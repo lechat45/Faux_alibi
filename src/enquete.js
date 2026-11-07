@@ -85,7 +85,7 @@ function factoire(){
   return l.length?l[Math.floor(Math.random()*l.length)]:null;
 }
 function evenements(){
-  if(c.test||G.bot||G.robot||S.fin||!S.introDone)return;
+  if(c.test||G.bot||G.robot||S.fin||!S.introDone||S.tu)return;
   S.jeu=(S.jeu||0)+1;
   if(!S.ev){const r=RNG(S.seed*3+1),l=shuffle(r,['courant','temoin','lettre']);S.ev=[{t:7200,k:l[0]},{t:16200,k:l[1]}]}
   const e=S.ev[0];if(!e||S.jeu<e.t)return;

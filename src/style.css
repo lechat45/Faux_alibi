@@ -426,3 +426,9 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
   .alignes{overflow:visible}
   .tribunal>footer{position:sticky;bottom:0;z-index:2}
 }
+/* Tutoriel : quelques mots, une flèche, et c'est au joueur d'agir */
+.tuto-p{position:absolute;left:50%;bottom:calc(52px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(10,8,20,.6);color:#c8c4d8;font:600 12px var(--f);padding:2px 9px;z-index:4}
+.tuto-p:hover{color:#fff}
+.calepin.appel,.marteau.appel{animation:appel .9s ease-in-out infinite}
+@keyframes appel{0%,100%{transform:scale(1)}50%{transform:scale(1.14) rotate(-3deg)}}
+@media (prefers-reduced-motion:reduce){.calepin.appel,.marteau.appel{animation:none;outline:3px solid #ffd23f}}

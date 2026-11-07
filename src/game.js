@@ -8,7 +8,7 @@ const R_=(g,c,x,y)=>R(g,c,x,y);
 const NIVEAUX=['Bavard','Méfiant','Fermé'];
 let c,S,W,G={},stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{}};
 // Réglages du joueur, tous réellement appliqués
-let O={texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,sons:1,musique:1,vol:50,lum:50,txt:100};
+let O={texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,diff:'auto',sons:1,musique:1,vol:50,lum:50,txt:100};
 let AC=null;
 function son(t){
   if(!O.sons||!O.vol)return;
@@ -29,12 +29,12 @@ function neuf(lv,seed,intro=true){
   S={seed,lv,t:{},liens:[],aides:0,jeu:0,evDocs:[],asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
   Object.values(W.doors).forEach(d=>{if(d.lock===null)S.open[d.id]=1});
   if(Cut)endCut();
-  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('but').hidden=true;
+  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('but').hidden=true;$('tuto-p').hidden=true;G.planCible=null;G.tutoO=null;
   cam.x=S.p.x-VW/2;cam.y=S.p.y-VH/2;G.snap=true;
   S.papiers.push(W.iAuto);
   save();render();
   if(lv===10){S.introDone=true;dit(JOUEUR,"Six salles, six façons d'interroger. Tout se joue dans la pièce.",300)}
-  else if(intro&&O.scenario)startIntro();else S.introDone=true;
+  else if(intro&&O.scenario)startIntro();else{S.introDone=true;if(intro)tutoLance()}
 }
 function prep(){
   W.obj.forEach(o=>{if(o.kind==='suspect'){W.blk[o.y][o.x]=0;o.fx=o.x*TS+8;o.fy=o.y*TS+11;o.wait=60+(o.s*97)%300;o.dir=0}});
@@ -265,6 +265,7 @@ function draw(){
     shadow(a.x,a.y,12);drawChar2(G.sheet[a.sh],a.x,a.y,a.dir,a.mv?(tick>>3)&3:0)}})});
   L.sort((a,b)=>a.y-b.y).forEach(i=>i.d());
   if(c.test)dessinDessus();
+  if(S.tu)tutoDessus();
   if(G.hover&&!modal){
     const[x,y,w,h]=objRect(G.hover),q=tick>>4&1;ctx.fillStyle='#ffd23f';
     [[x-2-q,y-2-q,5,1],[x-2-q,y-2-q,1,5],[x+w-3+q,y-2-q,5,1],[x+w+1+q,y-2-q,1,5],[x-2-q,y+h+1+q,5,1],[x-2-q,y+h-3+q,1,5],[x+w-3+q,y+h+1+q,5,1],[x+w+1+q,y+h-3+q,1,5]].forEach(a=>ctx.fillRect(...a));
@@ -323,6 +324,7 @@ const at0=()=>({x:S.p.x,y:S.p.y});
 function say(nom,txt,at,por){modal='dlg';bulle({at:at||at0(),nom,txt,por,btn:[{t:'Compris',f:closeAll}]})}
 function talk(o,msg,refus,e){
   if(c.test)return salleParle(o.s);
+  if(S.tu)S.tu.parle=1;
   const s=o.s,su=c.suspects[s],V=VOIX(s),need=su.niveau-1,pret=()=>(S.conf[s]||0)>=need;
   o.mv=false;modal='dlg';
   const btn=HOURS.map((h,i)=>({t:(S.asked[s+'-'+i]?'✓ ':'Et à ')+h+(S.asked[s+'-'+i]?'':' ?'),f:()=>{
@@ -419,37 +421,19 @@ function startIntro(){
   if(G.noCut){S.introDone=true;return}
   const b=G.body,cells=freeNear(b.x,b.y,10),V=c.vName,e=c.vg==='f'?'e':'',A=W.rooms[c.rc],ic=cells.find(q=>q[0]!==W.spawn.x||q[1]!==W.spawn.y)||[b.x+1,b.y],me=[W.spawn.x,W.spawn.y];
   const door=cells[cells.length-1]||me,win=c.win.length>1?`quelque part entre ${HOURS[c.win[0]]} et ${HOURS[c.win[1]]}`:HOURS[c.hc];
-  const ba=t=>({say:'ba',nom:'Basile, votre adjoint',t}),moi=t=>({say:'me',nom:'Vous',t});
+  const ba=t=>({say:'ba',nom:'Basile, votre adjoint',t});
   const q=[
     {fn:()=>{G.fade=1}},{area:c.rc},{cam:[b.x*TS+8,b.y*TS]},{snap:1},
     {card:`Affaire n° ${c.seed}`,sub:`${c.set.nom}, minuit.`},
     act('v','v',[b.x+.5,b.y],0,{down:true}),act('ba','ba',ic,0),act('me','me',door,2),
     {fade:0},{go:'me',x:me[0]*TS+8,y:me[1]*TS+11,sp:1.2},
     ba(`Ah, inspecteur ! Vous voilà enfin. Bienvenue ${c.set.lieu}.`),
-    moi("Basile. Que s'est-il passé ?"),
-    ba(`Voici ${V}, ${c.vrole}. Retrouvé${e} mort${e} ici même, à minuit pile.`),
-    ba(`Le légiste parle d'${CLASSES[c.cls]}. La mort remonte à ${win}. J'ai glissé son rapport dans votre calepin.`),
+    ba(`Voici ${V}, ${c.vrole}. Retrouvé${e} mort${e} ici même, à minuit pile. Le légiste parle d'${CLASSES[c.cls]}, ${win.startsWith('quelque')?win:'à '+win}.`),
     ...(c.crime==='suicide'?[ba("Tout a été arrangé pour faire croire à un suicide. Le légiste n'y croit pas une seconde.")]:c.crime==='vol'?[ba(`Et ${c.vole} a disparu. La victime a sans doute surpris son voleur.`)]:c.crime==='poison'?[ba("Aucune blessure, juste un verre renversé près du corps. Quelqu'un a versé quelque chose dedans.")]:[]),
-    moi("L'assassin a pu filer ?"),
-    ba("Impossible, tout est bloqué. Il est encore là, parmi eux."),
-    ba(c.liars===1?"Écoutez bien : chaque suspect peut vous dire où il était, heure par heure. Les innocents disent la vérité. Un seul ment : l'assassin.":"Écoutez bien : chaque suspect peut vous dire où il était, heure par heure. Ils sont deux, et ils ont agi ensemble : deux personnes mentent, ce sont les deux assassins."),
-    ba("Si deux versions de la même heure ne peuvent pas être vraies ensemble, vous tenez quelque chose."),
-    moi("Et comment je m'y prends ?"),
-    ba("Cliquez sur le sol pour marcher, et sur une personne pour lui parler. Vous ne voyez que la pièce où vous êtes : les murs, ça cache."),
-    ba("Certains parlent facilement, d'autres non. Si quelqu'un se ferme, insistez, parlez de la victime ou montrez-lui un papier qui le compromet."),
-    ba("Fouillez les tiroirs, les armoires et les bibliothèques. Il faudra parfois ranger des livres, crocheter une serrure ou résoudre une énigme. Dans les caisses, videz tout : personne ne vous dira ce qui compte."),
-    ba("Gardez vos trouvailles : un même objet peut ouvrir plusieurs cachettes différentes."),
-    ba("Dans le calepin, la page Déductions vous aide à comparer deux témoignages. Et si vous séchez, demandez-moi un indice, mais votre note en souffrira."),
-    ba("Chaque pièce a son présentoir. Ce qui manque est peut-être l'arme du crime."),
-    ba("Tout s'écrit dans votre calepin, là, en bas à droite : notes, témoignages, objets et documents. La carte, en haut à droite, vous montre où vous êtes."),
-    {fn:()=>{const k=$('calepin');k.classList.remove('frise');void k.offsetWidth;k.classList.add('frise')}},
-    ba("Dernière chose, et c'est la plus importante : vous n'avez droit qu'à une seule accusation. Elle se fait avec le marteau du juge, en bas à gauche, et vous pourrez y ajouter l'arme et l'heure du crime. Si vous vous trompez, l'assassin s'en tire."),
-    moi('Compris. Présentez-moi tout ce beau monde.'),
-    {fade:1},{card:'Les suspects',sub:`${c.n} personnes, une seule nuit.`},{fade:0}
+    ba(c.liars===1?"Personne n'a pu sortir. L'assassin est encore là, et lui seul va vous mentir.":"Personne n'a pu sortir. Ils sont deux, et ils vont vous mentir."),
+    ba(stats.tuto?"À vous de jouer, inspecteur.":"Commençons par le début, je vous montre.")
   ];
-  c.suspects.forEach((su,i)=>q.push({say:'x',nom:`${su.nom}, ${su.role}`,t:VOICES[su.voice].hi[0],por:G.por[i]}));
-  q.push(ba("À vous de jouer, inspecteur."));
-  play(q,()=>{S.introDone=true;save();render()});
+  play(q,()=>{S.introDone=true;save();render();tutoLance()});
 }
 function motDossier(){
   const f=S.fin,a=f.arme,h=f.heure;if(a==null&&h==null)return'';
@@ -616,7 +600,7 @@ function npcLife(){
     if(o.kind!=='suspect')return;
     if(o.em>0)o.em--;
     gesteMaj(o);if(o.assis||o.pilote)return;
-    const near=Math.hypot(P.x-o.fx,P.y-o.fy)<58&&visible(ar,o.fx>>4,(o.fy-3)>>4);
+    const R=reglage(),near=Math.hypot(P.x-o.fx,P.y-o.fy)<R.vue*.7&&visible(ar,o.fx>>4,(o.fy-3)>>4);
     if(o.hold>0)o.hold--;
     if(near||o.hold>0){
       o.mv=false;o.tx=undefined;
@@ -626,12 +610,12 @@ function npcLife(){
       const A=W.rooms[o.room],opts=[];
       for(let i=0;i<8;i++){const x=A.x0+int(Math.random,A.x1-A.x0+1),y=A.y0+1+int(Math.random,A.y1-A.y0),tx=x*TS+8,ty=y*TS+11;if(!solidCell(W,x,y,{})&&Math.hypot(tx-o.fx,ty-o.fy)<70&&npcLine(o.fx,o.fy,tx,ty))opts.push([tx,ty])}
       if(opts.length){o.tx=opts[0][0];o.ty=opts[0][1]}
-      o.wait=120+Math.random()*340;
+      o.wait=(120+Math.random()*340)*R.att;
     }
     if(o.tx!==undefined){
       const dx=o.tx-o.fx,dy=o.ty-o.fy,d=Math.hypot(dx,dy);
       if(d<1){o.tx=undefined;o.mv=false}
-      else{o.fx+=dx/d*.45;o.fy+=dy/d*.45;o.mv=true;o.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?0:2);o.x=o.fx>>4;o.y=(o.fy-3)>>4}
+      else{o.fx+=dx/d*.45*R.npc;o.fy+=dy/d*.45*R.npc;o.mv=true;o.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?0:2);o.x=o.fx>>4;o.y=(o.fy-3)>>4}
     }
   });
   if(O.bavard&&!c.test&&tick%520===260&&!G.ambO){
@@ -649,6 +633,7 @@ function update(){
   (G.rip||[]).forEach(r=>r.t--);if(G.rip)G.rip=G.rip.filter(r=>r.t>0);
   if(toastT>0&&--toastT===0)$('toast').hidden=true;
   typeBulle();
+  if(S&&S.tu)tutoTick();
   if(tick%(O.calme?6:3)===0&&W&&W.furn.some(f=>f.name==='fireplace'))feuPas();
   if(G.pzT)G.pzT();
   if(modal==='cut'&&Cut){stepCut();return}
@@ -686,7 +671,7 @@ function update(){
   const nom=G.area!=null&&W.areas[G.area]?W.areas[G.area].name:'';
   if(nom!==G.nomL){G.nomL=nom;$('lieu').textContent=nom;$('lieu').hidden=!nom}
   if(tick%240===0)save();
-  if(tick%20===0)miniCarte();
+  if(tick%16===0)miniCarte();
 }
 function toast(t,bon){const e=$('toast');e.textContent=t;e.className='toast'+(bon?' bon':'');e.hidden=false;toastT=120}
 
@@ -818,6 +803,7 @@ function miniCarte(){
   if(G.planK!==cle||!G.plan){G.planK=cle;G.plan=dessinePlan(a);k.width=G.plan.width;k.height=G.plan.height}
   const g=k.getContext('2d'),T=G.planT;g.drawImage(G.plan,0,0);
   const px=(S.p.x/TS-T.x0)*T.s,py=(S.p.y/TS-T.y0)*T.s;g.fillStyle='#fff';g.beginPath();g.arc(px,py,8,0,7);g.fill();g.fillStyle='#d8483e';g.beginPath();g.arc(px,py,6,0,7);g.fill();
+  if(G.planCible&&(tick>>4)&1){const[a,b]=G.planCible;g.strokeStyle='#d8483e';g.lineWidth=5;g.beginPath();g.arc((a-T.x0)*T.s,(b-T.y0)*T.s,15,0,7);g.stroke()}
   const e=$('ici'),t=W.areas[a].name;if(e.textContent!==t)e.textContent=t;
 }
 function ouvrirTribunal(){
@@ -860,7 +846,7 @@ function render(){
 
 // ——— Page d'accueil ———
 function accueil(){
-  closeAll();enJeu=false;$('but').hidden=true;if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
+  closeAll();enJeu=false;$('but').hidden=true;$('tuto-p').hidden=true;['calepin','marteau'].forEach(n=>$(n).classList.remove('appel'));if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
   $('accueil').hidden=false;$('prompt').hidden=true;$('lieu').hidden=true;$('amb').hidden=true;$('hud').hidden=true;
   const n=stats.gagnees,suite=LEVELS.findIndex((l,i)=>!stats.res[i]);
   const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${DIFF[l.diff].label}</span>${stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
@@ -873,6 +859,7 @@ const OPTS=[
   ['texte','Vitesse du texte',[['lent','Lente'],['normal','Normale'],['rapide','Rapide'],['direct','Immédiate']]],
   ['perso','Vitesse du personnage',[['normal','Normale'],['rapide','Rapide']]],
   ['zoom','Taille de la carte',[['petit','Petite'],['auto','Automatique'],['grand','Grande']]],
+  ['diff','Difficulté',[['auto','Selon le niveau'],['facile','Facile'],['moyen','Moyenne'],['difficile','Difficile']]],
   ['scenario',"Scénario d'ouverture",[[1,'Oui'],[0,'Non']]],
   ['bavard','Bavardages des suspects',[[1,'Oui'],[0,'Non']]],
   ['labels','Noms au survol',[[1,'Oui'],[0,'Non']]],
@@ -895,7 +882,7 @@ function ouvrirOptions(){
   e.innerHTML=`<div class="fiche-pz opts"><button class="croix" data-a="fermeropts" aria-label="Fermer les options">${croix}</button><h3>Options</h3>
     <div class="lignes">${OPTS.map(([k,t,l])=>`<div class="opt"><span>${t}</span><div class="ligne">${l.map(([v,n])=>`<button class="etiq ${O[k]==v?'actif':''}" data-o="${k}" data-v="${v}" aria-pressed="${O[k]==v}">${n}</button>`).join('')}</div></div>`).join('')}
     ${CURSEURS.map(([k,t,a,b])=>`<div class="opt"><label for="o-${k}">${t}</label><input id="o-${k}" type="range" min="${a}" max="${b}" value="${O[k]}" data-c="${k}"></div>`).join('')}</div>
-    <div class="ligne">${enJeu?'<button class="etiq" data-a="accueil">Retour à l\'accueil</button><button class="etiq" data-a="revoir">Revoir le scénario</button>':''}<button class="etiq alt" data-a="raz">Effacer ma progression</button></div>
+    <div class="ligne">${enJeu?'<button class="etiq" data-a="accueil">Retour à l\'accueil</button><button class="etiq" data-a="revoir">Revoir le scénario</button>'+(c&&!c.test?'<button class="etiq" data-a="retuto">Refaire le tutoriel</button>':''):''}<button class="etiq alt" data-a="raz">Effacer ma progression</button></div>
     <h4>Atelier</h4><div class="ligne">${Object.keys(PTYPES).map(t=>`<button class="etiq" data-a="essai" data-v="${t}">${PTYPES[t]}</button>`).join('')}${Object.keys(MINIS).map(t=>`<button class="etiq" data-a="mini" data-v="${t}">${MINIS[t]}</button>`).join('')}</div></div>`;
 }
 
@@ -1201,6 +1188,8 @@ function pret(){
     if(a==='accueil'){$('options').hidden=true;return accueil()}
     if(a==='suite'){const n=LEVELS.findIndex((l,i)=>!stats.res[i]);return neuf(n<0?(S.lv+1)%10:n)}
     if(a==='revoir'){closeAll();return startIntro()}
+    if(a==='retuto'){closeAll();stats.tuto=0;save();return tutoLance()}
+    if(a==='passertuto')return tutoFin();
     if(a==='essai'){const j=enJeu;closeAll();if(!j)$('hud').hidden=true;return openPz(makePuzzle(RNG((Math.random()*1e9)|0),v,1),null,true)}
     if(a==='mini'){const j=enJeu;closeAll();if(!j)$('hud').hidden=true;return openMini(v,null,true)}
   });

@@ -1,5 +1,5 @@
 const fs=require('fs'),path=require('path'),d=path.join(__dirname,'..');
-const js=['levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','salles','sons','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
+const js=['levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','salles','tuto','sons','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
 const css=fs.readFileSync(path.join(d,'src/style.css'),'utf8');
 const out=`<!DOCTYPE html>
 <html lang="fr">
@@ -24,6 +24,7 @@ const out=`<!DOCTYPE html>
   </div>
   <div id="amb" class="amb" hidden></div>
   <div id="but" class="but" hidden></div>
+  <button id="tuto-p" class="tuto-p" data-a="passertuto" hidden>Passer le tutoriel</button>
   <div id="toast" class="toast" hidden></div>
   <div id="prompt" class="prompt" hidden></div>
   <div id="bulle" class="bulle" hidden></div>
