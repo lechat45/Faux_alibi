@@ -552,10 +552,32 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .res-t{width:100%;font:400 18px/1.3 var(--main);padding:8px;background:#fffaf0;color:var(--encre);border:2px solid var(--stylo);resize:none;user-select:text;-webkit-user-select:text}
 .aide-inst{background:#f6ecd0 var(--grain);color:var(--encre);padding:8px 12px;font:400 18px/1.25 var(--main);max-width:28em;box-shadow:3px 4px 0 rgba(0,0,0,.5);text-shadow:none}
 .aide-inst b{font-weight:700;color:#8a2830}
+/* iPhone en application plein écran : la barre d'état, l'encoche et la barre d'accueil passent par-dessus le jeu.
+   Tout ce qui touche un bord de l'écran se décale de la place qu'elles prennent. */
+:root{--sh:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);--sg:env(safe-area-inset-left,0px);--sd:env(safe-area-inset-right,0px)}
+#zone-sure{position:absolute;visibility:hidden;pointer-events:none;top:var(--sh);left:var(--sg);height:var(--sb);width:var(--sd);padding:0}
+.vue>.croix{top:calc(14px + var(--sh));right:calc(14px + var(--sd))}
+.croix.claire{top:calc(12px + var(--sh));right:calc(14px + var(--sd))}
+.carnet{padding:calc(12px + var(--sh)) calc(14px + var(--sd)) calc(12px + var(--sb)) calc(14px + var(--sg))}
+.livret{height:min(640px,calc(100vh - 28px - var(--sh) - var(--sb)))}
+.doc{padding:calc(14px + var(--sh)) calc(14px + var(--sd)) calc(14px + var(--sb)) calc(14px + var(--sg))}
+.pz,.pop{padding:calc(12px + var(--sh)) calc(12px + var(--sd)) calc(12px + var(--sb)) calc(12px + var(--sg))}
+.tribunal{padding-top:calc(clamp(10px,3vh,26px) + var(--sh));padding-left:calc(16px + var(--sg));padding-right:calc(16px + var(--sd))}
+.tribunal>footer{padding-bottom:calc(clamp(8px,1.8vh,14px) + var(--sb))}
+.toast{top:calc(60px + var(--sh))}
+.acc-ui{padding-top:calc(24px + var(--sh));padding-bottom:calc(24px + var(--sb))}
+@media (max-width:820px){
+  .carnet{padding:calc(8px + var(--sh)) calc(8px + var(--sd)) calc(8px + var(--sb)) calc(8px + var(--sg))}
+  .livret{height:100%}
+}
+@media (max-width:560px){.doc{padding-top:calc(58px + var(--sh))}}
+@media (max-height:500px){.livret{height:calc(100vh - 16px - var(--sh) - var(--sb))}}
+.bulle{max-width:calc(100% - 16px - var(--sg) - var(--sd))}
 </style>
 </head>
 <body>
 <main id="app">
+  <i id="zone-sure" aria-hidden="true"></i>
   <canvas id="jeu" tabindex="0" aria-label="Carte du jeu. Clique pour te déplacer et agir."></canvas>
   <div id="lieu" class="lieu" hidden></div>
   <div id="hud" class="hud" hidden>
@@ -4478,11 +4500,13 @@ function ancreBulle(x,y){
   if(!Cut&&W&&W.areas){const a=G.area!=null?G.area:c.rc;if(W.areas[a]&&!visible(a,x>>4,(y-3)>>4))return null}
   return[sx,sy];
 }
+// Place prise par la barre d'état, l'encoche et la barre d'accueil (iPhone en application)
+function zoneSure(){const e=$('zone-sure');return e?{h:e.offsetTop,b:e.offsetHeight,g:e.offsetLeft,d:e.offsetWidth}:{h:0,b:0,g:0,d:0}}
 function placeBulle(b,x,pieds,taille){
-  const app=$('app'),W0=app.clientWidth,H0=app.clientHeight,w=b.offsetWidth,h=b.offsetHeight;
+  const app=$('app'),W0=app.clientWidth,H0=app.clientHeight,w=b.offsetWidth,h=b.offsetHeight,z=zoneSure(),hh=8+z.h,bb=8+z.b,gg=8+z.g,dd=8+z.d;
   let top=pieds-taille-h-14,dessous=false;
-  if(top<8){const t2=pieds+14;if(t2+h<=H0-8){top=t2;dessous=true}else top=Math.max(8,Math.min(top,H0-h-8))}
-  const left=Math.max(8,Math.min(W0-w-8,x-w/2));
+  if(top<hh){const t2=Math.max(pieds+14,hh);if(t2+h<=H0-bb){top=t2;dessous=true}else top=Math.max(hh,Math.min(top,H0-h-bb))}
+  const left=Math.max(gg,Math.min(W0-w-dd,x-w/2));
   b.style.left=left+'px';b.style.top=top+'px';b.classList.toggle('bas',dessous);b.classList.remove('haut');
   b.style.setProperty('--q',Math.max(10,Math.min(w-26,x-left-8))+'px');
 }

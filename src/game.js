@@ -312,11 +312,13 @@ function ancreBulle(x,y){
   if(!Cut&&W&&W.areas){const a=G.area!=null?G.area:c.rc;if(W.areas[a]&&!visible(a,x>>4,(y-3)>>4))return null}
   return[sx,sy];
 }
+// Place prise par la barre d'état, l'encoche et la barre d'accueil (iPhone en application)
+function zoneSure(){const e=$('zone-sure');return e?{h:e.offsetTop,b:e.offsetHeight,g:e.offsetLeft,d:e.offsetWidth}:{h:0,b:0,g:0,d:0}}
 function placeBulle(b,x,pieds,taille){
-  const app=$('app'),W0=app.clientWidth,H0=app.clientHeight,w=b.offsetWidth,h=b.offsetHeight;
+  const app=$('app'),W0=app.clientWidth,H0=app.clientHeight,w=b.offsetWidth,h=b.offsetHeight,z=zoneSure(),hh=8+z.h,bb=8+z.b,gg=8+z.g,dd=8+z.d;
   let top=pieds-taille-h-14,dessous=false;
-  if(top<8){const t2=pieds+14;if(t2+h<=H0-8){top=t2;dessous=true}else top=Math.max(8,Math.min(top,H0-h-8))}
-  const left=Math.max(8,Math.min(W0-w-8,x-w/2));
+  if(top<hh){const t2=Math.max(pieds+14,hh);if(t2+h<=H0-bb){top=t2;dessous=true}else top=Math.max(hh,Math.min(top,H0-h-bb))}
+  const left=Math.max(gg,Math.min(W0-w-dd,x-w/2));
   b.style.left=left+'px';b.style.top=top+'px';b.classList.toggle('bas',dessous);b.classList.remove('haut');
   b.style.setProperty('--q',Math.max(10,Math.min(w-26,x-left-8))+'px');
 }

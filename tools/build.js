@@ -15,6 +15,7 @@ const out=`<!DOCTYPE html>
 </head>
 <body>
 <main id="app">
+  <i id="zone-sure" aria-hidden="true"></i>
   <canvas id="jeu" tabindex="0" aria-label="Carte du jeu. Clique pour te déplacer et agir."></canvas>
   <div id="lieu" class="lieu" hidden></div>
   <div id="hud" class="hud" hidden>
