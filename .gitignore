@@ -1,0 +1,7 @@
+faux-alibi.html
+.claude/
+.env
+.env.*
+node_modules/
+tools/p.js
+*.log
