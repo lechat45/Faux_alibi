@@ -1,6 +1,6 @@
 // Génération de la carte : architecture, mobilier, portes, cachettes, énigmes d'objets et audit.
 let MW=62,MH=33;
-const FP={chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
+const FP={escalier:[2,1],secours:[2,1],chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
   console:[3,1],labbench:[3,1],planter:[3,1],table:[3,2],rtable:[2,2],chair:[1,1],sofa:[3,1],armchair:[1,1],bed:[2,3],crate:[1,1],barrel:[1,1],plant:[1,1],mannequin:[1,1],spot:[1,1],ropes:[1,1],
   trunk:[2,1],lamp:[1,1],globe:[1,1],stool:[1,1],tank:[1,1],tub:[3,1],toilet:[1,1],shower:[2,1],desk:[3,1],pcdesk:[3,1],commode:[2,1],chevet:[1,1],lift:[2,1],medic:[1,1],washer:[1,1],copier:[1,1],roulette:[3,2],engine:[3,2],
   chairB:[1,1],chairL:[1,1],chairR:[1,1],armchairB:[1,1],armchairL:[1,1],armchairR:[1,1],sofaB:[3,1],basse:[3,1]};
@@ -8,6 +8,8 @@ const DECO=[['chariot','valise'],['bascule','valise'],['banquette','valise'],['f
 const FLAVOR={chariot:['Des serviettes propres et de petits savons.'],valise:["Une étiquette à moitié arrachée. Elle est vide."],bascule:['Il se balance encore un peu.'],banquette:['Le velours est usé aux accoudoirs.'],fontaine:["Elle glougloute toute seule."],radio:['Rien que du grésillement.'],skis:['Les fartages sont encore frais.'],portant:['Des costumes de scène qui sentent la naphtaline.'],bouee:['Elle porte le nom du navire.'],barre:['Elle est bloquée depuis le départ.'],perfusion:["La poche est presque vide."],brancard:['Les draps sont propres.'],armure:["Il n'y a personne dedans. Enfin, j'espère."],bandit:['Trois citrons. Encore perdu.'],jetons:['Quelques jetons abandonnés en plein jeu.'],portemanteau:['Des manteaux encore humides de pluie.','Un chapeau, une écharpe, un vieux pardessus.'],parapluies:['Trois parapluies, encore mouillés.'],chaussures:["Des chaussures bien alignées. Personne n'est sorti ce soir."],videpoche:['Un vide-poches, quelques clés sans étiquette.','Une petite coupelle et le courrier du matin.'],banc:['Un banc pour se déchausser.'],shelf:['Des rangées de livres, rien de plus.','Les reliures sentent le vieux cuir.'],cabinet:['Des tiroirs bien rangés, sans surprise.'],crate:['Des clous et de la paille.'],trunk:['Des vêtements pliés et de vieux journaux.'],
  barrel:['Ça sonne plein.'],table:['Quelques papiers sans intérêt.','Des tasses encore tièdes.'],clock:['Elle tique trop fort pour être honnête.','Elle retarde de deux minutes.'],plant:['La terre est humide. Quelqu\'un en prend soin.'],
  locker:['Un casier vide, qui sent le renfermé.'],lamp:['L\'ampoule grésille.'],lift:['L\'ascenseur est à l\'arrêt, impossible de l\'appeler.','Le bouton ne répond plus. Rien à faire.'],tub:['La baignoire est sèche.'],toilet:['Rien ici. Heureusement.'],shower:['Le carrelage est encore humide.'],
+ escalier:["L'escalier de service. Une corde rouge barre le passage : « Fermé pendant la tempête ».","Une fine couche de poussière couvre les marches : personne n'est monté ce soir."],
+ secours:["La sortie de secours est enchaînée. Personne n'a pu sortir par là ce soir.","Une chaîne, un gros cadenas, et dehors la tempête. Le coupable est forcément encore à l'intérieur."],
  bed:['Les draps sont tirés au cordeau.','Personne n\'a dormi ici ce soir.'],sofa:['Rien entre les coussins.'],armchair:['Il garde la forme de son dernier occupant.'],chair:['Une simple chaise.'],stove:['Les plaques sont froides.'],piano:['Une touche sonne faux.'],
  globe:['Il tourne mal, comme le monde.'],washer:['Le tambour est vide.'],copier:['Elle clignote : plus de papier.'],roulette:['Le cylindre s\'est arrêté sur le 17.'],engine:['Le métal est brûlant et le bruit assourdissant.'],tank:['Le liquide ne bouge pas.'],
  console:['Des voyants clignotent sans raison.'],rack:['Des câbles partout.'],mannequin:['Son regard vide met mal à l\'aise.'],spot:['Il est encore chaud.'],ropes:['Une corde bien rangée.'],planter:['Quelques plantes fatiguées.'],labbench:['Des éprouvettes alignées.'],stool:['Un tabouret bancal.'],basse:['Quelques revues, une tasse froide.'],
@@ -15,7 +17,7 @@ const FLAVOR={chariot:['Des serviettes propres et de petits savons.'],valise:["U
  chevet:['Un livre corné et un verre d\'eau.','Le tiroir est vide.'],fridge:['Un reste de fromage, rien d\'intéressant.','Ça sent un peu le renfermé.'],sink:['Le siphon est propre.','Une goutte tombe du robinet.'],counter:['Des miettes et un torchon humide.','Rien dans les placards, à part de la vaisselle.'],
  medic:['Des pansements et de l\'aspirine.','Quelques flacons ordinaires.'],vanity:['Du maquillage et une brosse.','Rien derrière le miroir.'],fireplace:['Le feu crépite. Rien de caché dans les braises.','Rien dans l\'âtre, à part les bûches.'],bar:['Des verres propres et des bouteilles entamées.'],washer:['Le tambour est vide.'],sewing:['Du fil et des aiguilles.']};
 const LOCKS=[['rouge','#e8504a'],['bleue','#4aa8ff'],['verte','#58d67a']];
-const SH_HAUT=['shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
+const SH_HAUT=['escalier','secours','shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
 const DIFFW={facile:{lock:1,eni:2,pz:2,bonus:1},moyen:{lock:1,eni:3,pz:3,bonus:1},difficile:{lock:2,eni:4,pz:3,bonus:2}};
 
 function buildWorld(c){
@@ -92,7 +94,7 @@ function buildWorld(c){
     const[fw,fh]=FP[name],id=nid(),f={id,name,x,y,w:fw,h:fh,room:A.i,v:int(r,1e6)};
     for(let a=0;a<fh;a++)for(let b=0;b<fw;b++)blk[y+a][x+b]=id;
     w.furn.push(f);
-    if(['lamp','fireplace','stove','vanity','console','rack','spot','tank'].includes(name))w.lamps.push({x:x+fw/2,y:y+.5,warm:name!=='console'&&name!=='rack'&&name!=='tank'});
+    if(['lamp','fireplace','stove','vanity','console','rack','spot','tank','secours'].includes(name))w.lamps.push({x:x+fw/2,y:y+.5,warm:!['console','rack','tank','secours'].includes(name)});
     return f;
   };
   const unplace=f=>{for(let a=0;a<f.h;a++)for(let b=0;b<f.w;b++)blk[f.y+a][f.x+b]=0;w.furn.splice(w.furn.indexOf(f),1);w.lamps=w.lamps.filter(l=>!(l.x===f.x+f.w/2&&l.y===f.y+.5))};
@@ -142,14 +144,39 @@ function buildWorld(c){
       }
     });
   };
-  // Couloirs : meubles répartis régulièrement, l'ascenseur tout au bout
+  // L'ascenseur se pose au milieu d'un pan de mur entier, de préférence tout au bout du couloir
+  const pansDeMur=A=>{const l=[];A.rects.forEach(q=>{let d=null;for(let x=q.x0;x<=q.x1+1;x++){const ok=x<=q.x1&&t[q.y0-1][x]===2&&t[q.y0-2][x]===2&&!gate[q.y0][x]&&!res[q.y0][x]&&!blk[q.y0][x];if(ok){if(d===null)d=x}else if(d!==null){l.push({q,x0:d,n:x-d});d=null}}});return l};
+  const poseAscenseur=(A,haut)=>{
+    const pans=pansDeMur(A).filter(p=>p.n>=2).sort((a,b)=>(b.q===haut)-(a.q===haut)||b.n-a.n);
+    for(const p of pans){
+      const impair=p.n%2===1&&p.n<=5,w0=impair?3:2,X=p.x0+((p.n-w0)>>1);
+      if(!libreLa(X,p.q.y0,w0,1))continue;
+      const f=place('lift',X,p.q.y0,A);if(impair){f.w=3;f.dx=8;blk[p.q.y0][X+2]=f.id}
+      if(areaOK(A))return f;
+      unplace(f);
+    }
+  };
+  // Un couloir ne s'arrête pas dans le vide : au bout, un escalier de service ou une sortie de secours
+  const boutsCouloir=A=>{
+    let n=0;
+    A.rects.forEach(q=>{
+      if(Math.min(q.x1-q.x0,q.y1-q.y0)+1>4||q.x1-q.x0<q.y1-q.y0)return;
+      [[q.x0,-1],[q.x1,1]].forEach(([xe,s])=>{
+        if(A.rects.some(o=>o!==q&&xe>=o.x0&&xe<=o.x1&&q.y0<=o.y1&&q.y1>=o.y0))return;
+        for(let y=q.y0;y<=q.y1;y++)if(gate[y][xe+s])return;
+        const X=s<0?q.x0:q.x1-1;
+        if(t[q.y0-1][X]!==2||t[q.y0-1][X+1]!==2||!libreLa(X,q.y0,2,1))return;
+        const f=place(c.lv===8||c.lv===1?'escalier':(n+c.lv)%2?'secours':'escalier',X,q.y0,A);
+        if(areaOK(A))n++;else unplace(f);
+      });
+    });
+  };
+  // Couloirs : meubles répartis régulièrement, l'ascenseur au milieu de son mur
   const poseCirc=A=>{
     if(/entrée|hall/i.test(A.name))poseEntree(A);
     const list=(A.rec.cw||[]).filter(n=>n!=='lift'),haut=A.rects.reduce((m,q)=>q.y0<m.y0?q:m),long=A.rects.reduce((m,q)=>q.x1-q.x0>m.x1-m.x0?q:m);
-    if((A.rec.cw||[]).includes('lift')){
-      const c0=(haut.x0+haut.x1-1)>>1;
-      for(const d of [0,-1,1,-2,2,-3,3,-4,4]){const X=c0+d;if(X<haut.x0||X+1>haut.x1||!libreLa(X,haut.y0,2,1))continue;const f=place('lift',X,haut.y0,A);if(areaOK(A))break;unplace(f)}
-    }
+    if((A.rec.cw||[]).includes('lift'))poseAscenseur(A,haut);
+    boutsCouloir(A);
     const W0=long.x1-long.x0+1;
     list.forEach((name,i)=>{
       const fw=FP[name][0];let X=long.x0+Math.floor((i+.5)*W0/list.length);
@@ -262,7 +289,7 @@ function buildWorld(c){
   // Tout se fouille, mais seuls quelques meubles cachent vraiment quelque chose
   const fou=w.furn.map(f=>({id:nid(),kind:'fouille',x:f.x,y:f.y,w:f.w,h:f.h,room:f.room,name:f.name,text:pick(r,FLAVOR[f.name.replace(/[BLR]$/,'')]||['Rien de particulier.'])}));
   const boxes=shuffle(r,fou.filter(o=>MG_BY[o.name]));
-  const others=shuffle(r,fou.filter(o=>!MG_BY[o.name]&&o.name!=='lift'));
+  const others=shuffle(r,fou.filter(o=>!MG_BY[o.name]&&!['lift','escalier','secours'].includes(o.name)));
   // On remplit toujours la pièce la moins chargée : rien ne s'entasse au même endroit
   const charge=o=>fou.filter(b=>b.room===o.room&&(b.loot||b.lock)).length;
   const meilleur=l=>{let m,v=1e9;for(const o of l){const q=charge(o)+r()*.6;if(q<v){v=q;m=o}}return m};

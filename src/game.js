@@ -163,13 +163,25 @@ function buildMap(){
     }
   });
   g.fillStyle='rgba(12,10,32,.32)';W.furn.forEach(f=>g.fillRect(f.x*TS,(f.y+f.h)*TS-1,f.w*TS,3));
-  // Tapis de couloir
-  if(L.runner)W.areas.filter(A=>!A.room).forEach(A=>A.rects.forEach(q=>{
-    const hz=q.x1-q.x0>=q.y1-q.y0,e=hz?q.y1-q.y0+1:q.x1-q.x0+1;
-    if(e<3)return;
-    const a=(hz?q.y0*TS:q.x0*TS)+8,l=e*TS-16,n=hz?(q.x1-q.x0+1)*TS:(q.y1-q.y0+1)*TS;
-    for(let i=0;i<n;i++)for(let j=0;j<l;j++){const X=hz?q.x0*TS+i:a+j,Y=hz?a+j:q.y0*TS+i,bd=j<2||j>=l-2,mo=(i%16)<2&&j>6&&j<l-6;R_(g,bd?'#d8b35c':mo?tone(L.runner,.3):tone(L.runner,(noise(i>>1,j>>1,5)-.5)*.1),X,Y)}
-  }));
+  // Tapis de couloir : un seul tapis qui suit les coudes, bordé d'or tout autour
+  if(L.runner)W.areas.filter(A=>!A.room).forEach(A=>{
+    const bandes=[];
+    A.rects.forEach(q=>{
+      const hz=q.x1-q.x0>=q.y1-q.y0,e=hz?q.y1-q.y0+1:q.x1-q.x0+1;if(e<3)return;
+      const autre=(x,y)=>A.rects.find(o=>o!==q&&x>=o.x0&&x<=o.x1&&y>=o.y0&&y<=o.y1);
+      if(hz){const a=autre(q.x0,q.y0)||autre(q.x0,q.y1),b=autre(q.x1,q.y0)||autre(q.x1,q.y1);bandes.push({hz,x0:a?a.x0*TS+8:q.x0*TS+8,x1:b?(b.x1+1)*TS-8:(q.x1+1)*TS-8,y0:q.y0*TS+8,y1:(q.y1+1)*TS-8})}
+      else{const a=autre(q.x0,q.y0)||autre(q.x1,q.y0),b=autre(q.x0,q.y1)||autre(q.x1,q.y1);bandes.push({hz,x0:q.x0*TS+8,x1:(q.x1+1)*TS-8,y0:a?a.y0*TS+8:q.y0*TS+8,y1:b?(b.y1+1)*TS-8:(q.y1+1)*TS-8})}
+    });
+    if(!bandes.length)return;
+    const dans=(x,y)=>bandes.find(b=>x>=b.x0&&x<b.x1&&y>=b.y0&&y<b.y1);
+    const X0=Math.min(...bandes.map(b=>b.x0)),Y0=Math.min(...bandes.map(b=>b.y0)),X1=Math.max(...bandes.map(b=>b.x1)),Y1=Math.max(...bandes.map(b=>b.y1));
+    for(let y=Y0;y<Y1;y++)for(let x=X0;x<X1;x++){
+      const b=dans(x,y);if(!b)continue;
+      const bord=!dans(x-2,y)||!dans(x+2,y)||!dans(x,y-2)||!dans(x,y+2)||!dans(x-2,y-2)||!dans(x+2,y+2)||!dans(x+2,y-2)||!dans(x-2,y+2);
+      const i=b.hz?x-b.x0:y-b.y0,j=b.hz?y-b.y0:x-b.x0,l=b.hz?b.y1-b.y0:b.x1-b.x0,mo=(i%16)<2&&j>6&&j<l-6;
+      R_(g,bord?'#d8b35c':mo?tone(L.runner,.3):tone(L.runner,(noise(i>>1,j>>1,5)-.5)*.1),x,y);
+    }
+  });
   Object.values(W.doors).forEach(d=>{
     if(d.v)return;
     for(let i=0;i<2;i++)wallColumn(g,(d.x+i)*TS,(d.y+1)*TS,W.areas[d.bas].tint,L.lamb);
@@ -293,16 +305,30 @@ function draw(){
   posBulles();
 }
 const toScreen=(x,y)=>[(x-Math.round(cam.x))*SC,(y-Math.round(cam.y))*SC];
+// Une bulle se pose au-dessus de la tête de celui qui parle, et seulement s'il est visible d'ici
+function ancreBulle(x,y){
+  const app=$('app'),[sx,sy]=toScreen(x,y);
+  if(sx<-4||sx>app.clientWidth+4||sy<0||sy>app.clientHeight+40)return null;
+  if(!Cut&&W&&W.areas){const a=G.area!=null?G.area:c.rc;if(W.areas[a]&&!visible(a,x>>4,(y-3)>>4))return null}
+  return[sx,sy];
+}
+function placeBulle(b,x,pieds,taille){
+  const app=$('app'),W0=app.clientWidth,H0=app.clientHeight,w=b.offsetWidth,h=b.offsetHeight;
+  let top=pieds-taille-h-14,dessous=false;
+  if(top<8){const t2=pieds+14;if(t2+h<=H0-8){top=t2;dessous=true}else top=Math.max(8,Math.min(top,H0-h-8))}
+  const left=Math.max(8,Math.min(W0-w-8,x-w/2));
+  b.style.left=left+'px';b.style.top=top+'px';b.classList.toggle('bas',dessous);b.classList.remove('haut');
+  b.style.setProperty('--q',Math.max(10,Math.min(w-26,x-left-8))+'px');
+}
 function posBulles(){
-  const b=$('bulle');
-  if(!b.hidden&&G.bAt){
-    const[x,y]=toScreen(G.bAt.x,G.bAt.y-34),W0=$('app').clientWidth,H=b.offsetHeight,w=b.offsetWidth;
-    let top=y-H-14,haut=false;if(top<10){top=Math.min($('app').clientHeight-H-10,y+100);haut=true}
-    const left=Math.max(12,Math.min(W0-w-12,x-50));
-    b.style.left=left+'px';b.style.top=top+'px';b.classList.toggle('haut',haut);b.style.setProperty('--q',Math.max(8,Math.min(w-24,x-left))+'px');
-  }else if(!b.hidden){b.style.left=Math.max(12,($('app').clientWidth-b.offsetWidth)/2)+'px';b.style.top=Math.max(10,$('app').clientHeight-b.offsetHeight-110)+'px';b.classList.add('haut')}
+  const b=$('bulle'),taille=34*SC;
+  if(!b.hidden){
+    const p=G.bAt&&ancreBulle(G.bAt.x,G.bAt.y);
+    if(p)placeBulle(b,p[0],p[1],taille);
+    else{b.style.left=Math.max(12,($('app').clientWidth-b.offsetWidth)/2)+'px';b.style.top=Math.max(10,$('app').clientHeight-b.offsetHeight-110)+'px';b.classList.add('haut');b.classList.remove('bas')}
+  }
   const a=$('amb');
-  if(!a.hidden&&G.ambO){const[x,y]=toScreen(G.ambO.fx,G.ambO.fy-32);a.style.left=Math.max(8,x-24)+'px';a.style.top=(y-a.offsetHeight-14)+'px'}
+  if(!a.hidden&&G.ambO){const p=ancreBulle(G.ambO.fx,G.ambO.fy);a.style.visibility=p?'':'hidden';if(p)placeBulle(a,p[0],p[1],taille)}
 }
 
 // ——— Bulles ———
@@ -585,7 +611,7 @@ function onMapHover(e){
   G.hover=objAt(p.x,p.y);
   $('jeu').style.cursor=G.hover?G.curH:G.curN;
 }
-const NOM_F={portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur"};
+const NOM_F={portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur",bed:'le lit',sofa:'le canapé',sofaB:'le canapé',armchair:'le fauteuil',armchairL:'le fauteuil',armchairR:'le fauteuil',armchairB:'le fauteuil',clock:"l'horloge",plant:'le pot de fleurs',piano:'le piano',escalier:"l'escalier de service",secours:'la sortie de secours'};
 function promptOf(o){
   if(o.kind==='suspect')return`Parler à ${c.suspects[o.s].prenom}`;
   if(o.kind==='vitrine')return`Examiner : ${c.set.rooms[o.room].o}`;
@@ -595,6 +621,7 @@ function promptOf(o){
   if(o.kind==='trace')return'Examiner';
   if(S.open[o.id])return'Déjà fouillé';
   if(o.name==='lift')return"Appeler l'ascenseur";
+  if(o.name==='escalier'||o.name==='secours')return`Examiner ${NOM_F[o.name]}`;
   return NOM_F[o.name]?`Fouiller ${NOM_F[o.name]}`:'Regarder';
 }
 
@@ -992,7 +1019,7 @@ function openCaisse(o){
 }
 
 // ——— Mini-jeux de fouille : courts, adaptés au meuble, sans échec définitif ———
-const MINIS={ecriture:'Comparer les écritures',empreinte:'Relever une empreinte',dechiree:'Recoller une lettre',livres:'Ranger les livres',cintres:'Fouiller les poches',poussiere:'Dégager les cendres',crochet:'Crocheter le tiroir',memo:'Paires de flacons',tatons:'Chercher à tâtons'};
+const MINIS={ecriture:'Comparer les écritures',empreinte:'Relever une empreinte',dechiree:'Recoller une lettre',livres:'Ranger les livres',cintres:'Fouiller les poches',poussiere:'Dégager les cendres',crochet:'Crocheter le tiroir',memo:'Paires de flacons',tatons:'Chercher à tâtons',couches:'Défaire le lit',coussins:'Soulever les coussins',horloge:"Remettre l'horloge à l'heure",pot:'Déplacer le pot',piano:'Jouer la mélodie'};
 function livreImg(b){
   const[k,g]=cv(16,64),h=b.h;
   box(g,1,64-h,14,h,b.col);R(g,tone(b.col,.3),3,64-h+2,1,h-4);R(g,'#e0c060',2,64-h+6,12,1);R(g,'#e0c060',2,64-h+8,12,1);R(g,'#e0c060',2,62,12,1);
@@ -1012,7 +1039,7 @@ function openMini(type,win,free,o){
   const nom=o&&NOM_F[o.name]?cap(NOM_F[o.name]):MINIS[type],q0=o&&o.loot,spr=icone(q0?(q0.t==='obj'?q0.id:q0.t==='cle'?'cle':'lettre'):'lettre');
   const done=()=>{G.pzT=null;G.mini=null;if(free){closeAll();toast('Bien joué',true);return}win()};
   const shell=(txt,inner)=>{$('pz').innerHTML=`<div class="fiche-pz"><h3>${esc(nom)}</h3><p id="mg-t">${esc(txt)}</p><div class="meuble" style="background-image:url(${fond})">${inner}</div><div class="ligne"><button class="etiq alt" data-x="ferme">Refermer</button></div></div>`};
-  if(miniPlus(type,shell,done))return;
+  if(miniPlus(type,shell,done)||miniNeuf(type,shell,done,spr,o))return;
   if(type==='livres'){
     const cols=['#a33a3a','#d8703a','#d8b83a','#3d7a4c','#2e6a8c','#6b3d78'],nb=6;
     const regles=[['Du plus petit au plus grand.',b=>b.h],["Dans l'ordre des numéros au dos.",b=>b.n],["Dans l'ordre des couleurs : rouge, orange, jaune, vert, bleu, violet.",b=>cols.indexOf(b.col)]];

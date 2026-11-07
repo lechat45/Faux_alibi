@@ -187,7 +187,7 @@ const SPR={
 };
 function furnitureSprite(f){
   const[k,g]=cv(f.w*TS+2,f.h*TS+36);
-  g.translate(1,1);
+  g.translate(1+(f.dx||0),1);
   const H=SH[f.name]||24;
   SPR[f.name](g,f.v);
   return outlineSprite(k);

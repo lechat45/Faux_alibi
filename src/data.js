@@ -43,7 +43,8 @@ const ENIGMES={
 const TAG_NOM={levier:'levier',fil:'crochet',optique:'loupe',chaleur:'chaleur',lumiere:'lumière',electrique:'courant',aimant:'aimant',coupe:'lame',colle:'colle',mine:'mine'};
 // Chaque meuble à cachette se fouille de l'intérieur, selon sa nature
 const MG_BY={shelf:'livres',wardrobe:'cintres',locker:'cintres',cabinet:'ecriture',commode:'crochet',chevet:'crochet',desk:'dechiree',pcdesk:'crochet',counter:'tatons',bar:'tatons',washer:'tatons',
-  fridge:'memo',medic:'memo',vanity:'empreinte',sink:'tatons',trunk:'caisse',crate:'caisse',barrel:'caisse',fireplace:'poussiere'};
+  fridge:'memo',medic:'memo',vanity:'empreinte',sink:'tatons',trunk:'caisse',crate:'caisse',barrel:'caisse',fireplace:'poussiere',
+  bed:'couches',sofa:'coussins',sofaB:'coussins',armchair:'coussins',armchairL:'coussins',armchairR:'coussins',armchairB:'coussins',clock:'horloge',plant:'pot',piano:'piano'};
 
 // ——— Documents : modèles réutilisables, remplis selon l'enquête ———
 const JOURS=['12 mars','3 avril','19 mai','7 juin','24 juillet','2 septembre','15 octobre','28 novembre'];
