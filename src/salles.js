@@ -1,7 +1,7 @@
 // Niveau test : un couloir, six salles, six façons d'interroger. Tout se joue dans le décor,
 // en marchant : pas de fenêtre devant le jeu, seulement de petites bulles au-dessus des têtes.
 // Plus c'est difficile, plus la zone de vue est large et plus les personnages vont vite
-const NIV_JEU={facile:{vue:62,ang:.85,vit:.85,npc:1,att:1},moyen:{vue:82,ang:1.05,vit:1.05,npc:1.35,att:.75},difficile:{vue:108,ang:1.35,vit:1.38,npc:1.8,att:.5}};
+const NIV_JEU={facile:{vue:62,ang:.85,vit:.85,npc:1,att:1},moyen:{vue:82,ang:1.05,vit:1.05,npc:1.35,att:.75},difficile:{vue:108,ang:1.35,vit:1.38,npc:1.8,att:.5},expert:{vue:108,ang:1.35,vit:1.38,npc:1.8,att:.5}};
 const reglage=()=>NIV_JEU[O.diff&&O.diff!=='auto'?O.diff:(c&&c.test?'moyen':(c&&c.key)||'moyen')];
 const dureeDos=()=>Math.round(125*reglage().vit+20),dureeEcoute=()=>Math.round(110*reglage().vit+20);
 const JOUEUR={get fx(){return S.p.x},get fy(){return S.p.y}};

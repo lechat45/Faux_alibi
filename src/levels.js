@@ -147,3 +147,23 @@ const NIVEAU_TEST=Object.assign(lvl('difficile','Couloir des interrogatoires','a
   ['Salle des archives','à la salle des archives',"l'agrafeuse de fonte",'lourd','libre','l_openspace','#7a5a3c'],
   ['Atelier du dessinateur',"à l'atelier du dessinateur",'la cordelette','lien','libre','l_veranda','#8a6a3a']]),{porte:'bois',portech:'bois',runner:'#7a2f35',floor:'parquet'});
 const LV=i=>i===10?NIVEAU_TEST:LEVELS[i];
+
+// ——— Un étage par lieu (le train n'en a pas), relié au rez-de-chaussée par l'ascenseur ou un escalier ———
+Object.assign(RECIPES,{
+  e_grenier:{f:'planche',run:['wardrobe','trunk','shelf','trunk'],g:[coin('BG',CAISSES),coin('BD',[['crate',0,0],['barrel',1,0]]),coin('C',[['trunk',0,0]])]},
+  e_bureau:{f:'parquet',rug:'#5a2a2a',run:['shelf','cabinet','clock','shelf'],g:[coin('C',[['desk',0,0],['chairB',1,1]],{rug:true}),coin('BG',[['plant',0,0]]),coin('BD',[['lamp',0,0],['armchair',1,0]])]},
+  e_archives:{f:'lino',run:['shelf','cabinet','shelf','cabinet','shelf'],g:[coin('C',[['desk',0,0],['chairB',1,1]]),coin('BD',[['crate',0,0],['crate',1,0]]),coin('BG',[['crate',0,0]])]},
+  e_observ:{f:'metal',run:['shelf','console','cabinet'],g:[coin('C',[['globe',0,0],['armchair',1,0]]),coin('BG',[['lamp',0,0],['armchair',1,0]]),coin('BD',[['crate',0,0],['barrel',1,0]])]},
+  e_costumes:{f:'parquet',run:['wardrobe','portant','vanity','wardrobe'],g:[coin('C',[['mannequin',0,0],['mannequin',2,0]]),coin('BG',[['trunk',0,0]]),coin('BD',[['valise',0,0],['plant',1,0]])]}
+});
+const ETAGES={
+ 0:{nom:'Deuxième étage',palier:'Palier du 2e',p:[['Chambre 21','ch_luxe','#5a3f58'],['Grenier','e_grenier','#6a5a44']]},
+ 1:{nom:'Étage',palier:'Palier',p:[['Cabinet de travail','e_bureau','#4a3a2a'],['Grenier','e_grenier','#6a5a44']]},
+ 3:{nom:'Étage de direction',palier:'Couloir de direction',p:[['Bureau du directeur','e_bureau','#3a4a5a'],['Salle des archives','e_archives','#5a5a52']]},
+ 4:{nom:'Niveau supérieur',palier:'Passerelle',p:[['Observatoire','e_observ','#2a3a5a'],['Réserve','e_grenier','#5a6068']]},
+ 5:{nom:'Les cintres',palier:'Passerelle des cintres',p:[['Régie','e_bureau','#3a2a3a'],['Atelier des costumes','e_costumes','#5a3a5a']]},
+ 6:{nom:'Pont supérieur',palier:'Coursive haute',p:[['Cabine du commandant','ch_luxe','#2f4656'],['Salle des cartes','e_bureau','#3a4a3a']]},
+ 7:{nom:'Premier étage',palier:'Couloir du 1er',p:[['Bureau du médecin-chef','e_bureau','#5a6a6a'],['Archives médicales','e_archives','#7a8a8a']]},
+ 8:{nom:'Étage',palier:'Galerie haute',p:[['Bibliothèque de la tour','l_biblio','#3a2a1a'],['Grenier','e_grenier','#5a4a34']]},
+ 9:{nom:'Étage privé',palier:'Couloir privé',p:[['Salon privé','s_grand','#4a1a24'],['Bureau du gérant','e_bureau','#3a2418']]}
+};

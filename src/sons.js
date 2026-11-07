@@ -51,8 +51,5 @@ function sonMaj(){
   if(a.ev==='bip'&&tick%360<15)ton(980,.16,.02,'sine');
   if(a.ev==='vague'&&tick%420<15)bruit(2.4,300,.12,'lowpass');
   if(a.ev==='jetons'&&Math.random()<.1)bruit(.02,4200,.05);
-  if(O.musique){
-    if(tick%480<15)ton(a.base/2,3.6,.05,'sine');
-    if(tick%150<15&&noise(tick>>7,(c.lv||0)+1,3)>.34){const g=[1,1.2,1.335,1.5,1.8,2];ton(a.base*g[Math.floor(noise(tick>>6,5,2)*g.length)],2.4,.032)}
-  }
+  if(O.musique)musiqueLieu(a.base);
 }

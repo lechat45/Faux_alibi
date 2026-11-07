@@ -17,11 +17,12 @@ const FLAVOR={chariot:['Des serviettes propres et de petits savons.'],valise:["U
  chevet:['Un livre corné et un verre d\'eau.','Le tiroir est vide.'],fridge:['Un reste de fromage, rien d\'intéressant.','Ça sent un peu le renfermé.'],sink:['Le siphon est propre.','Une goutte tombe du robinet.'],counter:['Des miettes et un torchon humide.','Rien dans les placards, à part de la vaisselle.'],
  medic:['Des pansements et de l\'aspirine.','Quelques flacons ordinaires.'],vanity:['Du maquillage et une brosse.','Rien derrière le miroir.'],fireplace:['Le feu crépite. Rien de caché dans les braises.','Rien dans l\'âtre, à part les bûches.'],bar:['Des verres propres et des bouteilles entamées.'],washer:['Le tambour est vide.'],sewing:['Du fil et des aiguilles.']};
 const LOCKS=[['rouge','#e8504a'],['bleue','#4aa8ff'],['verte','#58d67a']];
+const avecEtage=(P,E)=>{const X=Math.max(...[...P.r,...P.c].map(q=>q[0]+q[2]))+5;return{r:P.r,l:P.l,c:[...P.c,[X,12,21,3,E.palier],[X,3,10,6,E.p[0][0]],[X+11,3,10,6,E.p[1][0]]]}};
 const SH_HAUT=['escalier','secours','shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
-const DIFFW={facile:{lock:1,eni:2,pz:2,bonus:1},moyen:{lock:1,eni:3,pz:3,bonus:1},difficile:{lock:2,eni:4,pz:3,bonus:2}};
+const DIFFW={facile:{lock:1,eni:2,pz:2,bonus:1},moyen:{lock:1,eni:3,pz:3,bonus:1},difficile:{lock:2,eni:4,pz:3,bonus:2},expert:{lock:2,eni:4,pz:3,bonus:2}};
 
 function buildWorld(c){
-  const L=c.set,r=RNG((c.seed*2654435761+c.lv*97+11)>>>0),D=DIFFW[c.key],P=L.plan;
+  const L=c.set,r=RNG((c.seed*2654435761+c.lv*97+11)>>>0),D=DIFFW[c.key],ET=!c.test&&typeof ETAGES!=='undefined'?ETAGES[c.lv]:null,P=ET?avecEtage(L.plan,ET):L.plan;
   const rects=[...P.r,...P.c];
   MW=Math.max(...rects.map(q=>q[0]+q[2]))+3;MH=Math.max(...rects.map(q=>q[1]+q[3]))+3;
   const grid=v=>range(MH).map(()=>Array(MW).fill(v)),t=grid(0),blk=grid(0),res=grid(0),gate=grid(0);
@@ -37,11 +38,12 @@ function buildWorld(c){
     A.view=rs.map(q=>[q.x0-1,q.y0-2,q.x1+1,q.y1+1]);
     return A;
   });
+  if(ET){const n=w.areas.length;[n-3,n-2,n-1].forEach((i,k)=>{const A=w.areas[i];A.etage=true;if(!k){A.palier=true;A.rec={f:L.floor,cw:[]}}else{const p=ET.p[k-1];A.rec=RECIPES[p[1]];A.tint=p[2]}})}
   // Le mur du fond suit la forme réelle du sol, même dans un coude
   for(let y=2;y<MH;y++)for(let x=0;x<MW;x++)if(t[y][x]===1&&t[y-1][x]===0){t[y-1][x]=2;if(t[y-2][x]===0)t[y-2][x]=2}
   w.rooms=w.areas.slice(0,L.rooms.length);
   // Portes : déduites de la position réelle des pièces
-  const doors=P.l.map(([a,b])=>{
+  const nA=w.areas.length,doors=[...P.l,...(ET?[[nA-2,nA-3],[nA-1,nA-3]]:[])].map(([a,b])=>{
     const A=w.areas[a],B=w.areas[b],id=nid();let d,m=null;
     for(const ra of A.rects)for(const rb of B.rects){
       const[g0,h0]=ra.x0<rb.x0?[ra,rb]:[rb,ra],[u0,l0]=ra.y0<rb.y0?[ra,rb]:[rb,ra];
@@ -62,7 +64,7 @@ function buildWorld(c){
     d.a=a;d.b=b;d.lock=null;w.doors[id]=d;
     if(!d.v){d.haut=A.rects.includes(m.U)?a:b;d.bas=d.haut===a?b:a}
     // la porte dépend de la pièce qu'elle ferme : numéro de chambre, hublot de cuisine, verre dépoli...
-    const nr=L.rooms.length,ferme=a<nr&&b<nr?([a,b].find(i=>L.rooms[i].t==='bain')??b):(a<nr?a:b),tp=L.rooms[ferme].t;
+    const nr=L.rooms.length,ferme=a<nr&&b<nr?([a,b].find(i=>L.rooms[i].t==='bain')??b):(a<nr?a:b),tp=(L.rooms[ferme]||{t:'libre'}).t;
     d.style=tp==='bain'?'bain':tp==='cuisine'?'cuisine':tp==='salon'?'double':tp==='chambre'?L.portech:L.porte;
     d.num=tp==='chambre'&&(L.rooms[ferme].n.match(/\d+/)||[])[0]||null;
     d.ferme=ferme;
@@ -131,11 +133,12 @@ function buildWorld(c){
     (plan||[]).forEach(([n,x])=>{const f=place(n,x,A.y0,A);if(!areaOK(A))unplace(f)});
   };
   // Une entrée a sa grande porte condamnée, son porte-manteau et ce qu'on y pose en arrivant
-  const poseEntree=A=>{
+  const poseEntree=(A,apres)=>{
     const q=A.rects[0],mur=(x,n=1)=>{for(let i=0;i<n;i++)if(t[q.y0-1][x+i]!==2)return false;return true},dehors=x=>{for(let j=q.y0-3;j>=0;j--)if(t[j][x]===1)return false;return true};
     const cand=[];for(let x=q.x0+1;x<q.x1-1;x++)if(mur(x,2))cand.push(x);
     const ext=cand.filter(x=>dehors(x)&&dehors(x+1)),l=ext.length?ext:cand,cx=(q.x0+q.x1-1)/2;
     if(l.length){const X=l.reduce((m,x)=>Math.abs(x-cx)<Math.abs(m-cx)?x:m);w.entrees.push({x:X,y:q.y0-2});for(let k=-1;k<3;k++){res[q.y0][X+k]=1;res[q.y0+1][X+k]=1}}
+    if(apres)apres();
     ['portemanteau','videpoche','chaussures','parapluies','banc'].forEach(name=>{
       const fw=FP[name][0],xs=range(q.x1-q.x0-fw+2).map(i=>q.x0+i);
       for(const x of shuffle(r,xs)){
@@ -146,12 +149,12 @@ function buildWorld(c){
   };
   // L'ascenseur se pose au milieu d'un pan de mur entier, de préférence tout au bout du couloir
   const pansDeMur=A=>{const l=[];A.rects.forEach(q=>{let d=null;for(let x=q.x0;x<=q.x1+1;x++){const ok=x<=q.x1&&t[q.y0-1][x]===2&&t[q.y0-2][x]===2&&!gate[q.y0][x]&&!res[q.y0][x]&&!blk[q.y0][x];if(ok){if(d===null)d=x}else if(d!==null){l.push({q,x0:d,n:x-d});d=null}}});return l};
-  const poseAscenseur=(A,haut)=>{
+  const poseAscenseur=(A,haut,nom='lift')=>{
     const pans=pansDeMur(A).filter(p=>p.n>=2).sort((a,b)=>(b.q===haut)-(a.q===haut)||b.n-a.n);
     for(const p of pans){
       const impair=p.n%2===1&&p.n<=5,w0=impair?3:2,X=p.x0+((p.n-w0)>>1);
       if(!libreLa(X,p.q.y0,w0,1))continue;
-      const f=place('lift',X,p.q.y0,A);if(impair){f.w=3;f.dx=8;blk[p.q.y0][X+2]=f.id}
+      const f=place(nom,X,p.q.y0,A);if(impair){f.w=3;f.dx=8;blk[p.q.y0][X+2]=f.id}
       if(areaOK(A))return f;
       unplace(f);
     }
@@ -173,9 +176,10 @@ function buildWorld(c){
   };
   // Couloirs : meubles répartis régulièrement, l'ascenseur au milieu de son mur
   const poseCirc=A=>{
-    if(/entrée|hall/i.test(A.name))poseEntree(A);
-    const list=(A.rec.cw||[]).filter(n=>n!=='lift'),haut=A.rects.reduce((m,q)=>q.y0<m.y0?q:m),long=A.rects.reduce((m,q)=>q.x1-q.x0>m.x1-m.x0?q:m);
-    if((A.rec.cw||[]).includes('lift'))poseAscenseur(A,haut);
+    const list=(A.rec.cw||[]).filter(n=>n!=='lift'),haut=A.rects.reduce((m,q)=>q.y0<m.y0?q:m),long=A.rects.reduce((m,q)=>q.x1-q.x0>m.x1-m.x0?q:m),lift=(A.rec.cw||[]).includes('lift');
+    // dans un hall, l'ascenseur passe juste après la porte d'entrée, avant les petits meubles qui morcellent le mur
+    if(/entrée|hall/i.test(A.name))poseEntree(A,()=>{if(lift)poseAscenseur(A,haut);else if(ET)poseAscenseur(A,haut,'escalier')});
+    else if(lift)poseAscenseur(A,haut);
     boutsCouloir(A);
     const W0=long.x1-long.x0+1;
     list.forEach((name,i)=>{
@@ -241,8 +245,16 @@ function buildWorld(c){
       }
     }
   };
+  // L'étage : deux pièces meublées comme les autres, et un palier avec l'escalier qui redescend
+  const poseEtage=A=>{
+    if(!A.palier){poseRun(A);(A.rec.g||[]).forEach(g=>poseGroupe(A,g));return}
+    const q=A.rects[0];
+    for(let X=q.x1-1;X>=q.x0;X--){if(t[q.y0-1][X]!==2||t[q.y0-1][X+1]!==2||!libreLa(X,q.y0,2,1))continue;const f=place('escalier',X,q.y0,A);if(areaOK(A)){f.acces='descend';break}unplace(f)}
+    ['plant','commode','clock','lamp','plant'].forEach((name,i)=>{const fw=FP[name][0];for(let k=0;k<4;k++){const x=q.x0+1+i*4+k;let ok=x+fw-1<=q.x1&&libreLa(x,q.y0,fw,1);for(let j=0;j<fw&&ok;j++)if(t[q.y0-1][x+j]!==2)ok=false;if(!ok)continue;const f=place(name,x,q.y0,A);if(areaOK(A))break;unplace(f)}});
+  };
   w.areas.forEach(A=>{
     A.flip=r()<.5;
+    if(A.etage){poseEtage(A);return}
     if(A.room){poseRun(A);(A.rec.g||[]).forEach(g=>poseGroupe(A,g));return}
     poseCirc(A);
     (L.ci||[]).forEach(n=>{if(A.y1-A.y0>=3)poseGroupe(A,CIRC[n])});
@@ -285,9 +297,24 @@ function buildWorld(c){
     const ri=homes[i%NR],cell=takeSolid(zoneOf(ri))||takeSolid(zoneOf(homes[(i+1)%NR]));
     w.obj.push({id:nid(),kind:'suspect',s:i,x:cell[0],y:cell[1],w:1,h:1,room:ri});
   });
+  // Accès à l'étage : l'ascenseur s'il y en a un, sinon un escalier, posé au besoin contre un mur libre
+  w.etage=null;
+  if(ET){
+    const sol=f=>!w.areas[f.room].etage,desc=w.furn.find(f=>f.acces==='descend');
+    let acc=w.furn.find(f=>f.name==='lift'&&sol(f))||w.furn.find(f=>f.name==='escalier'&&sol(f));
+    for(const A of [...w.areas.filter(A=>!A.room&&!A.etage),...w.areas.filter(A=>A.room)]){
+      if(acc)break;
+      for(const q of A.rects)for(let x=q.x0;x<q.x1&&!acc;x++){
+        if(t[q.y0-1][x]!==2||t[q.y0-1][x+1]!==2||t[q.y0-2][x]!==2||t[q.y0-2][x+1]!==2||!libreLa(x,q.y0,2,1))continue;
+        const f=place('escalier',x,q.y0,A);if(areaOK(A))acc=f;else unplace(f);
+      }
+    }
+    const devant=f=>{for(const[x,y]of[[f.x+((f.w-1)>>1),f.y+1],[f.x+(f.w>>1),f.y+1],[f.x-1,f.y],[f.x+f.w,f.y],[f.x,f.y+2]])if(t[y]&&t[y][x]===1&&!blk[y][x]&&!gate[y][x])return[x,y];return null};
+    if(acc&&desc&&devant(acc)&&devant(desc)){acc.acces='monte';if(acc.name==='escalier')acc.v=1e7+acc.v%1e6;desc.v=2e7;w.etage={nom:ET.nom,haut:devant(desc),bas:devant(acc)}}
+  }
   // Tout meuble se fouille. Les cachettes sont les meubles à tiroirs, armoires, bibliothèques...
   // Tout se fouille, mais seuls quelques meubles cachent vraiment quelque chose
-  const fou=w.furn.map(f=>({id:nid(),kind:'fouille',x:f.x,y:f.y,w:f.w,h:f.h,room:f.room,name:f.name,text:pick(r,FLAVOR[f.name.replace(/[BLR]$/,'')]||['Rien de particulier.'])}));
+  const fou=w.furn.filter(f=>w.etage||!w.areas[f.room].etage).map(f=>({id:nid(),kind:'fouille',acces:w.etage?f.acces:undefined,x:f.x,y:f.y,w:f.w,h:f.h,room:f.room,name:f.name,text:pick(r,FLAVOR[f.name.replace(/[BLR]$/,'')]||['Rien de particulier.'])}));
   const boxes=shuffle(r,fou.filter(o=>MG_BY[o.name]));
   const others=shuffle(r,fou.filter(o=>!MG_BY[o.name]&&!['lift','escalier','secours'].includes(o.name)));
   // On remplit toujours la pièce la moins chargée : rien ne s'entasse au même endroit
@@ -299,7 +326,7 @@ function buildWorld(c){
 
   // Portes verrouillées : la clé se trouve toujours du côté déjà accessible
   const zone=(ouverts)=>{const z=new Set([c.rc]);let ch=true;while(ch){ch=false;doors.forEach(d=>{if(d.lock!==null&&!ouverts.has(d.lock))return;if(z.has(d.a)!==z.has(d.b)){z.add(d.a);z.add(d.b);ch=true}})}return z};
-  const cand=shuffle(r,doors);let nb=0;
+  const cand=shuffle(r,doors.filter(d=>!w.areas[d.a].etage&&!w.areas[d.b].etage));let nb=0;
   for(const d of cand){
     if(nb>=D.lock)break;
     d.lock=nb;
@@ -379,6 +406,7 @@ function auditWorld(w,c){
     const seen=new Set([w.spawn.y*w.mw+w.spawn.x]),st=[[w.spawn.x,w.spawn.y]];
     while(st.length){const[x,y]=st.pop();for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=x+a,Y=y+b,k=Y*w.mw+X;
       if(seen.has(k)||solidCell(w,X,Y,open))continue;seen.add(k);st.push([X,Y])}}
+    if(w.etage){const[a,b]=w.etage.bas,[e0,f0]=w.etage.haut,K=f0*w.mw+e0;if(seen.has(b*w.mw+a)&&!seen.has(K)){seen.add(K);st.push([e0,f0]);while(st.length){const[x,y]=st.pop();for(const[p,q]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=x+p,Y=y+q,k=Y*w.mw+X;if(seen.has(k)||solidCell(w,X,Y,open))continue;seen.add(k);st.push([X,Y])}}}}
     return seen;
   };
   const near=(o,seen)=>{for(let y=o.y-1;y<=o.y+o.h;y++)for(let x=o.x-1;x<=o.x+o.w;x++)if(seen.has(y*w.mw+x))return true;return false};

@@ -149,13 +149,14 @@ Object.assign(SPR,{
   plant(g,v){g.save();g.translate(0,0);PLANTES[v%10](g,v);g.restore()},
   lamp(g,v){LAMPES[v%10](g,v)},
   // Bout de couloir : l'escalier de service, fermé par une corde rouge
-  escalier(g,v){const P=PX(g),bo='#5b3820';
+  escalier(g,v){const P=PX(g),bo='#5b3820',ouvert=v>=1e7,desc=v>=2e7;
     P(tone(bo,-.2),0,0,32,46);P('#0e0c16',2,2,28,42);
-    for(let k=0;k<8;k++){const y=41-k*5,t=-.06-k*.1;P(tone('#8a6a4a',t),2+k,y-1,28-k*2,2);P(tone('#5a3a24',t),2+k,y+1,28-k*2,3)}
-    traitP(g,'#c8a040',28,40,21,5);traitP(g,tone('#c8a040',-.3),28,41,21,6);for(let k=0;k<7;k++)P(tone(bo,-.05),28-k,40-k*5,1,4);
-    P('#c8a040',3,30,2,14);P('#c8a040',27,30,2,14);P('#fff0a0',3,30,1,1);P('#fff0a0',27,30,1,1);
+    for(let k=0;k<8;k++){const y=desc?6+k*5:41-k*5,t=-.06-k*.1;P(tone('#8a6a4a',t),2+k,y-1,28-k*2,2);P(tone('#5a3a24',t),2+k,y+1,28-k*2,3)}
+    if(desc){traitP(g,'#c8a040',28,6,21,41);for(let k=0;k<7;k++)P(tone(bo,-.05),28-k,6+k*5,1,4)}else{traitP(g,'#c8a040',28,40,21,5);traitP(g,tone('#c8a040',-.3),28,41,21,6);for(let k=0;k<7;k++)P(tone(bo,-.05),28-k,40-k*5,1,4)}
+    if(!ouvert){P('#c8a040',3,30,2,14);P('#c8a040',27,30,2,14);P('#fff0a0',3,30,1,1);P('#fff0a0',27,30,1,1);
     for(let x=5;x<27;x++)P('#a3262a',x,32+Math.round(Math.sin((x-5)/22*Math.PI)*3),1,2);
-    P('#f4ecd8',12,37,8,5);P('#a3262a',13,39,6,1);P(tone(bo,.25),0,0,32,1);P(tone(bo,-.4),0,45,32,1)},
+    P('#f4ecd8',12,37,8,5);P('#a3262a',13,39,6,1)}
+    else{P('#c8a040',11,3,10,7);P('#2a2018',12,4,8,5);(desc?[[15,4,2,2],[14,6,4,1],[15,7,2,1]]:[[15,4,2,1],[14,5,4,1],[15,6,2,2]]).forEach(([x,y,w,h])=>P('#ffe08a',x,y,w,h))}P(tone(bo,.25),0,0,32,1);P(tone(bo,-.4),0,45,32,1)},
   // Bout de couloir : la sortie de secours, enchaînée pendant la tempête
   secours(g,v){const P=PX(g),cad='#6a7078',po='#4a6a5a';
     P('#0e3a1e',8,0,16,6);P('#2ad86a',9,1,14,4);P('#e8fff0',12,1,1,1);P('#e8fff0',11,2,3,1);P('#e8fff0',10,3,1,1);P('#e8fff0',13,3,1,1);P('#e8fff0',16,2,5,1);P('#e8fff0',19,1,1,3);

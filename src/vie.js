@@ -103,7 +103,7 @@ function motsCrime(){
 }
 const dateCle=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function jourDuJour(){const k=dateCle(new Date()),h=hashS('jour'+k);return{k,lv:h%10,seed:1000+(h>>>4)%8999}}
-function lanceJour(){const j=jourDuJour();neuf(j.lv,j.seed);S.jour=j.k;save()}
+function lanceJour(){const j=jourDuJour();neuf(j.lv,j.seed,true,null);S.jour=j.k;save()}
 function finJour(){
   if(!S.jour||G.robot)return;
   stats.jours=stats.jours||{};if(stats.jours[S.jour])return;
@@ -127,7 +127,7 @@ function finDe(f){
 }
 function marqueFin(){
   const k=S.fin.cle=finDe(S.fin);
-  if(!G.robot){stats.fins=stats.fins||{};stats.fins[k]=1;finJour()}
+  if(!G.robot){stats.fins=stats.fins||{};stats.fins[k]=1;finJour();if(S.fin.win&&S.mode==='expert'){stats.exp=stats.exp||{};const e=stats.exp[S.lv];if(!e||S.fin.note.l<e)stats.exp[S.lv]=S.fin.note.l}}
   save();
 }
 const EXCUSABLES=['chantage','brevet','contrat','article','renvoi'];

@@ -6,7 +6,7 @@ const cap=s=>s[0].toUpperCase()+s.slice(1);
 const STORE='fauxalibi.v5';
 const R_=(g,c,x,y)=>R(g,c,x,y);
 const NIVEAUX=['Bavard','Méfiant','Fermé'];
-let c,S,W,G={},stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0};
+let c,S,W,G={},stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0,exp:{}};
 // Réglages du joueur, tous réellement appliqués
 let O={texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,diff:'auto',sons:1,musique:1,vol:50,lum:50,txt:100};
 let AC=null;
@@ -22,11 +22,11 @@ const keys={up:0,down:0,left:0,right:0};
 let tick=0,cam={x:0,y:0},parts=[],toastT=0,modal=null,VW=400,VH=250,SC=3,ctx,Cut=null,enJeu=false;
 
 // ——— État d'une partie ———
-function neuf(lv,seed,intro=true){
+function neuf(lv,seed,intro=true,mode=O.expert&&lv<10?'expert':null){
   seed=seed??(1000+Math.floor(Math.random()*8999));
-  c=generate(seed,lv);habiller(c);if(lv===10)preparerTest(c);
+  c=generate(seed,lv,mode);habiller(c);if(lv===10)preparerTest(c);
   W=buildWorld(c);prep();if(lv===10)finirTest();
-  S={seed,lv,t:{},liens:[],aides:0,jeu:0,evDocs:[],stress:{},vues:{},sujets:{},traces:{},asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
+  S={seed,lv,mode,t:{},liens:[],aides:0,jeu:0,evDocs:[],stress:{},vues:{},sujets:{},traces:{},asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
   Object.values(W.doors).forEach(d=>{if(d.lock===null)S.open[d.id]=1});
   if(Cut)endCut();
   closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('but').hidden=true;$('tuto-p').hidden=true;G.planCible=null;G.tutoO=null;
@@ -61,7 +61,7 @@ function save(){try{localStorage.setItem(STORE,JSON.stringify({S:S&&!(c&&c.test)
 function chargeStats(){try{const o=JSON.parse(localStorage.getItem(STORE));if(o){stats=Object.assign(stats,o.stats);O=Object.assign(O,o.O);G.sauve=o.S&&!o.S.fin?o.S:null}}catch(e){}}
 function continuer(){
   try{
-    S=G.sauve;c=generate(S.seed,S.lv);habiller(c);W=buildWorld(c);prep();(S.evDocs||[]).forEach(d=>W.docs.push(d));G.choix=[];G.sel=[];G.noir=0;G.plan=null;$('marteau').hidden=false;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
+    S=G.sauve;c=generate(S.seed,S.lv,S.mode);habiller(c);W=buildWorld(c);prep();(S.evDocs||[]).forEach(d=>W.docs.push(d));G.choix=[];G.sel=[];G.noir=0;G.plan=null;$('marteau').hidden=false;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
     if(!S.introDone)startIntro();
   }catch(e){neuf(0)}
 }
@@ -164,7 +164,7 @@ function buildMap(){
   });
   g.fillStyle='rgba(12,10,32,.32)';W.furn.forEach(f=>g.fillRect(f.x*TS,(f.y+f.h)*TS-1,f.w*TS,3));
   // Tapis de couloir : un seul tapis qui suit les coudes, bordé d'or tout autour
-  if(L.runner)W.areas.filter(A=>!A.room).forEach(A=>{
+  if(L.runner)W.areas.filter(A=>!A.room&&!(A.etage&&!A.palier)).forEach(A=>{
     const bandes=[];
     A.rects.forEach(q=>{
       const hz=q.x1-q.x0>=q.y1-q.y0,e=hz?q.y1-q.y0+1:q.x1-q.x0+1;if(e<3)return;
@@ -294,7 +294,7 @@ function draw(){
   else ctx.drawImage(maskOf(masque),0,0);
   ctx.setTransform(1,0,0,1,0,0);
   ctx.globalCompositeOperation='multiply';ctx.imageSmoothingEnabled=true;
-  ctx.drawImage(G.light,cx/2,cy/2,VW/2,VH/2,0,0,VW,VH);ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(G.light,cx/2+roulis(),cy/2,VW/2,VH/2,0,0,VW,VH);ctx.imageSmoothingEnabled=false;ambianceLumiere();
   ctx.globalCompositeOperation='lighter';
   const pxx=P.x-cx,pyy=P.y-cy-8,rad=70,q=ctx.createRadialGradient(pxx,pyy,2,pxx,pyy,rad);q.addColorStop(0,'rgba(95,88,70,.45)');q.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=q;ctx.fillRect(pxx-rad,pyy-rad,rad*2,rad*2);
   ctx.globalCompositeOperation='source-over';
@@ -454,7 +454,7 @@ function startIntro(){
   const ba=t=>({say:'ba',nom:'Basile, votre adjoint',t});
   const q=[
     {fn:()=>{G.fade=1}},{area:c.rc},{cam:[b.x*TS+8,b.y*TS]},{snap:1},
-    {card:titreAffaire(),sub:`${c.set.nom}, minuit.`},
+    {card:titreAffaire()+(c.key==='expert'?' · Expert':''),sub:`${c.set.nom}, minuit.`},
     act('v','v',[b.x+.5,b.y],0,{down:true}),act('ba','ba',ic,0),act('me','me',door,2),
     {fade:0},{go:'me',x:me[0]*TS+8,y:me[1]*TS+11,sp:1.2},
     ba(`Ah, inspecteur ! Vous voilà enfin. Bienvenue ${c.set.lieu}.`),
@@ -619,6 +619,7 @@ function promptOf(o){
   if(o.kind==='entree')return"Porte d'entrée";
   if(o.kind==='corps')return'Le corps';
   if(o.kind==='trace')return'Examiner';
+  if(o.acces&&W.etage)return o.acces==='descend'?'Redescendre':o.name==='lift'?"Prendre l'ascenseur":"Monter à l'étage";
   if(S.open[o.id])return'Déjà fouillé';
   if(o.name==='lift')return"Appeler l'ascenseur";
   if(o.name==='escalier'||o.name==='secours')return`Examiner ${NOM_F[o.name]}`;
@@ -670,6 +671,7 @@ function update(){
   if(S&&S.tu)tutoTick();
   if(tick%(O.calme?6:3)===0&&W&&W.furn.some(f=>f.name==='fireplace'))feuPas();
   if(G.pzT)G.pzT();
+  if(!Cut&&G.fade>0)G.fade=Math.max(0,G.fade-.05);
   if(modal==='cut'&&Cut){stepCut();return}
   if(modal)return;
   npcLife();
@@ -749,10 +751,11 @@ function enigme(o){
   btn.push({t:'Laisser',cl:'alt',f:closeAll});
   bulle({at:at0(),nom:cap(NOM_F[o.name]||'Le meuble'),txt:E.t+(S.inv.length?' Que puis-je utiliser ?':" Je n'ai rien sur moi pour ça."),btn});
 }
-const puzzleFor=o=>makePuzzle(RNG(o.id*7919+c.seed),o.ptype,{facile:0,moyen:1,difficile:2}[c.key]);
+const puzzleFor=o=>makePuzzle(RNG(o.id*7919+c.seed),o.ptype,{facile:0,moyen:1,difficile:2,expert:2}[c.key]);
 function interact(o){
   if(!o)return;
   if(c.test&&o.kind==='fouille')return fouilleTest(o);
+  if(o.acces&&W.etage)return voyage(o);
   if(o.kind==='suspect')return talk(o);
   if(o.kind==='vitrine'){const n=inspecter(o.room);return say(cap(c.set.rooms[o.room].o),n.join(' '))}
   if(o.kind==='corps')return ouvrirDoc(W.iAuto);
@@ -775,7 +778,7 @@ function interact(o){
 function pion(i,cl=''){return`<span class="pion ${cl}" title="${esc(c.suspects[i].nom)}">${c.suspects[i].ini}</span>`}
 function pNotes(){
   const n=S.cards.length,cases=S.cards.map(k=>`<${k.doc!==undefined?`button data-a="lire" data-v="${k.doc}"`:'div'} class="case k-${k.k}"><span class="t"><img alt="" src="${imgURL(k.ic)}"><span>${esc(k.t)}</span></span><span>${esc(k.x)}</span></${k.doc!==undefined?'button':'div'}>`).join('');
-  return`<h2>Mes découvertes</h2>${S.fin?'':'<div class="ligne"><button class="etiq alt" data-a="aide">Demander un indice à Basile</button><span class="petitp">Chaque indice baisse ta note.</span></div>'}${n?`<div class="cases">${cases}</div>`:'<p class="main">Rien pour l\'instant. Parle aux suspects et fouille les pièces.</p>'}`;
+  return`<h2>Mes découvertes</h2>${S.fin||c.key==='expert'?'':'<div class="ligne"><button class="etiq alt" data-a="aide">Demander un indice à Basile</button><span class="petitp">Chaque indice baisse ta note.</span></div>'}${n?`<div class="cases">${cases}</div>`:'<p class="main">Rien pour l\'instant. Parle aux suspects et fouille les pièces.</p>'}`;
 }
 function pTemoins(){
   const tete=HOURS.map((h,i)=>`<th class="${c.win.includes(i)?'crime':''}">${h}</th>`).join('');
@@ -800,7 +803,7 @@ function pPapiers(){
   return`<h2>Mes documents</h2><div class="papiers">${S.papiers.map(i=>`<button class="pap" data-a="lire" data-v="${i}"><img alt="" src="${imgURL('lettre')}"><span>${esc(W.docs[i].t)}</span></button>`).join('')}</div>`;
 }
 function dessinePlan(a){
-  const rs=W.areas.flatMap(A=>A.rects),x0=Math.min(...rs.map(q=>q.x0))-1,y0=Math.min(...rs.map(q=>q.y0))-1,x1=Math.max(...rs.map(q=>q.x1))+2,y1=Math.max(...rs.map(q=>q.y1))+2;
+  const et=!!(W.areas[a]&&W.areas[a].etage),rs=W.areas.filter(A=>!!A.etage===et).flatMap(A=>A.rects),x0=Math.min(...rs.map(q=>q.x0))-1,y0=Math.min(...rs.map(q=>q.y0))-1,x1=Math.max(...rs.map(q=>q.x1))+2,y1=Math.max(...rs.map(q=>q.y1))+2;
   const cw=540,s=cw/(x1-x0),ch=Math.ceil((y1-y0)*s),[k,g]=cv(cw,ch),X=x=>(x-x0)*s,Y=y=>(y-y0)*s,encre='#2a2438';
   G.planT={x0,y0,s};
   R(g,'#eadcb8',0,0,cw,ch);
@@ -858,7 +861,7 @@ function pFin(){
   return`<h2>${f.win?'Affaire résolue !':(c.tueurs.length>1?"Les assassins m'ont échappé":"L'assassin m'a échappé")}</h2>${pFinNom()}${pNote()}
   <div class="gens">${c.tueurs.map(i=>`<div class="fiche"><img alt="" src="${imgURL('p'+i)}"><span><b>${esc(c.suspects[i].nom)}</b>${f.win?(c.suspects[i].g==='f'?'Démasquée.':'Démasqué.'):'Ce n\'est pas cette personne que j\'ai arrêtée.'}</span></div>`).join('')}</div>
   ${f.arme!=null||f.heure!=null?`<p class="main">${esc(motDossier())}</p>`:''}<ul class="main">${preuve().map(l=>`<li>${esc(l)}</li>`).join('')}</ul>
-  <div class="ligne"><button class="etiq fort" data-a="suite">Enquête suivante</button><button class="etiq" data-a="accueil">Accueil</button></div>`;
+  <div class="ligne"><button class="etiq fort" data-a="suite">Enquête suivante</button><button class="etiq" data-a="partage">Partager mon résultat</button><button class="etiq" data-a="accueil">Accueil</button></div>`;
 }
 const TABS={notes:['Notes','#d8483e',pNotes],temoins:['Témoins','#3a7ad8',pTemoins],deduc:['Déductions','#b0406a',pDeduc],gens:['Personnes','#58a65a',pGens],objets:['Objets','#e0a03a',pObjets],papiers:['Documents','#8a5ac8',pPapiers],fin:['Verdict','#ffd23f',pFin]};
 function ouvrir(t){
@@ -885,9 +888,9 @@ function accueil(){
   closeAll();enJeu=false;$('but').hidden=true;$('tuto-p').hidden=true;['calepin','marteau'].forEach(n=>$(n).classList.remove('appel'));if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
   $('accueil').hidden=false;$('prompt').hidden=true;$('lieu').hidden=true;$('amb').hidden=true;$('hud').hidden=true;
   const n=stats.gagnees,suite=LEVELS.findIndex((l,i)=>!stats.res[i]);
-  const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${DIFF[l.diff].label}</span>${stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
+  const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${O.expert?'Expert':DIFF[l.diff].label}</span>${O.expert?(stats.exp&&stats.exp[i]?`<i>Expert · ${stats.exp[i]}</i>`:''):stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
   $('acc-ui').innerHTML=`<div class="acc-g"><h1>Faux<br><span>Alibi</span></h1><p>Dix lieux, cinquante pièces, et à chaque fois quelqu'un qui ment.</p>
-    <div class="ligne"><button class="etiq fort" data-a="nouvelle" data-v="${suite<0?int(Math.random,10):suite}">Nouvelle enquête</button>${G.sauve?'<button class="etiq" data-a="continuer">Continuer</button>':''}<button class="etiq" data-a="reglages">Options</button></div></div>
+    <div class="ligne"><button class="etiq fort" data-a="nouvelle" data-v="${suite<0?int(Math.random,10):suite}">Nouvelle enquête</button>${G.sauve?'<button class="etiq" data-a="continuer">Continuer</button>':''}<button class="etiq ${O.expert?'actif':''}" data-a="expert" aria-pressed="${!!O.expert}">Expert : ${O.expert?'oui':'non'}</button><button class="etiq" data-a="reglages">Options</button></div></div>
     <div class="acc-d"><div class="tampon"><b>${n}</b><span>enquête${n>1?'s':''} résolue${n>1?'s':''}</span><small>Fins : ${Object.keys(stats.fins||{}).length}/6</small></div><div class="dossiers">${ligneJour()}${dos}<button class="dossier essai" data-a="test"><span class="no">T</span><span class="nom">Niveau test : 6 interrogatoires</span><span class="dif">Essai</span></button></div></div>`;
 }
 // ——— Options : une fenêtre unique, depuis l'accueil comme depuis le jeu ———
@@ -1187,6 +1190,8 @@ function pret(){
     const a=b.dataset.a,v=b.dataset.v;
     if(a==='vote'){const[k,x]=v.split(':');stats.sys=stats.sys||{};stats.sys[k]=x;save();return ouvrirTest()}
     if(a==='jour')return lanceJour();
+    if(a==='partage')return partager();
+    if(a==='expert'){O.expert=!O.expert;save();return accueil()}
     if(a==='tem')return choisirTem(v);
     if(a==='comparer')return comparer();
     if(a==='aide'){const t=aideTexte();closeAll();return say('Basile',t,null,G.porBa)}
@@ -1221,7 +1226,7 @@ function pret(){
       return frappe($('trib-mart'),()=>{$('tribunal').hidden=true;modal=null;startVerite(l)});
     }
     if(a==='raz'){b.dataset.a='raz2';b.textContent='Vraiment tout effacer ?';return}
-    if(a==='raz2'){stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0};G.sauve=null;S=null;save();return accueil()}
+    if(a==='raz2'){stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0,exp:{}};G.sauve=null;S=null;save();return accueil()}
     if(a==='accueil'){$('options').hidden=true;return accueil()}
     if(a==='suite'){const n=LEVELS.findIndex((l,i)=>!stats.res[i]);return neuf(n<0?(S.lv+1)%10:n)}
     if(a==='revoir'){closeAll();return startIntro()}

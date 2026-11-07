@@ -3,7 +3,8 @@ const HOURS=['20 h','21 h','22 h','23 h'];
 const DIFF={
   facile:{label:'Facile',n:5,window:1,liars:1},
   moyen:{label:'Moyen',n:6,window:2,liars:1},
-  difficile:{label:'Difficile',n:6,window:2,liars:2}
+  difficile:{label:'Difficile',n:6,window:2,liars:2},
+  expert:{label:'Expert',n:7,window:2,liars:2}
 };
 const CLASSES={
   lourd:'un coup porté avec un objet lourd',
@@ -67,8 +68,8 @@ const form=(s,g)=>{const p=s.split('|');return p.length>1&&g==='f'?p[1]:p[0]};
 
 function otherRoom(r,excl){let x;do{x=int(r,NR)}while(excl.includes(x));return x}
 
-function attempt(r,lv){
-  const set=LV(lv),key=set.diff,d=DIFF[key],H=HOURS.length,n=d.n;
+function attempt(r,lv,modeJeu){
+  const set=LV(lv),key=modeJeu==='expert'?'expert':set.diff,d=DIFF[key],H=HOURS.length,n=d.n;
   const hc=1+int(r,H-1),rc=int(r,NR),k=int(r,n);
   const inn=shuffle(r,range(n).filter(i=>i!==k));
   const [X,Y,W,Z,x]=inn;
@@ -140,7 +141,7 @@ function attempt(r,lv){
   for(const nm of shuffle(r,NAMES)){if(!seen.has(nm[0][0])){seen.add(nm[0][0]);pool.push(nm)}}
   const roles=shuffle(r,set.roles),vic=pick(r,VICTIMS);
   const vName=(vic[1]==='f'?'Mme ':'M. ')+vic[0];
-  const motives=shuffle(r,MOTIVES),voices=shuffle(r,range(VOICES.length)),niveaux=shuffle(r,range(n).map(q=>1+q%3));
+  const motives=shuffle(r,MOTIVES),voices=shuffle(r,range(VOICES.length)),niveaux=shuffle(r,range(n).map(q=>key==='expert'?2+q%2:1+q%3));
   const trait=pick(r,TRAITS);
   const sharers=shuffle(r,inn).slice(0,1+int(r,2));
   const suspects=range(n).map(i=>({
@@ -148,7 +149,7 @@ function attempt(r,lv){
     role:form(roles[i],pool[i][1]),
     trait:(i===k||sharers.includes(i))?form(trait.t,pool[i][1]):null,
     mobile:motives[i].m.replace('{v}',vName),
-    doc:motives[i].doc.replace('{v}',vName).replace('{n}',pool[i][0]),dk:motives[i].k,aveu:motives[i].a,dl:motives[i].dl,voice:voices[i],niveau:niveaux[i]
+    doc:motives[i].doc.replace('{v}',vName).replace('{n}',pool[i][0]),dk:motives[i].k,aveu:motives[i].a,dl:motives[i].dl,voice:voices[i%voices.length],niveau:niveaux[i]
   }));
 
   // L'arme : deux objets de chaque classe, un seul manque dans la classe du crime
@@ -223,10 +224,10 @@ function solve(c,known){
 }
 const memes=(a,b)=>a.length===b.length&&a.every(x=>b.includes(x));
 const isUnique=(c,w)=>w.length>0&&w.every(x=>memes(x.L,c.tueurs)&&x.h===c.hc);
-function generate(seed,lv){
-  const r=RNG(seed^((lv+3)*2654435761));
+function generate(seed,lv,mode){
+  const r=RNG(seed^((lv+3)*2654435761)^(mode==='expert'?1540483477:0));
   for(let i=0;i<2000;i++){
-    const c=attempt(r,lv);
+    const c=attempt(r,lv,mode);
     c.seed=seed;
     if(isUnique(c,solve(c,ALL))&&isUnique(c,solve(c,knownOf(c.needed))))return c;
   }

@@ -540,6 +540,7 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .touche:hover{background:linear-gradient(#fffbe8,#efe6c8)}
 .touche:active{background:#ffe9a0;transform:translateY(2px)}
 .touche:nth-child(1)::after,.touche:nth-child(2)::after,.touche:nth-child(4)::after,.touche:nth-child(5)::after,.touche:nth-child(6)::after{content:"";position:absolute;right:-32%;top:0;width:58%;height:52%;background:#1a1418;border-radius:0 0 3px 3px;z-index:1;pointer-events:none}
+.res-t{width:100%;font:400 18px/1.3 var(--main);padding:8px;background:#fffaf0;color:var(--encre);border:2px solid var(--stylo);resize:none;user-select:text;-webkit-user-select:text}
 </style>
 </head>
 <body>
@@ -718,6 +719,26 @@ const NIVEAU_TEST=Object.assign(lvl('difficile','Couloir des interrogatoires','a
   ['Atelier du dessinateur',"à l'atelier du dessinateur",'la cordelette','lien','libre','l_veranda','#8a6a3a']]),{porte:'bois',portech:'bois',runner:'#7a2f35',floor:'parquet'});
 const LV=i=>i===10?NIVEAU_TEST:LEVELS[i];
 
+// ——— Un étage par lieu (le train n'en a pas), relié au rez-de-chaussée par l'ascenseur ou un escalier ———
+Object.assign(RECIPES,{
+  e_grenier:{f:'planche',run:['wardrobe','trunk','shelf','trunk'],g:[coin('BG',CAISSES),coin('BD',[['crate',0,0],['barrel',1,0]]),coin('C',[['trunk',0,0]])]},
+  e_bureau:{f:'parquet',rug:'#5a2a2a',run:['shelf','cabinet','clock','shelf'],g:[coin('C',[['desk',0,0],['chairB',1,1]],{rug:true}),coin('BG',[['plant',0,0]]),coin('BD',[['lamp',0,0],['armchair',1,0]])]},
+  e_archives:{f:'lino',run:['shelf','cabinet','shelf','cabinet','shelf'],g:[coin('C',[['desk',0,0],['chairB',1,1]]),coin('BD',[['crate',0,0],['crate',1,0]]),coin('BG',[['crate',0,0]])]},
+  e_observ:{f:'metal',run:['shelf','console','cabinet'],g:[coin('C',[['globe',0,0],['armchair',1,0]]),coin('BG',[['lamp',0,0],['armchair',1,0]]),coin('BD',[['crate',0,0],['barrel',1,0]])]},
+  e_costumes:{f:'parquet',run:['wardrobe','portant','vanity','wardrobe'],g:[coin('C',[['mannequin',0,0],['mannequin',2,0]]),coin('BG',[['trunk',0,0]]),coin('BD',[['valise',0,0],['plant',1,0]])]}
+});
+const ETAGES={
+ 0:{nom:'Deuxième étage',palier:'Palier du 2e',p:[['Chambre 21','ch_luxe','#5a3f58'],['Grenier','e_grenier','#6a5a44']]},
+ 1:{nom:'Étage',palier:'Palier',p:[['Cabinet de travail','e_bureau','#4a3a2a'],['Grenier','e_grenier','#6a5a44']]},
+ 3:{nom:'Étage de direction',palier:'Couloir de direction',p:[['Bureau du directeur','e_bureau','#3a4a5a'],['Salle des archives','e_archives','#5a5a52']]},
+ 4:{nom:'Niveau supérieur',palier:'Passerelle',p:[['Observatoire','e_observ','#2a3a5a'],['Réserve','e_grenier','#5a6068']]},
+ 5:{nom:'Les cintres',palier:'Passerelle des cintres',p:[['Régie','e_bureau','#3a2a3a'],['Atelier des costumes','e_costumes','#5a3a5a']]},
+ 6:{nom:'Pont supérieur',palier:'Coursive haute',p:[['Cabine du commandant','ch_luxe','#2f4656'],['Salle des cartes','e_bureau','#3a4a3a']]},
+ 7:{nom:'Premier étage',palier:'Couloir du 1er',p:[['Bureau du médecin-chef','e_bureau','#5a6a6a'],['Archives médicales','e_archives','#7a8a8a']]},
+ 8:{nom:'Étage',palier:'Galerie haute',p:[['Bibliothèque de la tour','l_biblio','#3a2a1a'],['Grenier','e_grenier','#5a4a34']]},
+ 9:{nom:'Étage privé',palier:'Couloir privé',p:[['Salon privé','s_grand','#4a1a24'],['Bureau du gérant','e_bureau','#3a2418']]}
+};
+
 // 50 objets, 10 familles d'énigmes d'objets et 15 modèles de documents réutilisables.
 // Un objet porte des propriétés (tags) : le même objet sert donc à plusieurs énigmes.
 const OBJETS=[
@@ -807,7 +828,8 @@ const HOURS=['20 h','21 h','22 h','23 h'];
 const DIFF={
   facile:{label:'Facile',n:5,window:1,liars:1},
   moyen:{label:'Moyen',n:6,window:2,liars:1},
-  difficile:{label:'Difficile',n:6,window:2,liars:2}
+  difficile:{label:'Difficile',n:6,window:2,liars:2},
+  expert:{label:'Expert',n:7,window:2,liars:2}
 };
 const CLASSES={
   lourd:'un coup porté avec un objet lourd',
@@ -871,8 +893,8 @@ const form=(s,g)=>{const p=s.split('|');return p.length>1&&g==='f'?p[1]:p[0]};
 
 function otherRoom(r,excl){let x;do{x=int(r,NR)}while(excl.includes(x));return x}
 
-function attempt(r,lv){
-  const set=LV(lv),key=set.diff,d=DIFF[key],H=HOURS.length,n=d.n;
+function attempt(r,lv,modeJeu){
+  const set=LV(lv),key=modeJeu==='expert'?'expert':set.diff,d=DIFF[key],H=HOURS.length,n=d.n;
   const hc=1+int(r,H-1),rc=int(r,NR),k=int(r,n);
   const inn=shuffle(r,range(n).filter(i=>i!==k));
   const [X,Y,W,Z,x]=inn;
@@ -944,7 +966,7 @@ function attempt(r,lv){
   for(const nm of shuffle(r,NAMES)){if(!seen.has(nm[0][0])){seen.add(nm[0][0]);pool.push(nm)}}
   const roles=shuffle(r,set.roles),vic=pick(r,VICTIMS);
   const vName=(vic[1]==='f'?'Mme ':'M. ')+vic[0];
-  const motives=shuffle(r,MOTIVES),voices=shuffle(r,range(VOICES.length)),niveaux=shuffle(r,range(n).map(q=>1+q%3));
+  const motives=shuffle(r,MOTIVES),voices=shuffle(r,range(VOICES.length)),niveaux=shuffle(r,range(n).map(q=>key==='expert'?2+q%2:1+q%3));
   const trait=pick(r,TRAITS);
   const sharers=shuffle(r,inn).slice(0,1+int(r,2));
   const suspects=range(n).map(i=>({
@@ -952,7 +974,7 @@ function attempt(r,lv){
     role:form(roles[i],pool[i][1]),
     trait:(i===k||sharers.includes(i))?form(trait.t,pool[i][1]):null,
     mobile:motives[i].m.replace('{v}',vName),
-    doc:motives[i].doc.replace('{v}',vName).replace('{n}',pool[i][0]),dk:motives[i].k,aveu:motives[i].a,dl:motives[i].dl,voice:voices[i],niveau:niveaux[i]
+    doc:motives[i].doc.replace('{v}',vName).replace('{n}',pool[i][0]),dk:motives[i].k,aveu:motives[i].a,dl:motives[i].dl,voice:voices[i%voices.length],niveau:niveaux[i]
   }));
 
   // L'arme : deux objets de chaque classe, un seul manque dans la classe du crime
@@ -1027,10 +1049,10 @@ function solve(c,known){
 }
 const memes=(a,b)=>a.length===b.length&&a.every(x=>b.includes(x));
 const isUnique=(c,w)=>w.length>0&&w.every(x=>memes(x.L,c.tueurs)&&x.h===c.hc);
-function generate(seed,lv){
-  const r=RNG(seed^((lv+3)*2654435761));
+function generate(seed,lv,mode){
+  const r=RNG(seed^((lv+3)*2654435761)^(mode==='expert'?1540483477:0));
   for(let i=0;i<2000;i++){
-    const c=attempt(r,lv);
+    const c=attempt(r,lv,mode);
     c.seed=seed;
     if(isUnique(c,solve(c,ALL))&&isUnique(c,solve(c,knownOf(c.needed))))return c;
   }
@@ -1211,11 +1233,12 @@ const FLAVOR={chariot:['Des serviettes propres et de petits savons.'],valise:["U
  chevet:['Un livre corné et un verre d\'eau.','Le tiroir est vide.'],fridge:['Un reste de fromage, rien d\'intéressant.','Ça sent un peu le renfermé.'],sink:['Le siphon est propre.','Une goutte tombe du robinet.'],counter:['Des miettes et un torchon humide.','Rien dans les placards, à part de la vaisselle.'],
  medic:['Des pansements et de l\'aspirine.','Quelques flacons ordinaires.'],vanity:['Du maquillage et une brosse.','Rien derrière le miroir.'],fireplace:['Le feu crépite. Rien de caché dans les braises.','Rien dans l\'âtre, à part les bûches.'],bar:['Des verres propres et des bouteilles entamées.'],washer:['Le tambour est vide.'],sewing:['Du fil et des aiguilles.']};
 const LOCKS=[['rouge','#e8504a'],['bleue','#4aa8ff'],['verte','#58d67a']];
+const avecEtage=(P,E)=>{const X=Math.max(...[...P.r,...P.c].map(q=>q[0]+q[2]))+5;return{r:P.r,l:P.l,c:[...P.c,[X,12,21,3,E.palier],[X,3,10,6,E.p[0][0]],[X+11,3,10,6,E.p[1][0]]]}};
 const SH_HAUT=['escalier','secours','shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
-const DIFFW={facile:{lock:1,eni:2,pz:2,bonus:1},moyen:{lock:1,eni:3,pz:3,bonus:1},difficile:{lock:2,eni:4,pz:3,bonus:2}};
+const DIFFW={facile:{lock:1,eni:2,pz:2,bonus:1},moyen:{lock:1,eni:3,pz:3,bonus:1},difficile:{lock:2,eni:4,pz:3,bonus:2},expert:{lock:2,eni:4,pz:3,bonus:2}};
 
 function buildWorld(c){
-  const L=c.set,r=RNG((c.seed*2654435761+c.lv*97+11)>>>0),D=DIFFW[c.key],P=L.plan;
+  const L=c.set,r=RNG((c.seed*2654435761+c.lv*97+11)>>>0),D=DIFFW[c.key],ET=!c.test&&typeof ETAGES!=='undefined'?ETAGES[c.lv]:null,P=ET?avecEtage(L.plan,ET):L.plan;
   const rects=[...P.r,...P.c];
   MW=Math.max(...rects.map(q=>q[0]+q[2]))+3;MH=Math.max(...rects.map(q=>q[1]+q[3]))+3;
   const grid=v=>range(MH).map(()=>Array(MW).fill(v)),t=grid(0),blk=grid(0),res=grid(0),gate=grid(0);
@@ -1231,11 +1254,12 @@ function buildWorld(c){
     A.view=rs.map(q=>[q.x0-1,q.y0-2,q.x1+1,q.y1+1]);
     return A;
   });
+  if(ET){const n=w.areas.length;[n-3,n-2,n-1].forEach((i,k)=>{const A=w.areas[i];A.etage=true;if(!k){A.palier=true;A.rec={f:L.floor,cw:[]}}else{const p=ET.p[k-1];A.rec=RECIPES[p[1]];A.tint=p[2]}})}
   // Le mur du fond suit la forme réelle du sol, même dans un coude
   for(let y=2;y<MH;y++)for(let x=0;x<MW;x++)if(t[y][x]===1&&t[y-1][x]===0){t[y-1][x]=2;if(t[y-2][x]===0)t[y-2][x]=2}
   w.rooms=w.areas.slice(0,L.rooms.length);
   // Portes : déduites de la position réelle des pièces
-  const doors=P.l.map(([a,b])=>{
+  const nA=w.areas.length,doors=[...P.l,...(ET?[[nA-2,nA-3],[nA-1,nA-3]]:[])].map(([a,b])=>{
     const A=w.areas[a],B=w.areas[b],id=nid();let d,m=null;
     for(const ra of A.rects)for(const rb of B.rects){
       const[g0,h0]=ra.x0<rb.x0?[ra,rb]:[rb,ra],[u0,l0]=ra.y0<rb.y0?[ra,rb]:[rb,ra];
@@ -1256,7 +1280,7 @@ function buildWorld(c){
     d.a=a;d.b=b;d.lock=null;w.doors[id]=d;
     if(!d.v){d.haut=A.rects.includes(m.U)?a:b;d.bas=d.haut===a?b:a}
     // la porte dépend de la pièce qu'elle ferme : numéro de chambre, hublot de cuisine, verre dépoli...
-    const nr=L.rooms.length,ferme=a<nr&&b<nr?([a,b].find(i=>L.rooms[i].t==='bain')??b):(a<nr?a:b),tp=L.rooms[ferme].t;
+    const nr=L.rooms.length,ferme=a<nr&&b<nr?([a,b].find(i=>L.rooms[i].t==='bain')??b):(a<nr?a:b),tp=(L.rooms[ferme]||{t:'libre'}).t;
     d.style=tp==='bain'?'bain':tp==='cuisine'?'cuisine':tp==='salon'?'double':tp==='chambre'?L.portech:L.porte;
     d.num=tp==='chambre'&&(L.rooms[ferme].n.match(/\d+/)||[])[0]||null;
     d.ferme=ferme;
@@ -1325,11 +1349,12 @@ function buildWorld(c){
     (plan||[]).forEach(([n,x])=>{const f=place(n,x,A.y0,A);if(!areaOK(A))unplace(f)});
   };
   // Une entrée a sa grande porte condamnée, son porte-manteau et ce qu'on y pose en arrivant
-  const poseEntree=A=>{
+  const poseEntree=(A,apres)=>{
     const q=A.rects[0],mur=(x,n=1)=>{for(let i=0;i<n;i++)if(t[q.y0-1][x+i]!==2)return false;return true},dehors=x=>{for(let j=q.y0-3;j>=0;j--)if(t[j][x]===1)return false;return true};
     const cand=[];for(let x=q.x0+1;x<q.x1-1;x++)if(mur(x,2))cand.push(x);
     const ext=cand.filter(x=>dehors(x)&&dehors(x+1)),l=ext.length?ext:cand,cx=(q.x0+q.x1-1)/2;
     if(l.length){const X=l.reduce((m,x)=>Math.abs(x-cx)<Math.abs(m-cx)?x:m);w.entrees.push({x:X,y:q.y0-2});for(let k=-1;k<3;k++){res[q.y0][X+k]=1;res[q.y0+1][X+k]=1}}
+    if(apres)apres();
     ['portemanteau','videpoche','chaussures','parapluies','banc'].forEach(name=>{
       const fw=FP[name][0],xs=range(q.x1-q.x0-fw+2).map(i=>q.x0+i);
       for(const x of shuffle(r,xs)){
@@ -1340,12 +1365,12 @@ function buildWorld(c){
   };
   // L'ascenseur se pose au milieu d'un pan de mur entier, de préférence tout au bout du couloir
   const pansDeMur=A=>{const l=[];A.rects.forEach(q=>{let d=null;for(let x=q.x0;x<=q.x1+1;x++){const ok=x<=q.x1&&t[q.y0-1][x]===2&&t[q.y0-2][x]===2&&!gate[q.y0][x]&&!res[q.y0][x]&&!blk[q.y0][x];if(ok){if(d===null)d=x}else if(d!==null){l.push({q,x0:d,n:x-d});d=null}}});return l};
-  const poseAscenseur=(A,haut)=>{
+  const poseAscenseur=(A,haut,nom='lift')=>{
     const pans=pansDeMur(A).filter(p=>p.n>=2).sort((a,b)=>(b.q===haut)-(a.q===haut)||b.n-a.n);
     for(const p of pans){
       const impair=p.n%2===1&&p.n<=5,w0=impair?3:2,X=p.x0+((p.n-w0)>>1);
       if(!libreLa(X,p.q.y0,w0,1))continue;
-      const f=place('lift',X,p.q.y0,A);if(impair){f.w=3;f.dx=8;blk[p.q.y0][X+2]=f.id}
+      const f=place(nom,X,p.q.y0,A);if(impair){f.w=3;f.dx=8;blk[p.q.y0][X+2]=f.id}
       if(areaOK(A))return f;
       unplace(f);
     }
@@ -1367,9 +1392,10 @@ function buildWorld(c){
   };
   // Couloirs : meubles répartis régulièrement, l'ascenseur au milieu de son mur
   const poseCirc=A=>{
-    if(/entrée|hall/i.test(A.name))poseEntree(A);
-    const list=(A.rec.cw||[]).filter(n=>n!=='lift'),haut=A.rects.reduce((m,q)=>q.y0<m.y0?q:m),long=A.rects.reduce((m,q)=>q.x1-q.x0>m.x1-m.x0?q:m);
-    if((A.rec.cw||[]).includes('lift'))poseAscenseur(A,haut);
+    const list=(A.rec.cw||[]).filter(n=>n!=='lift'),haut=A.rects.reduce((m,q)=>q.y0<m.y0?q:m),long=A.rects.reduce((m,q)=>q.x1-q.x0>m.x1-m.x0?q:m),lift=(A.rec.cw||[]).includes('lift');
+    // dans un hall, l'ascenseur passe juste après la porte d'entrée, avant les petits meubles qui morcellent le mur
+    if(/entrée|hall/i.test(A.name))poseEntree(A,()=>{if(lift)poseAscenseur(A,haut);else if(ET)poseAscenseur(A,haut,'escalier')});
+    else if(lift)poseAscenseur(A,haut);
     boutsCouloir(A);
     const W0=long.x1-long.x0+1;
     list.forEach((name,i)=>{
@@ -1435,8 +1461,16 @@ function buildWorld(c){
       }
     }
   };
+  // L'étage : deux pièces meublées comme les autres, et un palier avec l'escalier qui redescend
+  const poseEtage=A=>{
+    if(!A.palier){poseRun(A);(A.rec.g||[]).forEach(g=>poseGroupe(A,g));return}
+    const q=A.rects[0];
+    for(let X=q.x1-1;X>=q.x0;X--){if(t[q.y0-1][X]!==2||t[q.y0-1][X+1]!==2||!libreLa(X,q.y0,2,1))continue;const f=place('escalier',X,q.y0,A);if(areaOK(A)){f.acces='descend';break}unplace(f)}
+    ['plant','commode','clock','lamp','plant'].forEach((name,i)=>{const fw=FP[name][0];for(let k=0;k<4;k++){const x=q.x0+1+i*4+k;let ok=x+fw-1<=q.x1&&libreLa(x,q.y0,fw,1);for(let j=0;j<fw&&ok;j++)if(t[q.y0-1][x+j]!==2)ok=false;if(!ok)continue;const f=place(name,x,q.y0,A);if(areaOK(A))break;unplace(f)}});
+  };
   w.areas.forEach(A=>{
     A.flip=r()<.5;
+    if(A.etage){poseEtage(A);return}
     if(A.room){poseRun(A);(A.rec.g||[]).forEach(g=>poseGroupe(A,g));return}
     poseCirc(A);
     (L.ci||[]).forEach(n=>{if(A.y1-A.y0>=3)poseGroupe(A,CIRC[n])});
@@ -1479,9 +1513,24 @@ function buildWorld(c){
     const ri=homes[i%NR],cell=takeSolid(zoneOf(ri))||takeSolid(zoneOf(homes[(i+1)%NR]));
     w.obj.push({id:nid(),kind:'suspect',s:i,x:cell[0],y:cell[1],w:1,h:1,room:ri});
   });
+  // Accès à l'étage : l'ascenseur s'il y en a un, sinon un escalier, posé au besoin contre un mur libre
+  w.etage=null;
+  if(ET){
+    const sol=f=>!w.areas[f.room].etage,desc=w.furn.find(f=>f.acces==='descend');
+    let acc=w.furn.find(f=>f.name==='lift'&&sol(f))||w.furn.find(f=>f.name==='escalier'&&sol(f));
+    for(const A of [...w.areas.filter(A=>!A.room&&!A.etage),...w.areas.filter(A=>A.room)]){
+      if(acc)break;
+      for(const q of A.rects)for(let x=q.x0;x<q.x1&&!acc;x++){
+        if(t[q.y0-1][x]!==2||t[q.y0-1][x+1]!==2||t[q.y0-2][x]!==2||t[q.y0-2][x+1]!==2||!libreLa(x,q.y0,2,1))continue;
+        const f=place('escalier',x,q.y0,A);if(areaOK(A))acc=f;else unplace(f);
+      }
+    }
+    const devant=f=>{for(const[x,y]of[[f.x+((f.w-1)>>1),f.y+1],[f.x+(f.w>>1),f.y+1],[f.x-1,f.y],[f.x+f.w,f.y],[f.x,f.y+2]])if(t[y]&&t[y][x]===1&&!blk[y][x]&&!gate[y][x])return[x,y];return null};
+    if(acc&&desc&&devant(acc)&&devant(desc)){acc.acces='monte';if(acc.name==='escalier')acc.v=1e7+acc.v%1e6;desc.v=2e7;w.etage={nom:ET.nom,haut:devant(desc),bas:devant(acc)}}
+  }
   // Tout meuble se fouille. Les cachettes sont les meubles à tiroirs, armoires, bibliothèques...
   // Tout se fouille, mais seuls quelques meubles cachent vraiment quelque chose
-  const fou=w.furn.map(f=>({id:nid(),kind:'fouille',x:f.x,y:f.y,w:f.w,h:f.h,room:f.room,name:f.name,text:pick(r,FLAVOR[f.name.replace(/[BLR]$/,'')]||['Rien de particulier.'])}));
+  const fou=w.furn.filter(f=>w.etage||!w.areas[f.room].etage).map(f=>({id:nid(),kind:'fouille',acces:w.etage?f.acces:undefined,x:f.x,y:f.y,w:f.w,h:f.h,room:f.room,name:f.name,text:pick(r,FLAVOR[f.name.replace(/[BLR]$/,'')]||['Rien de particulier.'])}));
   const boxes=shuffle(r,fou.filter(o=>MG_BY[o.name]));
   const others=shuffle(r,fou.filter(o=>!MG_BY[o.name]&&!['lift','escalier','secours'].includes(o.name)));
   // On remplit toujours la pièce la moins chargée : rien ne s'entasse au même endroit
@@ -1493,7 +1542,7 @@ function buildWorld(c){
 
   // Portes verrouillées : la clé se trouve toujours du côté déjà accessible
   const zone=(ouverts)=>{const z=new Set([c.rc]);let ch=true;while(ch){ch=false;doors.forEach(d=>{if(d.lock!==null&&!ouverts.has(d.lock))return;if(z.has(d.a)!==z.has(d.b)){z.add(d.a);z.add(d.b);ch=true}})}return z};
-  const cand=shuffle(r,doors);let nb=0;
+  const cand=shuffle(r,doors.filter(d=>!w.areas[d.a].etage&&!w.areas[d.b].etage));let nb=0;
   for(const d of cand){
     if(nb>=D.lock)break;
     d.lock=nb;
@@ -1573,6 +1622,7 @@ function auditWorld(w,c){
     const seen=new Set([w.spawn.y*w.mw+w.spawn.x]),st=[[w.spawn.x,w.spawn.y]];
     while(st.length){const[x,y]=st.pop();for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=x+a,Y=y+b,k=Y*w.mw+X;
       if(seen.has(k)||solidCell(w,X,Y,open))continue;seen.add(k);st.push([X,Y])}}
+    if(w.etage){const[a,b]=w.etage.bas,[e0,f0]=w.etage.haut,K=f0*w.mw+e0;if(seen.has(b*w.mw+a)&&!seen.has(K)){seen.add(K);st.push([e0,f0]);while(st.length){const[x,y]=st.pop();for(const[p,q]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=x+p,Y=y+q,k=Y*w.mw+X;if(seen.has(k)||solidCell(w,X,Y,open))continue;seen.add(k);st.push([X,Y])}}}}
     return seen;
   };
   const near=(o,seen)=>{for(let y=o.y-1;y<=o.y+o.h;y++)for(let x=o.x-1;x<=o.x+o.w;x++)if(seen.has(y*w.mw+x))return true;return false};
@@ -3214,6 +3264,7 @@ function noirDessine(px,py){
 // ——— Orage derrière les fenêtres ———
 function eclair(){G.eclair=16;if(typeof tonnerre==='function')setTimeout(tonnerre,400+Math.random()*1400)}
 function fenetresVivantes(){
+  ambianceFenetres();
   const neige=c.lv===0||c.lv===4;
   if(O.pluie){ctx.fillStyle=neige?'rgba(240,244,255,.8)':'rgba(170,190,235,.55)';W.windows.forEach((w,i)=>{for(let k=0;k<6;k++){const x=w.x*TS+4+((k*9+i*5+(neige?tick>>4:0))%24),y=w.y*TS+6+(((k*5+(tick>>(neige?3:0)))%14));ctx.fillRect(x,y,1,neige?1:2)}})}
   if(G.eclair>0&&!neige){ctx.fillStyle=`rgba(232,238,255,${G.eclair%5<3?.75:.25})`;W.windows.forEach(w=>ctx.fillRect(w.x*TS+(c.lv===6?9:3),w.y*TS+(c.lv===6?7:5),c.lv===6?14:26,c.lv===6?14:16))}
@@ -3247,7 +3298,7 @@ function dessinePNJ(o){
 // Niveau test : un couloir, six salles, six façons d'interroger. Tout se joue dans le décor,
 // en marchant : pas de fenêtre devant le jeu, seulement de petites bulles au-dessus des têtes.
 // Plus c'est difficile, plus la zone de vue est large et plus les personnages vont vite
-const NIV_JEU={facile:{vue:62,ang:.85,vit:.85,npc:1,att:1},moyen:{vue:82,ang:1.05,vit:1.05,npc:1.35,att:.75},difficile:{vue:108,ang:1.35,vit:1.38,npc:1.8,att:.5}};
+const NIV_JEU={facile:{vue:62,ang:.85,vit:.85,npc:1,att:1},moyen:{vue:82,ang:1.05,vit:1.05,npc:1.35,att:.75},difficile:{vue:108,ang:1.35,vit:1.38,npc:1.8,att:.5},expert:{vue:108,ang:1.35,vit:1.38,npc:1.8,att:.5}};
 const reglage=()=>NIV_JEU[O.diff&&O.diff!=='auto'?O.diff:(c&&c.test?'moyen':(c&&c.key)||'moyen')];
 const dureeDos=()=>Math.round(125*reglage().vit+20),dureeEcoute=()=>Math.round(110*reglage().vit+20);
 const JOUEUR={get fx(){return S.p.x},get fy(){return S.p.y}};
@@ -3545,7 +3596,7 @@ function motsCrime(){
 }
 const dateCle=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function jourDuJour(){const k=dateCle(new Date()),h=hashS('jour'+k);return{k,lv:h%10,seed:1000+(h>>>4)%8999}}
-function lanceJour(){const j=jourDuJour();neuf(j.lv,j.seed);S.jour=j.k;save()}
+function lanceJour(){const j=jourDuJour();neuf(j.lv,j.seed,true,null);S.jour=j.k;save()}
 function finJour(){
   if(!S.jour||G.robot)return;
   stats.jours=stats.jours||{};if(stats.jours[S.jour])return;
@@ -3569,7 +3620,7 @@ function finDe(f){
 }
 function marqueFin(){
   const k=S.fin.cle=finDe(S.fin);
-  if(!G.robot){stats.fins=stats.fins||{};stats.fins[k]=1;finJour()}
+  if(!G.robot){stats.fins=stats.fins||{};stats.fins[k]=1;finJour();if(S.fin.win&&S.mode==='expert'){stats.exp=stats.exp||{};const e=stats.exp[S.lv];if(!e||S.fin.note.l<e)stats.exp[S.lv]=S.fin.note.l}}
   save();
 }
 const EXCUSABLES=['chantage','brevet','contrat','article','renvoi'];
@@ -3693,10 +3744,7 @@ function sonMaj(){
   if(a.ev==='bip'&&tick%360<15)ton(980,.16,.02,'sine');
   if(a.ev==='vague'&&tick%420<15)bruit(2.4,300,.12,'lowpass');
   if(a.ev==='jetons'&&Math.random()<.1)bruit(.02,4200,.05);
-  if(O.musique){
-    if(tick%480<15)ton(a.base/2,3.6,.05,'sine');
-    if(tick%150<15&&noise(tick>>7,(c.lv||0)+1,3)>.34){const g=[1,1.2,1.335,1.5,1.8,2];ton(a.base*g[Math.floor(noise(tick>>6,5,2)*g.length)],2.4,.032)}
-  }
+  if(O.musique)musiqueLieu(a.base);
 }
 
 // Mobilier varié : un lit propre à chaque lieu, dix plantes en pot, dix lampadaires,
@@ -3850,13 +3898,14 @@ Object.assign(SPR,{
   plant(g,v){g.save();g.translate(0,0);PLANTES[v%10](g,v);g.restore()},
   lamp(g,v){LAMPES[v%10](g,v)},
   // Bout de couloir : l'escalier de service, fermé par une corde rouge
-  escalier(g,v){const P=PX(g),bo='#5b3820';
+  escalier(g,v){const P=PX(g),bo='#5b3820',ouvert=v>=1e7,desc=v>=2e7;
     P(tone(bo,-.2),0,0,32,46);P('#0e0c16',2,2,28,42);
-    for(let k=0;k<8;k++){const y=41-k*5,t=-.06-k*.1;P(tone('#8a6a4a',t),2+k,y-1,28-k*2,2);P(tone('#5a3a24',t),2+k,y+1,28-k*2,3)}
-    traitP(g,'#c8a040',28,40,21,5);traitP(g,tone('#c8a040',-.3),28,41,21,6);for(let k=0;k<7;k++)P(tone(bo,-.05),28-k,40-k*5,1,4);
-    P('#c8a040',3,30,2,14);P('#c8a040',27,30,2,14);P('#fff0a0',3,30,1,1);P('#fff0a0',27,30,1,1);
+    for(let k=0;k<8;k++){const y=desc?6+k*5:41-k*5,t=-.06-k*.1;P(tone('#8a6a4a',t),2+k,y-1,28-k*2,2);P(tone('#5a3a24',t),2+k,y+1,28-k*2,3)}
+    if(desc){traitP(g,'#c8a040',28,6,21,41);for(let k=0;k<7;k++)P(tone(bo,-.05),28-k,6+k*5,1,4)}else{traitP(g,'#c8a040',28,40,21,5);traitP(g,tone('#c8a040',-.3),28,41,21,6);for(let k=0;k<7;k++)P(tone(bo,-.05),28-k,40-k*5,1,4)}
+    if(!ouvert){P('#c8a040',3,30,2,14);P('#c8a040',27,30,2,14);P('#fff0a0',3,30,1,1);P('#fff0a0',27,30,1,1);
     for(let x=5;x<27;x++)P('#a3262a',x,32+Math.round(Math.sin((x-5)/22*Math.PI)*3),1,2);
-    P('#f4ecd8',12,37,8,5);P('#a3262a',13,39,6,1);P(tone(bo,.25),0,0,32,1);P(tone(bo,-.4),0,45,32,1)},
+    P('#f4ecd8',12,37,8,5);P('#a3262a',13,39,6,1)}
+    else{P('#c8a040',11,3,10,7);P('#2a2018',12,4,8,5);(desc?[[15,4,2,2],[14,6,4,1],[15,7,2,1]]:[[15,4,2,1],[14,5,4,1],[15,6,2,2]]).forEach(([x,y,w,h])=>P('#ffe08a',x,y,w,h))}P(tone(bo,.25),0,0,32,1);P(tone(bo,-.4),0,45,32,1)},
   // Bout de couloir : la sortie de secours, enchaînée pendant la tempête
   secours(g,v){const P=PX(g),cad='#6a7078',po='#4a6a5a';
     P('#0e3a1e',8,0,16,6);P('#2ad86a',9,1,14,4);P('#e8fff0',12,1,1,1);P('#e8fff0',11,2,3,1);P('#e8fff0',10,3,1,1);P('#e8fff0',13,3,1,1);P('#e8fff0',16,2,5,1);P('#e8fff0',19,1,1,3);
@@ -3880,7 +3929,7 @@ const parquet=g=>{for(let y=0;y<200;y++)for(let x=0;x<320;x+=4)R(g,tone('#5b3820
 const recouvre=(a,b)=>{const w=Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x),h=Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y);return w>0&&h>0?w*h/(a.w*a.h):0};
 function miniNeuf(type,shell,done,spr,o){
   let fini=false;
-  const gagne=t=>{if(fini)return;fini=true;dire(t||'Trouvé !');son('bon');setTimeout(()=>{if(G.mini||G.pzT)done()},520)};
+  const gagne=t=>{if(fini)return;fini=true;dire(t||'Trouvé !');son('bon');indiceMini(type,o);setTimeout(()=>{if(G.mini||G.pzT)done()},520)};
   if(type==='couches'){
     const{k,g,pos}=toile(shell,"Quelque chose a été glissé dans ce lit. Fais glisser les oreillers et les draps pour les tirer.");
     const col=['#c43a3a','#2f4a3a','#22345a','#7a1a2a','#5a2a6a','#4a6a8a'][int(Math.random,6)];
@@ -3931,7 +3980,7 @@ function miniNeuf(type,shell,done,spr,o){
     return true;
   }
   if(type==='horloge'){
-    const H0=1+int(Math.random,12),M0=5*int(Math.random,12);let h=(H0+3+int(Math.random,6))%12||12,m=5*int(Math.random,12);
+    const hh=typeof c!=='undefined'&&c&&!c.test?parseInt(HOURS[c.hc]):8+int(Math.random,4),H0=hh%12||12,M0=5*int(Math.random,12);G.horloge={hh,M0};let h=(H0+3+int(Math.random,6))%12||12,m=5*int(Math.random,12);
     const{k,g,pos}=toile(shell,`Un papier coincé derrière le cadran : « ${H0} h ${String(M0).padStart(2,'0')} ». Fais tourner la grande aiguille jusqu'à cette heure.`);
     const cx=160,cy=92,rr=68;let ouvert=0;
     const paint=()=>{if(!$('mg-c'))return;
@@ -3983,6 +4032,110 @@ function miniNeuf(type,shell,done,spr,o){
   }
   return false;
 }
+// Certains mini-jeux livrent aussi un indice sur l'affaire
+function indiceMini(type,o){
+  if(!o||!S||c.test||G.robot)return;
+  S.indices=S.indices||{};if(S.indices[o.id])return;S.indices[o.id]=1;
+  if(type==='horloge'&&G.horloge){const{hh,M0}=G.horloge;note('trace',"Mot dans l'horloge",`Derrière le balancier, un mot griffonné : « Fait à ${hh} h ${String(M0).padStart(2,'0')}. Personne ne saura. » L'heure du crime ?`,'loupe');return}
+  if(type==='piano'){
+    const l=[];c.needed.forEach(q=>{if(q.t==='s'&&!S.asked[q.s+'-'+q.h])l.push([q.s,q.h])});
+    if(!l.length)for(let s=0;s<c.n;s++)for(let h=0;h<HOURS.length;h++)if(!S.asked[s+'-'+h])l.push([s,h]);
+    if(!l.length)return;const[s,h]=l[int(Math.random,l.length)];apprendre(s,h);
+    toast(`Dans la partition, une ligne au crayon : où ${c.suspects[s].prenom} dit avoir été à ${HOURS[h]}`,true);return;
+  }
+  if((type==='couches'||type==='coussins')&&o.room<c.set.rooms.length){
+    const l=[];c.suspects.forEach((su,s)=>{if(c.pos[s].includes(o.room))l.push(s)});if(!l.length)return;
+    const s=l[int(Math.random,l.length)],su=c.suspects[s],e=su.g==='f'?'e':'';
+    note('trace',`Passage de ${su.prenom}`,`${type==='couches'?"Sous l'oreiller":'Entre les coussins'}, un objet à ${su.prenom} : ${su.g==='f'?'elle':'il'} est venu${e} ${c.set.rooms[o.room].d} ce soir.`,'p'+s);
+  }
+}
+
+// Chaque lieu a son étage, son ambiance et sa petite musique. Et on peut partager son résultat.
+
+// ——— Monter à l'étage, redescendre ———
+function voyage(o){
+  const[x,y]=o.acces==='monte'?W.etage.haut:W.etage.bas;
+  closeAll();son('porte');
+  S.p.x=x*TS+8;S.p.y=y*TS+11;G.walk=null;G.moved=false;
+  cam.x=S.p.x-VW/2;cam.y=S.p.y-VH/2;G.snap=true;G.area=areaIdx(x,y);G.fade=.95;
+  toast(o.acces==='monte'?W.etage.nom:'Rez-de-chaussée',true);
+  render();save();
+}
+
+// ——— Ambiance : ce qui bouge derrière les fenêtres et dans la lumière ———
+const calmeAmb=()=>!c||c.test||document.body.classList.contains('calme');
+const roulis=()=>c&&c.lv===6&&!calmeAmb()?Math.round(Math.sin(tick*.02)*2.4):0;
+function ambianceFenetres(){
+  if(calmeAmb())return;
+  const lv=c.lv;
+  W.windows.forEach((w,i)=>{
+    const x=w.x*TS,y=w.y*TS;
+    if(lv===6){for(let k=0;k<5;k++){ctx.fillStyle='rgba(220,235,255,.75)';ctx.fillRect(x+9+((k*5+(tick>>3)+i*3)%13),y+16+Math.round(Math.sin(tick*.05+k)*1.6),2,1)}return}
+    const gx=x+3,gy=y+5,gw=26;
+    if(lv===4)for(let j=0;j<gw;j++){
+      const h=Math.sin(j*.35+tick*.03)*2+Math.sin(j*.11-tick*.017)*2,yy=gy+4+Math.round(h);
+      ctx.fillStyle=`rgba(90,255,170,${(.32+.2*Math.sin(tick*.04+j*.2)).toFixed(2)})`;ctx.fillRect(gx+j,yy,1,3);ctx.fillStyle='rgba(130,190,255,.25)';ctx.fillRect(gx+j,yy-2,1,2);
+    }
+    if(lv===2)for(let k=0;k<3;k++){const xx=gx+gw-1-((tick*2+k*37+i*11)%(gw+40));if(xx>=gx&&xx<gx+gw-1){ctx.fillStyle='rgba(255,226,150,.9)';ctx.fillRect(xx,gy+9+(k%2)*3,2,1)}}
+    if(lv===3)for(let k=0;k<7;k++)if(noise(k+i*7,tick>>5,3)>.5){ctx.fillStyle='rgba(255,225,140,.85)';ctx.fillRect(gx+(k*9+i*5)%gw,gy+7+(k*5)%8,1,1)}
+  });
+  // Poussière qui danse dans la lumière des lampes : théâtre et château
+  if(lv===5||lv===8){ctx.fillStyle='rgba(255,240,200,.55)';W.lamps.forEach((l,i)=>{const lx=l.x*TS,ly=l.y*TS;if(Math.abs(lx-S.p.x)>260||Math.abs(ly-S.p.y)>200)return;for(let k=0;k<4;k++){const t=tick*.012+k*1.7+i;ctx.fillRect(Math.round(lx+Math.sin(t*1.3)*11),Math.round(ly-6-((tick*.12+k*9)%20)+Math.sin(t)*3),1,1)}})}
+}
+function ambianceLumiere(){
+  if(calmeAmb())return;
+  const lv=c.lv;
+  if(lv===9){
+    ctx.globalCompositeOperation='lighter';ctx.fillStyle=`rgba(90,10,60,${(.05+.03*Math.sin(tick*.05)).toFixed(3)})`;ctx.fillRect(0,0,VW,VH);ctx.globalCompositeOperation='source-over';
+    if(noise(tick>>2,9,4)>.94){ctx.fillStyle='rgba(8,4,16,.18)';ctx.fillRect(0,0,VW,VH)}
+  }
+  if(lv===7&&noise(tick>>1,7,5)>.975){ctx.fillStyle='rgba(225,240,255,.08)';ctx.fillRect(0,0,VW,VH)}
+  if(lv===8||lv===5){ctx.fillStyle=`rgba(8,4,16,${(noise(tick>>2,8,6)*.05).toFixed(3)})`;ctx.fillRect(0,0,VW,VH)}
+}
+
+// ——— Une petite musique différente dans chaque lieu ———
+const GAMMES={penta:[0,2,4,7,9],maj:[0,2,4,5,7,9,11],min:[0,2,3,5,7,8,10],dor:[0,2,3,5,7,9,10],blues:[0,3,5,6,7,10],tons:[0,2,4,6,8,10],harm:[0,2,3,5,7,8,11]};
+const MUSIQUES=[
+ {g:'penta',bpm:100,ty:'triangle',m:[0,2,4,-1,3,2,1,-1,2,4,5,-1,4,2,0,-1],b:[0,-1,-1,-1,3,-1,-1,-1,4,-1,-1,-1,0,-1,-1,-1]},      // Hôtel : air de montagne
+ {g:'min',bpm:70,ty:'triangle',m:[4,-1,3,2,3,-1,-1,-1,2,-1,1,0,1,-1,-1,-1],b:[0,-1,-1,-1,5,-1,-1,-1,3,-1,-1,-1,4,-1,-1,-1]},       // Villa : piano mélancolique
+ {g:'dor',bpm:132,ty:'square',m:[0,-1,2,-1,4,-1,2,-1,3,-1,1,-1,2,-1,-1,-1],b:[0,-1,0,-1,4,-1,0,-1,0,-1,0,-1,4,-1,0,-1]},          // Train : au rythme des rails
+ {g:'blues',bpm:96,ty:'triangle',m:[0,1,2,-1,4,-1,2,1,0,-1,-1,5,4,-1,2,-1],b:[0,-1,2,-1,4,-1,5,-1,0,-1,2,-1,4,-1,2,-1]},          // Tour : jazz de bureau
+ {g:'tons',bpm:60,ty:'sine',m:[0,-1,-1,4,-1,-1,5,-1,-1,-1,3,-1,-1,2,-1,-1],b:[0,-1,-1,-1,-1,-1,-1,-1,3,-1,-1,-1,-1,-1,-1,-1]},    // Station : la nuit polaire
+ {g:'maj',bpm:126,ty:'triangle',m:[4,-1,-1,5,4,3,2,-1,-1,4,3,2,1,-1,-1,-1],b:[0,-1,-1,4,-1,-1,0,-1,-1,4,-1,-1,0,-1,-1,4]},         // Théâtre : une valse
+ {g:'dor',bpm:92,ty:'triangle',m:[0,0,2,3,4,-1,4,3,2,-1,0,-1,1,2,0,-1],b:[0,-1,-1,-1,3,-1,-1,-1,4,-1,-1,-1,0,-1,-1,-1]},           // Paquebot : chant de marins
+ {g:'maj',bpm:64,ty:'sine',o:2,m:[6,-1,-1,-1,4,-1,-1,-1,3,-1,-1,-1,1,-1,-1,-1],b:[0,-1,-1,-1,-1,-1,-1,-1,5,-1,-1,-1,-1,-1,-1,-1]},// Clinique : notes froides
+ {g:'harm',bpm:88,ty:'square',m:[0,2,4,7,4,2,0,2,5,7,5,2,6,4,3,-1],b:[0,-1,-1,-1,5,-1,-1,-1,3,-1,-1,-1,4,-1,-1,-1]},                // Château : clavecin
+ {g:'blues',bpm:112,ty:'triangle',m:[0,-1,1,2,3,-1,2,-1,4,3,2,-1,0,-1,-1,-1],b:[0,1,2,4,0,1,2,4,3,4,5,4,0,1,2,4]}                   // Casino : swing
+];
+function noteA(fq,t0,d,v,ty){
+  if(!SND.m)return;
+  const o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.value=fq;
+  g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(v,t0+.02);g.gain.exponentialRampToValueAtTime(.0001,t0+d);
+  o.connect(g);g.connect(SND.m);o.start(t0);o.stop(t0+d+.05);
+}
+function musiqueLieu(base){
+  const M=MUSIQUES[(c.lv||0)%10],gam=GAMMES[M.g],pas=60/M.bpm/2,t=AC.currentTime;
+  const fq=i=>base*Math.pow(2,gam[i%gam.length]/12+Math.floor(i/gam.length)+((M.o||1)-1));
+  if(!SND.mt||SND.mt<t-.4||SND.mlv!==c.lv){SND.mt=t+.15;SND.mi=0;SND.mlv=c.lv}
+  while(SND.mt<t+.7){
+    const i=SND.mi++%M.m.length,a=M.m[i],b=M.b[i];
+    if(a>=0)noteA(fq(a),SND.mt,pas*1.8,M.ty==='square'?.012:.03,M.ty);
+    if(b>=0)noteA(fq(b)/2,SND.mt,pas*3,.026,'sine');
+    SND.mt+=pas;
+  }
+}
+
+// ——— Partager son résultat ———
+function texteResultat(){
+  const f=S.fin,n=f.note||{l:'?',min:0},q=FINS[f.cle],quand=S.jour?'Enquête du jour '+S.jour.split('-').reverse().join('/'):'Affaire n° '+c.seed;
+  return`Faux Alibi · ${quand} · ${c.set.nom}${c.key==='expert'?' · Expert':''}\n${q?q[0]:(f.win?'Affaire résolue':'Affaire ratée')} · Note ${n.l} · ${n.min} min\nhttps://lechat45.github.io/Faux_alibi/`;
+}
+function partager(){
+  const t=texteResultat();
+  const montre=()=>{vue(`<div class="d objet"><p class="petit">Mon résultat</p><textarea id="res-t" readonly rows="4" class="res-t">${esc(t)}</textarea><p class="petit">Sélectionne ce texte et copie-le pour le partager.</p></div>`);const e=$('res-t');if(e){e.focus();e.select()}};
+  if(navigator.share&&matchMedia('(pointer:coarse)').matches){navigator.share({text:t}).catch(()=>{});return}
+  try{const p=navigator.clipboard&&navigator.clipboard.writeText(t);if(!p)return montre();p.then(()=>toast('Résultat copié : colle-le où tu veux',true),montre)}catch(e){montre()}
+}
 
 // Faux Alibi : accueil, boucle de jeu, rendu, scènes, calepin, documents, mini-jeux.
 const $=id=>document.getElementById(id);
@@ -3992,7 +4145,7 @@ const cap=s=>s[0].toUpperCase()+s.slice(1);
 const STORE='fauxalibi.v5';
 const R_=(g,c,x,y)=>R(g,c,x,y);
 const NIVEAUX=['Bavard','Méfiant','Fermé'];
-let c,S,W,G={},stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0};
+let c,S,W,G={},stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0,exp:{}};
 // Réglages du joueur, tous réellement appliqués
 let O={texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,diff:'auto',sons:1,musique:1,vol:50,lum:50,txt:100};
 let AC=null;
@@ -4008,11 +4161,11 @@ const keys={up:0,down:0,left:0,right:0};
 let tick=0,cam={x:0,y:0},parts=[],toastT=0,modal=null,VW=400,VH=250,SC=3,ctx,Cut=null,enJeu=false;
 
 // ——— État d'une partie ———
-function neuf(lv,seed,intro=true){
+function neuf(lv,seed,intro=true,mode=O.expert&&lv<10?'expert':null){
   seed=seed??(1000+Math.floor(Math.random()*8999));
-  c=generate(seed,lv);habiller(c);if(lv===10)preparerTest(c);
+  c=generate(seed,lv,mode);habiller(c);if(lv===10)preparerTest(c);
   W=buildWorld(c);prep();if(lv===10)finirTest();
-  S={seed,lv,t:{},liens:[],aides:0,jeu:0,evDocs:[],stress:{},vues:{},sujets:{},traces:{},asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
+  S={seed,lv,mode,t:{},liens:[],aides:0,jeu:0,evDocs:[],stress:{},vues:{},sujets:{},traces:{},asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
   Object.values(W.doors).forEach(d=>{if(d.lock===null)S.open[d.id]=1});
   if(Cut)endCut();
   closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('but').hidden=true;$('tuto-p').hidden=true;G.planCible=null;G.tutoO=null;
@@ -4047,7 +4200,7 @@ function save(){try{localStorage.setItem(STORE,JSON.stringify({S:S&&!(c&&c.test)
 function chargeStats(){try{const o=JSON.parse(localStorage.getItem(STORE));if(o){stats=Object.assign(stats,o.stats);O=Object.assign(O,o.O);G.sauve=o.S&&!o.S.fin?o.S:null}}catch(e){}}
 function continuer(){
   try{
-    S=G.sauve;c=generate(S.seed,S.lv);habiller(c);W=buildWorld(c);prep();(S.evDocs||[]).forEach(d=>W.docs.push(d));G.choix=[];G.sel=[];G.noir=0;G.plan=null;$('marteau').hidden=false;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
+    S=G.sauve;c=generate(S.seed,S.lv,S.mode);habiller(c);W=buildWorld(c);prep();(S.evDocs||[]).forEach(d=>W.docs.push(d));G.choix=[];G.sel=[];G.noir=0;G.plan=null;$('marteau').hidden=false;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
     if(!S.introDone)startIntro();
   }catch(e){neuf(0)}
 }
@@ -4150,7 +4303,7 @@ function buildMap(){
   });
   g.fillStyle='rgba(12,10,32,.32)';W.furn.forEach(f=>g.fillRect(f.x*TS,(f.y+f.h)*TS-1,f.w*TS,3));
   // Tapis de couloir : un seul tapis qui suit les coudes, bordé d'or tout autour
-  if(L.runner)W.areas.filter(A=>!A.room).forEach(A=>{
+  if(L.runner)W.areas.filter(A=>!A.room&&!(A.etage&&!A.palier)).forEach(A=>{
     const bandes=[];
     A.rects.forEach(q=>{
       const hz=q.x1-q.x0>=q.y1-q.y0,e=hz?q.y1-q.y0+1:q.x1-q.x0+1;if(e<3)return;
@@ -4280,7 +4433,7 @@ function draw(){
   else ctx.drawImage(maskOf(masque),0,0);
   ctx.setTransform(1,0,0,1,0,0);
   ctx.globalCompositeOperation='multiply';ctx.imageSmoothingEnabled=true;
-  ctx.drawImage(G.light,cx/2,cy/2,VW/2,VH/2,0,0,VW,VH);ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(G.light,cx/2+roulis(),cy/2,VW/2,VH/2,0,0,VW,VH);ctx.imageSmoothingEnabled=false;ambianceLumiere();
   ctx.globalCompositeOperation='lighter';
   const pxx=P.x-cx,pyy=P.y-cy-8,rad=70,q=ctx.createRadialGradient(pxx,pyy,2,pxx,pyy,rad);q.addColorStop(0,'rgba(95,88,70,.45)');q.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=q;ctx.fillRect(pxx-rad,pyy-rad,rad*2,rad*2);
   ctx.globalCompositeOperation='source-over';
@@ -4440,7 +4593,7 @@ function startIntro(){
   const ba=t=>({say:'ba',nom:'Basile, votre adjoint',t});
   const q=[
     {fn:()=>{G.fade=1}},{area:c.rc},{cam:[b.x*TS+8,b.y*TS]},{snap:1},
-    {card:titreAffaire(),sub:`${c.set.nom}, minuit.`},
+    {card:titreAffaire()+(c.key==='expert'?' · Expert':''),sub:`${c.set.nom}, minuit.`},
     act('v','v',[b.x+.5,b.y],0,{down:true}),act('ba','ba',ic,0),act('me','me',door,2),
     {fade:0},{go:'me',x:me[0]*TS+8,y:me[1]*TS+11,sp:1.2},
     ba(`Ah, inspecteur ! Vous voilà enfin. Bienvenue ${c.set.lieu}.`),
@@ -4605,6 +4758,7 @@ function promptOf(o){
   if(o.kind==='entree')return"Porte d'entrée";
   if(o.kind==='corps')return'Le corps';
   if(o.kind==='trace')return'Examiner';
+  if(o.acces&&W.etage)return o.acces==='descend'?'Redescendre':o.name==='lift'?"Prendre l'ascenseur":"Monter à l'étage";
   if(S.open[o.id])return'Déjà fouillé';
   if(o.name==='lift')return"Appeler l'ascenseur";
   if(o.name==='escalier'||o.name==='secours')return`Examiner ${NOM_F[o.name]}`;
@@ -4656,6 +4810,7 @@ function update(){
   if(S&&S.tu)tutoTick();
   if(tick%(O.calme?6:3)===0&&W&&W.furn.some(f=>f.name==='fireplace'))feuPas();
   if(G.pzT)G.pzT();
+  if(!Cut&&G.fade>0)G.fade=Math.max(0,G.fade-.05);
   if(modal==='cut'&&Cut){stepCut();return}
   if(modal)return;
   npcLife();
@@ -4735,10 +4890,11 @@ function enigme(o){
   btn.push({t:'Laisser',cl:'alt',f:closeAll});
   bulle({at:at0(),nom:cap(NOM_F[o.name]||'Le meuble'),txt:E.t+(S.inv.length?' Que puis-je utiliser ?':" Je n'ai rien sur moi pour ça."),btn});
 }
-const puzzleFor=o=>makePuzzle(RNG(o.id*7919+c.seed),o.ptype,{facile:0,moyen:1,difficile:2}[c.key]);
+const puzzleFor=o=>makePuzzle(RNG(o.id*7919+c.seed),o.ptype,{facile:0,moyen:1,difficile:2,expert:2}[c.key]);
 function interact(o){
   if(!o)return;
   if(c.test&&o.kind==='fouille')return fouilleTest(o);
+  if(o.acces&&W.etage)return voyage(o);
   if(o.kind==='suspect')return talk(o);
   if(o.kind==='vitrine'){const n=inspecter(o.room);return say(cap(c.set.rooms[o.room].o),n.join(' '))}
   if(o.kind==='corps')return ouvrirDoc(W.iAuto);
@@ -4761,7 +4917,7 @@ function interact(o){
 function pion(i,cl=''){return`<span class="pion ${cl}" title="${esc(c.suspects[i].nom)}">${c.suspects[i].ini}</span>`}
 function pNotes(){
   const n=S.cards.length,cases=S.cards.map(k=>`<${k.doc!==undefined?`button data-a="lire" data-v="${k.doc}"`:'div'} class="case k-${k.k}"><span class="t"><img alt="" src="${imgURL(k.ic)}"><span>${esc(k.t)}</span></span><span>${esc(k.x)}</span></${k.doc!==undefined?'button':'div'}>`).join('');
-  return`<h2>Mes découvertes</h2>${S.fin?'':'<div class="ligne"><button class="etiq alt" data-a="aide">Demander un indice à Basile</button><span class="petitp">Chaque indice baisse ta note.</span></div>'}${n?`<div class="cases">${cases}</div>`:'<p class="main">Rien pour l\'instant. Parle aux suspects et fouille les pièces.</p>'}`;
+  return`<h2>Mes découvertes</h2>${S.fin||c.key==='expert'?'':'<div class="ligne"><button class="etiq alt" data-a="aide">Demander un indice à Basile</button><span class="petitp">Chaque indice baisse ta note.</span></div>'}${n?`<div class="cases">${cases}</div>`:'<p class="main">Rien pour l\'instant. Parle aux suspects et fouille les pièces.</p>'}`;
 }
 function pTemoins(){
   const tete=HOURS.map((h,i)=>`<th class="${c.win.includes(i)?'crime':''}">${h}</th>`).join('');
@@ -4786,7 +4942,7 @@ function pPapiers(){
   return`<h2>Mes documents</h2><div class="papiers">${S.papiers.map(i=>`<button class="pap" data-a="lire" data-v="${i}"><img alt="" src="${imgURL('lettre')}"><span>${esc(W.docs[i].t)}</span></button>`).join('')}</div>`;
 }
 function dessinePlan(a){
-  const rs=W.areas.flatMap(A=>A.rects),x0=Math.min(...rs.map(q=>q.x0))-1,y0=Math.min(...rs.map(q=>q.y0))-1,x1=Math.max(...rs.map(q=>q.x1))+2,y1=Math.max(...rs.map(q=>q.y1))+2;
+  const et=!!(W.areas[a]&&W.areas[a].etage),rs=W.areas.filter(A=>!!A.etage===et).flatMap(A=>A.rects),x0=Math.min(...rs.map(q=>q.x0))-1,y0=Math.min(...rs.map(q=>q.y0))-1,x1=Math.max(...rs.map(q=>q.x1))+2,y1=Math.max(...rs.map(q=>q.y1))+2;
   const cw=540,s=cw/(x1-x0),ch=Math.ceil((y1-y0)*s),[k,g]=cv(cw,ch),X=x=>(x-x0)*s,Y=y=>(y-y0)*s,encre='#2a2438';
   G.planT={x0,y0,s};
   R(g,'#eadcb8',0,0,cw,ch);
@@ -4844,7 +5000,7 @@ function pFin(){
   return`<h2>${f.win?'Affaire résolue !':(c.tueurs.length>1?"Les assassins m'ont échappé":"L'assassin m'a échappé")}</h2>${pFinNom()}${pNote()}
   <div class="gens">${c.tueurs.map(i=>`<div class="fiche"><img alt="" src="${imgURL('p'+i)}"><span><b>${esc(c.suspects[i].nom)}</b>${f.win?(c.suspects[i].g==='f'?'Démasquée.':'Démasqué.'):'Ce n\'est pas cette personne que j\'ai arrêtée.'}</span></div>`).join('')}</div>
   ${f.arme!=null||f.heure!=null?`<p class="main">${esc(motDossier())}</p>`:''}<ul class="main">${preuve().map(l=>`<li>${esc(l)}</li>`).join('')}</ul>
-  <div class="ligne"><button class="etiq fort" data-a="suite">Enquête suivante</button><button class="etiq" data-a="accueil">Accueil</button></div>`;
+  <div class="ligne"><button class="etiq fort" data-a="suite">Enquête suivante</button><button class="etiq" data-a="partage">Partager mon résultat</button><button class="etiq" data-a="accueil">Accueil</button></div>`;
 }
 const TABS={notes:['Notes','#d8483e',pNotes],temoins:['Témoins','#3a7ad8',pTemoins],deduc:['Déductions','#b0406a',pDeduc],gens:['Personnes','#58a65a',pGens],objets:['Objets','#e0a03a',pObjets],papiers:['Documents','#8a5ac8',pPapiers],fin:['Verdict','#ffd23f',pFin]};
 function ouvrir(t){
@@ -4871,9 +5027,9 @@ function accueil(){
   closeAll();enJeu=false;$('but').hidden=true;$('tuto-p').hidden=true;['calepin','marteau'].forEach(n=>$(n).classList.remove('appel'));if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
   $('accueil').hidden=false;$('prompt').hidden=true;$('lieu').hidden=true;$('amb').hidden=true;$('hud').hidden=true;
   const n=stats.gagnees,suite=LEVELS.findIndex((l,i)=>!stats.res[i]);
-  const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${DIFF[l.diff].label}</span>${stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
+  const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${O.expert?'Expert':DIFF[l.diff].label}</span>${O.expert?(stats.exp&&stats.exp[i]?`<i>Expert · ${stats.exp[i]}</i>`:''):stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
   $('acc-ui').innerHTML=`<div class="acc-g"><h1>Faux<br><span>Alibi</span></h1><p>Dix lieux, cinquante pièces, et à chaque fois quelqu'un qui ment.</p>
-    <div class="ligne"><button class="etiq fort" data-a="nouvelle" data-v="${suite<0?int(Math.random,10):suite}">Nouvelle enquête</button>${G.sauve?'<button class="etiq" data-a="continuer">Continuer</button>':''}<button class="etiq" data-a="reglages">Options</button></div></div>
+    <div class="ligne"><button class="etiq fort" data-a="nouvelle" data-v="${suite<0?int(Math.random,10):suite}">Nouvelle enquête</button>${G.sauve?'<button class="etiq" data-a="continuer">Continuer</button>':''}<button class="etiq ${O.expert?'actif':''}" data-a="expert" aria-pressed="${!!O.expert}">Expert : ${O.expert?'oui':'non'}</button><button class="etiq" data-a="reglages">Options</button></div></div>
     <div class="acc-d"><div class="tampon"><b>${n}</b><span>enquête${n>1?'s':''} résolue${n>1?'s':''}</span><small>Fins : ${Object.keys(stats.fins||{}).length}/6</small></div><div class="dossiers">${ligneJour()}${dos}<button class="dossier essai" data-a="test"><span class="no">T</span><span class="nom">Niveau test : 6 interrogatoires</span><span class="dif">Essai</span></button></div></div>`;
 }
 // ——— Options : une fenêtre unique, depuis l'accueil comme depuis le jeu ———
@@ -5173,6 +5329,8 @@ function pret(){
     const a=b.dataset.a,v=b.dataset.v;
     if(a==='vote'){const[k,x]=v.split(':');stats.sys=stats.sys||{};stats.sys[k]=x;save();return ouvrirTest()}
     if(a==='jour')return lanceJour();
+    if(a==='partage')return partager();
+    if(a==='expert'){O.expert=!O.expert;save();return accueil()}
     if(a==='tem')return choisirTem(v);
     if(a==='comparer')return comparer();
     if(a==='aide'){const t=aideTexte();closeAll();return say('Basile',t,null,G.porBa)}
@@ -5207,7 +5365,7 @@ function pret(){
       return frappe($('trib-mart'),()=>{$('tribunal').hidden=true;modal=null;startVerite(l)});
     }
     if(a==='raz'){b.dataset.a='raz2';b.textContent='Vraiment tout effacer ?';return}
-    if(a==='raz2'){stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0};G.sauve=null;S=null;save();return accueil()}
+    if(a==='raz2'){stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0,exp:{}};G.sauve=null;S=null;save();return accueil()}
     if(a==='accueil'){$('options').hidden=true;return accueil()}
     if(a==='suite'){const n=LEVELS.findIndex((l,i)=>!stats.res[i]);return neuf(n<0?(S.lv+1)%10:n)}
     if(a==='revoir'){closeAll();return startIntro()}

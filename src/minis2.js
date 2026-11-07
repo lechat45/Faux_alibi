@@ -11,7 +11,7 @@ const parquet=g=>{for(let y=0;y<200;y++)for(let x=0;x<320;x+=4)R(g,tone('#5b3820
 const recouvre=(a,b)=>{const w=Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x),h=Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y);return w>0&&h>0?w*h/(a.w*a.h):0};
 function miniNeuf(type,shell,done,spr,o){
   let fini=false;
-  const gagne=t=>{if(fini)return;fini=true;dire(t||'Trouvé !');son('bon');setTimeout(()=>{if(G.mini||G.pzT)done()},520)};
+  const gagne=t=>{if(fini)return;fini=true;dire(t||'Trouvé !');son('bon');indiceMini(type,o);setTimeout(()=>{if(G.mini||G.pzT)done()},520)};
   if(type==='couches'){
     const{k,g,pos}=toile(shell,"Quelque chose a été glissé dans ce lit. Fais glisser les oreillers et les draps pour les tirer.");
     const col=['#c43a3a','#2f4a3a','#22345a','#7a1a2a','#5a2a6a','#4a6a8a'][int(Math.random,6)];
@@ -62,7 +62,7 @@ function miniNeuf(type,shell,done,spr,o){
     return true;
   }
   if(type==='horloge'){
-    const H0=1+int(Math.random,12),M0=5*int(Math.random,12);let h=(H0+3+int(Math.random,6))%12||12,m=5*int(Math.random,12);
+    const hh=typeof c!=='undefined'&&c&&!c.test?parseInt(HOURS[c.hc]):8+int(Math.random,4),H0=hh%12||12,M0=5*int(Math.random,12);G.horloge={hh,M0};let h=(H0+3+int(Math.random,6))%12||12,m=5*int(Math.random,12);
     const{k,g,pos}=toile(shell,`Un papier coincé derrière le cadran : « ${H0} h ${String(M0).padStart(2,'0')} ». Fais tourner la grande aiguille jusqu'à cette heure.`);
     const cx=160,cy=92,rr=68;let ouvert=0;
     const paint=()=>{if(!$('mg-c'))return;
@@ -113,4 +113,21 @@ function miniNeuf(type,shell,done,spr,o){
     return true;
   }
   return false;
+}
+// Certains mini-jeux livrent aussi un indice sur l'affaire
+function indiceMini(type,o){
+  if(!o||!S||c.test||G.robot)return;
+  S.indices=S.indices||{};if(S.indices[o.id])return;S.indices[o.id]=1;
+  if(type==='horloge'&&G.horloge){const{hh,M0}=G.horloge;note('trace',"Mot dans l'horloge",`Derrière le balancier, un mot griffonné : « Fait à ${hh} h ${String(M0).padStart(2,'0')}. Personne ne saura. » L'heure du crime ?`,'loupe');return}
+  if(type==='piano'){
+    const l=[];c.needed.forEach(q=>{if(q.t==='s'&&!S.asked[q.s+'-'+q.h])l.push([q.s,q.h])});
+    if(!l.length)for(let s=0;s<c.n;s++)for(let h=0;h<HOURS.length;h++)if(!S.asked[s+'-'+h])l.push([s,h]);
+    if(!l.length)return;const[s,h]=l[int(Math.random,l.length)];apprendre(s,h);
+    toast(`Dans la partition, une ligne au crayon : où ${c.suspects[s].prenom} dit avoir été à ${HOURS[h]}`,true);return;
+  }
+  if((type==='couches'||type==='coussins')&&o.room<c.set.rooms.length){
+    const l=[];c.suspects.forEach((su,s)=>{if(c.pos[s].includes(o.room))l.push(s)});if(!l.length)return;
+    const s=l[int(Math.random,l.length)],su=c.suspects[s],e=su.g==='f'?'e':'';
+    note('trace',`Passage de ${su.prenom}`,`${type==='couches'?"Sous l'oreiller":'Entre les coussins'}, un objet à ${su.prenom} : ${su.g==='f'?'elle':'il'} est venu${e} ${c.set.rooms[o.room].d} ce soir.`,'p'+s);
+  }
 }
