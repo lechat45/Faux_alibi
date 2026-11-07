@@ -1249,7 +1249,7 @@ const SH_HAUT=['escalier','secours','shelf','wardrobe','fridge','locker','clock'
 const DIFFW={facile:{lock:1,eni:2,pz:2,bonus:1},moyen:{lock:1,eni:3,pz:3,bonus:1},difficile:{lock:2,eni:4,pz:3,bonus:2},expert:{lock:2,eni:4,pz:3,bonus:2}};
 
 function buildWorld(c){
-  const L=c.set,r=RNG((c.seed*2654435761+c.lv*97+11)>>>0),D=DIFFW[c.key],ET=!c.test&&typeof ETAGES!=='undefined'?ETAGES[c.lv]:null,P=ET?avecEtage(L.plan,ET):L.plan;
+  const L=c.set,r=RNG((c.seed*2654435761+c.lv*97+11)>>>0),D=DIFFW[c.key],ET=!c.test&&c.key==='expert'&&typeof ETAGES!=='undefined'?ETAGES[c.lv]:null,P=ET?avecEtage(L.plan,ET):L.plan;
   const rects=[...P.r,...P.c];
   MW=Math.max(...rects.map(q=>q[0]+q[2]))+3;MH=Math.max(...rects.map(q=>q[1]+q[3]))+3;
   const grid=v=>range(MH).map(()=>Array(MW).fill(v)),t=grid(0),blk=grid(0),res=grid(0),gate=grid(0);
