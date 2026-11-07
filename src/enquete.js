@@ -49,7 +49,9 @@ function pDeduc(){
 function choisirTem(k){
   let l=G.sel||[];const h=k.split('-')[1];
   if(l.includes(k))l=l.filter(q=>q!==k);else{l=l.filter(q=>q.split('-')[1]===h);l.push(k);if(l.length>2)l=l.slice(-2)}
-  G.sel=l;ouvrir('deduc');
+  G.sel=l;
+  if(modal==='mur'){if(l.length===2)return comparer();return rendMur()}
+  ouvrir('deduc');
 }
 function comparer(){
   const[a,b]=G.sel,[p,h]=a.split('-'),[q]=b.split('-'),H=+h,cle=[a,b].sort().join('+');
@@ -57,9 +59,9 @@ function comparer(){
   if(!S.liens.some(z=>z.k===cle)){
     const reg=p==='r'||q==='r',s=+(p==='r'?q:p),t=+q,nom=i=>c.suspects[i].prenom,cf=reg?c.stmts[s][H].room===c.locked.room:conflit(s,t,H);
     const tx=reg?(cf?`${nom(s)} dit avoir été dans une pièce verrouillée à ${HOURS[H]}. Impossible.`:`Le registre ne contredit pas ${nom(s)} à ${HOURS[H]}.`):(cf?`${nom(s)} et ${nom(t)} ne peuvent pas dire vrai tous les deux à ${HOURS[H]}.`:`${nom(s)} et ${nom(t)} peuvent dire vrai tous les deux à ${HOURS[H]}.`);
-    S.liens.unshift({k:cle,c:cf,t:tx});if(cf)son('bon');
+    S.liens.unshift({k:cle,c:cf,t:tx,h:H,p:reg?[s]:[s,t]});if(cf)son('bon');
   }
-  G.sel=[];save();ouvrir('deduc');
+  G.sel=[];save();if(modal==='mur')return rendMur();ouvrir('deduc');
 }
 // ——— Note de fin d'enquête ———
 function noteEnquete(ok){

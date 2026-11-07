@@ -21,6 +21,7 @@ const TUTO=[
  {t:o=>`Examine le présentoir${o?lieuTuto(o):''} : ce qui manque est peut-être l'arme`,cible:vitrineTuto,ok:()=>Object.keys(S.seenRooms).length>0},
  {t:o=>`Interroge aussi ${o?c.suspects[o.s].prenom:'quelqu\'un d\'autre'}${o?lieuTuto(o):''} sur ${HOURS[heureTuto()]}`,cible:()=>suspectTuto(),ok:()=>temoinsTuto()>=2},
  {t:()=>"Calepin, page Déductions : compare ces deux versions",ui:'calepin',ok:()=>(S.liens||[]).length>0},
+ {t:()=>"Ton mur d'enquête est à côté du marteau : ouvre-le",ui:'murb',ok:()=>modal==='mur'},
  {t:()=>"Quand tu sais qui ment, frappe avec le marteau. Une seule accusation !",ui:'marteau',duree:480}
 ];
 function tutoLance(){
@@ -29,7 +30,7 @@ function tutoLance(){
 }
 function tutoMaj(){
   const u=S&&S.tu;$('tuto-p').hidden=!u;
-  ['calepin','marteau'].forEach(n=>$(n).classList.toggle('appel',!!u&&TUTO[u.i].ui===n));
+  ['calepin','marteau','murb'].forEach(n=>$(n).classList.toggle('appel',!!u&&TUTO[u.i].ui===n));
   if(!u){$('but').hidden=true;G.planCible=null;return}
   const q=TUTO[u.i],o=q.cible?q.cible():null,e=$('but');
   G.tutoO=o;

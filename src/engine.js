@@ -18,6 +18,8 @@ const NAMES=[['Inès Marchand','f'],['Paul Ferrand','m'],['Awa Diallo','f'],['Hu
   ['Léo Dumas','m'],['Rose Tessier','f'],['Victor Aubry','m'],['Margot Lacroix','f'],['Elias Weber','m'],['Olga Petrova','f']];
 const VICTIMS=[['Vauquelin','m'],['Delmas','f'],['Sauvage','f'],['Armand','m'],['Castel','m'],['Fontaine','f'],['Grimaud','m'],['Lestrange','f']];
 const MOTIVES=[
+  {k:'dette',dl:["Tu m'avais promis de patienter, {V}. Les huissiers sont à ma porte.","Une dette est une dette.","Alors considère-la comme réglée, {V}."],m:"devait une forte somme à {v} et ne pouvait plus payer",doc:"Une reconnaissance de dette signée par {n}, jamais remboursée.",a:"D'accord, je devais de l'argent. Comme beaucoup de gens ici."},
+  {k:'renvoi',dl:["Vingt ans de service, {V}, et tu me jettes dehors.","Tout le monde est remplaçable.","Toi aussi, {V}."],m:"a perdu sa place à cause de {v}",doc:"Une lettre de renvoi adressée à {n}, signée de {v}.",a:"Oui, on m'a mis à la porte. Ça ne fait pas de moi un assassin."},
   {k:'dette',dl:["Encore une lettre de rappel ce matin, {V}. {m} francs, c'est ça ?","Une dette est une dette. Tu paieras, comme tout le monde.","Voilà, {V}. Tu peux rayer mon nom de ton petit carnet. Nous sommes quittes."],m:'devait une somme énorme à {v}',doc:'Une reconnaissance de dette : {n} doit 40 000 francs à {v}, à rembourser avant la fin du mois.',a:"Bon, oui, je lui devais de l'argent. Beaucoup. Mais tuer son créancier, ça n'efface pas la dette, ça la fait passer aux héritiers."},
   {k:'renvoi',dl:["Vingt ans à te servir, {V}. Et trois lignes pour me jeter dehors.","Personne n'est irremplaçable. Fais tes valises.","Tu avais raison, {V} : personne n'est irremplaçable. Même pas toi."],m:'venait de recevoir sa lettre de renvoi de {v}',doc:"Une lettre de renvoi signée {v}, adressée à {n} : « Vos services ne sont plus requis. »",a:"Vingt ans de loyauté et trois lignes pour me jeter dehors. J'étais furieux, oui. Vous ne l'auriez pas été ?"},
   {k:'brevet',dl:["Tu as signé mon travail de ton nom, {V}. Mes nuits, mes plans, tout.","Une idée appartient à celui qui sait la vendre.","Garde-le, ton brevet, {V}. Là où tu vas, il ne te rapportera plus rien."],m:'accuse {v} de lui avoir volé une invention',doc:"Un brevet au nom de {v}. Dans la marge, griffonné par {n} : « C'était MON idée. »",a:"Cette idée était la mienne. Tout le monde le sait. Je voulais un procès, pas un cadavre."},
@@ -151,14 +153,15 @@ function attempt(r,lv){
 
   // L'arme : deux objets de chaque classe, un seul manque dans la classe du crime
   // Le type d'affaire change les indices et le récit, jamais la logique des témoignages
-  let crime=pick(r,['meurtre','meurtre','poison','suicide','vol']),set1=set;
+  let crime=pick(r,['meurtre','meurtre','poison','suicide','vol','accident','message','chantage']),set1=set;
   if(crime==='poison'){
     set1={...set,rooms:set.rooms.map(q=>({...q}))};
     const P=shuffle(r,POISONS);shuffle(r,range(NR)).slice(0,2).forEach((i,j)=>{set1.rooms[i].o=P[j];set1.rooms[i].c='poison'});
   }
   const dispo=Object.keys(CLASSES).filter(k=>set1.rooms.slice(0,NR).filter(q=>q.c===k).length>=2),sans=dispo.filter(k=>k!=='lourd');
   if(crime==='suicide'&&!sans.length)crime='meurtre';
-  const cls=crime==='poison'?'poison':pick(r,(crime==='suicide'?sans:dispo).filter(k=>k!=='poison'));
+  if(crime==='accident'&&!dispo.includes('lourd'))crime='message';
+  const cls=crime==='poison'?'poison':crime==='accident'?'lourd':pick(r,(crime==='suicide'?sans:dispo).filter(k=>k!=='poison'));
   const vole=pick(r,VOLS);
   const wpn=pick(r,range(NR).filter(i=>set1.rooms[i].c===cls));
   const leurre=pick(r,range(NR).filter(i=>set1.rooms[i].c!==cls));

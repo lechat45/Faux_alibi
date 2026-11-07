@@ -55,7 +55,7 @@ function detailAutopsie(c){
    lame:{les:"Plaie thoracique unique de 3 cm sous le mamelon gauche, profonde de 9 cm. Péricarde et ventricule gauche transpercés.",int:"Coup porté de face, à courte distance, sans trace de lutte.",obj:"lame étroite à un seul tranchant"},
    lien:{les:"Sillon horizontal continu autour du cou, pétéchies conjonctivales, fracture de la corne droite de l'os hyoïde.",int:"Strangulation exercée par-derrière. Aucune défense notable.",obj:"lien souple et résistant"},
    poison:{les:"Aucune plaie. Pupilles très contractées, lèvres bleuies, odeur âcre dans la bouche.",int:"Toxique pris avec une boisson, moins d'une heure avant la mort.",obj:"toxique violent"}}[c.cls];
-  const faux=c.crime==='suicide'?" La mise en scène d'un suicide ne résiste pas à l'examen.":'';
+  const faux=c.crime==='suicide'?" La mise en scène d'un suicide ne résiste pas à l'examen.":c.crime==='accident'?" Une simple chute n'explique pas ces lésions.":'';
   const f=c.vg==='f';
   return{dos:`IML-${n(1000,9899)}`,req:n(1000,4999),med:pick(r,LEGISTES),asst:pick(r,ASSISTANTS),jour:pick(r,JOURS),ht:`${n(7,9)} h ${n(10,55)}`,age:n(42,71),taille:`${f?1:1},${f?n(58,72):n(68,86)} m`,poids:`${f?n(54,72):n(68,94)} kg`,
    piece:c.set.rooms[c.rc].n,lieu:c.set.nom,rect:`${n(29,32)},${n(1,9)} °C`,les:T.les,int:T.int+faux,obj:T.obj,tox:c.cls==='poison'?'présence massive d\'un alcaloïde':'recherche négative',alc:`0,${n(2,9)} g/l`,ville:pick(r,VILLES),casier:n(2,14),ongle:n(0,1)?'Aucun tissu étranger sous les ongles.':'Rien d\'exploitable sous les ongles.',f};

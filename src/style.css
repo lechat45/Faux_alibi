@@ -432,3 +432,62 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .calepin.appel,.marteau.appel{animation:appel .9s ease-in-out infinite}
 @keyframes appel{0%,100%{transform:scale(1)}50%{transform:scale(1.14) rotate(-3deg)}}
 @media (prefers-reduced-motion:reduce){.calepin.appel,.marteau.appel{animation:none;outline:3px solid #ffd23f}}
+/* Mur d'enquête */
+.murb{position:absolute;left:calc(max(10px,env(safe-area-inset-left,0px)) + var(--icone)*1.45);bottom:calc(8px + env(safe-area-inset-bottom,0px));width:calc(var(--icone)*1.2);height:calc(var(--icone)*.92);background-size:100% 100%;image-rendering:pixelated;pointer-events:auto;transition:transform .12s}
+.murb:hover{transform:translateY(-4px)}
+.murb.appel{animation:appel .9s ease-in-out infinite}
+.mur-v{position:absolute;inset:0;z-index:7;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:#2a1a12;color:#1a1626}
+.m-tete{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 14px;background:#3a2416;box-shadow:inset 0 -3px 0 #1f140e}
+.m-tete .croix{position:static}
+.m-ong{display:flex;gap:6px}
+.m-ong button{background:#c8b48a;color:#3a2416;font:600 clamp(14px,2.2vh,17px) var(--f);padding:5px 14px;box-shadow:2px 2px 0 rgba(0,0,0,.4)}
+.m-ong button[aria-selected=true]{background:#f6ecd0;color:#8a2830}
+.planche-m{position:relative;overflow:hidden;box-shadow:inset 0 0 0 8px #5b3820,inset 0 0 40px rgba(30,16,8,.5);touch-action:none}
+#fils{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.carte-m{position:absolute;width:clamp(78px,11%,128px);padding:5px 5px 7px;background:#f4ecd8;box-shadow:2px 3px 0 rgba(30,16,8,.45);display:grid;justify-items:center;text-align:center;gap:1px;cursor:grab;user-select:none;-webkit-user-select:none;transform:rotate(-1deg);touch-action:none}
+.carte-m:nth-child(2n){transform:rotate(1.2deg)}
+.carte-m.prise{cursor:grabbing;z-index:5;box-shadow:5px 7px 0 rgba(30,16,8,.45)}
+.carte-m.sel{outline:3px solid #d8302a}
+.carte-m img{width:100%;image-rendering:pixelated;pointer-events:none}
+.carte-m b{font:700 clamp(12px,1.9vh,15px)/1.1 var(--f)}
+.carte-m small{font:400 clamp(12px,1.8vh,14px)/1.05 var(--main);color:#4a3a2a}
+.carte-m.c-vic{background:#2a2430;color:#f0ecdc}.carte-m.c-vic small{color:#c8c4d8}.carte-m.c-vic img{filter:grayscale(1)}
+.carte-m.c-doc{background:#fbf3dc;box-shadow:2px 3px 0 rgba(30,16,8,.45),inset 0 -14px 0 -12px #c8b48a}
+.carte-m.c-note{background:#ffe88a}
+.epingle{position:absolute;top:-4px;left:50%;width:9px;height:9px;margin-left:-4px;border-radius:50%;background:#d8302a;box-shadow:inset 2px 2px 0 #ff9a8a,1px 2px 0 rgba(30,16,8,.5);z-index:3}
+.m-lire{background:#2a3a6a;color:#fff4e0;font:600 12px var(--f);padding:1px 7px;margin-top:2px}
+.fil-l{position:absolute;z-index:3;transform:translate(-50%,-50%);background:#fff8e4;color:#a3262a;font:700 12px var(--f);padding:0 6px;box-shadow:1px 1px 0 rgba(30,16,8,.5)}
+.m-aide{background:#3a2416;color:#e8dcc0;font:400 clamp(14px,2vh,17px) var(--main);padding:3px 14px;text-align:center}
+.m-chrono{grid-row:2/4;overflow:auto;padding:12px 14px;display:grid;align-content:start;gap:8px;min-height:0}
+.m-msg{background:#fff8e4;padding:5px 12px;font:400 19px/1.15 var(--main);box-shadow:2px 3px 0 rgba(30,16,8,.4);justify-self:center;text-align:center;max-width:760px}
+.m-msg.bon{background:#c8ecc8}
+.chrono-w{overflow-x:auto}
+.chrono{border-collapse:separate;border-spacing:4px;width:100%;min-width:560px;table-layout:fixed;margin:0 auto;max-width:1100px}
+.chrono thead th{background:#f4ecd8;font:700 16px var(--f);padding:3px;color:#2a3a6a}
+.chrono thead th:first-child{background:none;width:118px}
+.chrono thead .crime{background:#d8483e;color:#fff4e0}
+.chrono td{padding:0;vertical-align:stretch}
+.nomh{display:flex;align-items:center;gap:5px;width:100%;background:#f4ecd8;color:var(--encre);padding:2px 5px;font:600 14px var(--f);position:relative}
+.nomh img{width:32px;height:32px;image-rendering:pixelated}
+.nomh i{position:absolute;right:2px;top:-4px;font:700 11px var(--f);font-style:normal;background:#d8302a;color:#fff;padding:0 3px;transform:rotate(4deg)}
+.jet{display:grid;width:100%;height:100%;min-height:48px;align-content:center;background:#fff8e4;color:#1a1626;padding:3px;box-shadow:1px 2px 0 rgba(30,16,8,.4);text-align:center}
+.jet b{font:400 clamp(14px,2vh,17px)/1.05 var(--main);color:#2a3a6a}
+.jet small{font:400 clamp(12px,1.7vh,15px)/1.05 var(--main);color:#4a3a2a}
+.jet.sel{background:#ffe45c}
+.jet.faux{box-shadow:inset 0 0 0 3px #d8302a}
+.chrono .crime .jet{background:#fde4dc}
+.chrono .crime .jet.sel{background:#ffe45c}
+.chrono .vide{display:grid;place-items:center;height:100%;min-height:48px;color:rgba(255,248,228,.75);font:700 18px var(--f)}
+.chrono tr.hyp .jet{opacity:.55;background:#d8d0bc}
+.chrono tr.hyp .nomh{background:#ffd0c8}
+/* Fins et enquête du jour */
+.fin-nom{display:grid;gap:2px;background:#2a2430;color:#f0ecdc;padding:7px 12px;margin:4px 0}
+.fin-nom b{font:700 19px var(--f);color:#ffd23f}
+.fin-nom span{font:400 18px/1.15 var(--main)}
+.dossier.jour{background:#8a2830;color:#fff4e0}
+.dossier.jour .no,.dossier.jour .dif{color:#ffd23f}
+.tampon small{display:block;font-size:12px}
+@media (max-width:640px){
+  .murb{left:calc(10px + var(--icone)*1.3)}
+  .carte-m{width:20%;padding:3px}
+}
