@@ -29,7 +29,7 @@ function neuf(lv,seed,intro=true){
   S={seed,lv,t:{},liens:[],aides:0,jeu:0,evDocs:[],stress:{},vues:{},sujets:{},traces:{},asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
   Object.values(W.doors).forEach(d=>{if(d.lock===null)S.open[d.id]=1});
   if(Cut)endCut();
-  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('murb').hidden=lv===10;$('but').hidden=true;$('tuto-p').hidden=true;G.planCible=null;G.tutoO=null;
+  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('but').hidden=true;$('tuto-p').hidden=true;G.planCible=null;G.tutoO=null;
   cam.x=S.p.x-VW/2;cam.y=S.p.y-VH/2;G.snap=true;
   S.papiers.push(W.iAuto);
   save();render();
@@ -61,7 +61,7 @@ function save(){try{localStorage.setItem(STORE,JSON.stringify({S:S&&!(c&&c.test)
 function chargeStats(){try{const o=JSON.parse(localStorage.getItem(STORE));if(o){stats=Object.assign(stats,o.stats);O=Object.assign(O,o.O);G.sauve=o.S&&!o.S.fin?o.S:null}}catch(e){}}
 function continuer(){
   try{
-    S=G.sauve;c=generate(S.seed,S.lv);habiller(c);W=buildWorld(c);prep();(S.evDocs||[]).forEach(d=>W.docs.push(d));G.choix=[];G.sel=[];G.noir=0;G.plan=null;$('marteau').hidden=false;$('murb').hidden=false;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
+    S=G.sauve;c=generate(S.seed,S.lv);habiller(c);W=buildWorld(c);prep();(S.evDocs||[]).forEach(d=>W.docs.push(d));G.choix=[];G.sel=[];G.noir=0;G.plan=null;$('marteau').hidden=false;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
     if(!S.introDone)startIntro();
   }catch(e){neuf(0)}
 }
@@ -127,7 +127,7 @@ function art(){
   G.portes={};
   G.ic={};G.url={};
   G.map=buildMap();G.light=buildLight();G.masks={};
-  $('calepin').style.backgroundImage=`url(${calepinSprite().toDataURL()})`;$('murb').style.backgroundImage=`url(${murIcone()})`;
+  $('calepin').style.backgroundImage=`url(${calepinSprite().toDataURL()})`;
   $('jeu').style.cursor=G.curN;
 }
 function icone(id,col){const k=id+(col||'');if(!G.ic[k])G.ic[k]=iconSprite(id,col);return G.ic[k]}
@@ -321,7 +321,7 @@ function typeBulle(){
   if(G.bI<G.bTxt.length){G.bI=Math.min(G.bTxt.length,G.bI+{lent:1,normal:2,rapide:5,direct:9999}[O.texte]);const e=$('btxt');if(e)e.textContent=G.bTxt.slice(0,G.bI)}
 }
 const finBulle=()=>{if(G.bI<G.bTxt.length){G.bI=G.bTxt.length;$('btxt').textContent=G.bTxt;return false}return true};
-function closeAll(){modal=null;$('bulle').hidden=true;$('pz').hidden=true;$('carnet').hidden=true;$('doc').hidden=true;$('options').hidden=true;$('tribunal').hidden=true;$('mur-v').hidden=true;G.pzT=null;G.mini=null;$('jeu').focus({preventScroll:true});if(S)render()}
+function closeAll(){modal=null;$('bulle').hidden=true;$('pz').hidden=true;$('carnet').hidden=true;$('doc').hidden=true;$('options').hidden=true;$('tribunal').hidden=true;G.pzT=null;G.mini=null;$('jeu').focus({preventScroll:true});if(S)render()}
 const at0=()=>({x:S.p.x,y:S.p.y});
 function say(nom,txt,at,por){modal='dlg';bulle({at:at||at0(),nom,txt,por,btn:[{t:'Compris',f:closeAll}]})}
 function talk(o,msg,refus,e){
@@ -691,7 +691,7 @@ function vue(html,apres){
 }
 function ouvrirDoc(i){
   const d=W.docs[i];
-  son('page');vue(DOC_HTML[d.k](d.p),e=>{const n=e.querySelector('.d'),[w,h]=FORMATS[d.k],u=G.url['doc'+d.k]||(G.url['doc'+d.k]=docFond(d.k));n.style.backgroundImage=`url(${u})`;n.style.width=`${w*3}px`;n.style.minHeight=`${h*3}px`;n.style.zoom=Math.min(1,(innerWidth-32)/(w*3))});
+  son('page');vue(DOC_HTML[d.k](d.p),e=>{const n=e.querySelector('.d'),[w,h]=FORMATS[d.k],u=G.url['doc'+d.k]||(G.url['doc'+d.k]=docFond(d.k));n.style.backgroundImage=`url(${u})`;const dispo=innerWidth-24,z=Math.max(.86,Math.min(1,dispo/(w*3)));n.style.width=`${Math.min(w*3,Math.floor(dispo/z))}px`;n.style.minHeight=`${Math.min(h*3,Math.round((innerHeight-24)/z))}px`;n.style.zoom=z});
   if(S.papiers.includes(i)&&d.lu)return;
   d.lu=1;
   if(!S.papiers.includes(i))S.papiers.push(i);
@@ -754,9 +754,9 @@ function pTemoins(){
   const tete=HOURS.map((h,i)=>`<th class="${c.win.includes(i)?'crime':''}">${h}</th>`).join('');
   const lignes=c.suspects.map((su,s)=>`<tr><th><img alt="" src="${imgURL('p'+s)}"><span>${esc(su.prenom)}</span></th>${HOURS.map((_,h)=>{
     const cl=c.win.includes(h)?'crime':'';
-    if(!S.asked[s+'-'+h])return`<td class="${cl}"><i>?</i></td>`;
+    if(!S.asked[s+'-'+h])return`<td class="${cl}" data-h="${HOURS[h]}"><i>?</i></td>`;
     const st=c.stmts[s][h],a=st.with.map(t=>c.suspects[t].prenom);if(st.vic)a.push(c.vName);
-    return`<td class="${cl}"><b>${esc(c.set.rooms[st.room].n)}</b><small>${a.length?'avec '+esc(liste(a)):(su.g==='f'?'seule':'seul')}</small></td>`;
+    return`<td class="${cl}" data-h="${HOURS[h]}"><b>${esc(c.set.rooms[st.room].n)}</b><small>${a.length?'avec '+esc(liste(a)):(su.g==='f'?'seule':'seul')}</small></td>`;
   }).join('')}</tr>`).join('');
   return`<h2>Emploi du temps</h2><p class="main">En rouge, l'heure du meurtre d'après l'autopsie.</p><div class="edt-wrap"><table class="edt"><thead><tr><th></th>${tete}</tr></thead><tbody>${lignes}</tbody></table></div><textarea id="note-t" data-n="t" rows="2" placeholder="Mes notes..." aria-label="Mes notes">${esc(S.notes.t||'')}</textarea>`;
 }
@@ -855,7 +855,7 @@ function render(){
 // ——— Page d'accueil ———
 function ligneJour(){const j=jourDuJour(),f=(stats.jours||{})[j.k];return`<button class="dossier jour" data-a="jour"><span class="no">J</span><span class="nom">Enquête du jour : ${esc(LEVELS[j.lv].nom)}</span><span class="dif">${f?`Faite · ${f}`:stats.serieJ?`Série : ${stats.serieJ}`:'Nouvelle'}</span></button>`}
 function accueil(){
-  closeAll();enJeu=false;$('but').hidden=true;$('tuto-p').hidden=true;['calepin','marteau','murb'].forEach(n=>$(n).classList.remove('appel'));if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
+  closeAll();enJeu=false;$('but').hidden=true;$('tuto-p').hidden=true;['calepin','marteau'].forEach(n=>$(n).classList.remove('appel'));if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
   $('accueil').hidden=false;$('prompt').hidden=true;$('lieu').hidden=true;$('amb').hidden=true;$('hud').hidden=true;
   const n=stats.gagnees,suite=LEVELS.findIndex((l,i)=>!stats.res[i]);
   const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${DIFF[l.diff].label}</span>${stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
@@ -1159,17 +1159,13 @@ function pret(){
     const b=e.target.closest('[data-a]');if(!b)return;
     const a=b.dataset.a,v=b.dataset.v;
     if(a==='vote'){const[k,x]=v.split(':');stats.sys=stats.sys||{};stats.sys[k]=x;save();return ouvrirTest()}
-    if(a==='mur')return ouvrirMur();
-    if(a==='murtab')return ouvrirMur(v);
-    if(a==='fil')return filSuivant(+v);
-    if(a==='hyp'){const M=S.mur;M.hyp[v]=!M.hyp[v];save();return rendMur()}
     if(a==='jour')return lanceJour();
     if(a==='tem')return choisirTem(v);
     if(a==='comparer')return comparer();
     if(a==='aide'){const t=aideTexte();closeAll();return say('Basile',t,null,G.porBa)}
     if(a==='test')return neuf(10,4321,false);
     if(a==='onglet')return ouvrir(v);
-    if(a==='fermer'){if(modal==='doc'&&!$('mur-v').hidden){$('doc').hidden=true;modal='mur';return}if(modal==='doc'&&G.tab&&!$('carnet').hidden){$('doc').hidden=true;modal='carnet';return}return closeAll()}
+    if(a==='fermer'){if(modal==='doc'&&G.tab&&!$('carnet').hidden){$('doc').hidden=true;modal='carnet';return}return closeAll()}
     if(a==='lire')return ouvrirDoc(+v);
     if(a==='objet')return vueObjet(v,'Dans ma poche');
     if(a==='nouvelle'||a==='niveau')return neuf(+v);

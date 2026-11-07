@@ -50,7 +50,6 @@ function choisirTem(k){
   let l=G.sel||[];const h=k.split('-')[1];
   if(l.includes(k))l=l.filter(q=>q!==k);else{l=l.filter(q=>q.split('-')[1]===h);l.push(k);if(l.length>2)l=l.slice(-2)}
   G.sel=l;
-  if(modal==='mur'){if(l.length===2)return comparer();return rendMur()}
   ouvrir('deduc');
 }
 function comparer(){
@@ -61,7 +60,7 @@ function comparer(){
     const tx=reg?(cf?`${nom(s)} dit avoir été dans une pièce verrouillée à ${HOURS[H]}. Impossible.`:`Le registre ne contredit pas ${nom(s)} à ${HOURS[H]}.`):(cf?`${nom(s)} et ${nom(t)} ne peuvent pas dire vrai tous les deux à ${HOURS[H]}.`:`${nom(s)} et ${nom(t)} peuvent dire vrai tous les deux à ${HOURS[H]}.`);
     S.liens.unshift({k:cle,c:cf,t:tx,h:H,p:reg?[s]:[s,t]});if(cf)son('bon');
   }
-  G.sel=[];save();if(modal==='mur')return rendMur();ouvrir('deduc');
+  G.sel=[];save();ouvrir('deduc');
 }
 // ——— Note de fin d'enquête ———
 function noteEnquete(ok){

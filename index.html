@@ -93,7 +93,7 @@ body.calme *{animation:none!important;transition:none!important}
 
 /* Le calepin : papier, spirale, marque-pages */
 .carnet{position:absolute;inset:0;background:rgba(5,4,12,.66);display:grid;grid-template-rows:minmax(0,1fr);place-items:center;padding:12px 14px;z-index:6;overflow:hidden}
-.livret{position:relative;width:min(900px,calc(100% - 112px));height:min(640px,calc(100vh - 28px));display:flex;min-height:0}
+.livret{position:relative;width:min(900px,calc(100% - 140px));margin-right:112px;height:min(640px,calc(100vh - 28px));display:flex;min-height:0}
 .spirale{flex:none;width:30px;background:repeating-linear-gradient(transparent 0 12px,#8a93a8 12px 18px,#d8dce4 18px 20px,transparent 20px 30px);margin-right:-13px;z-index:2}
 .feuille{position:relative;flex:1;min-width:0;background:#eadcb8 var(--grain);background-size:64px;color:var(--encre);box-shadow:6px 8px 0 rgba(0,0,0,.5),inset 22px 0 18px -18px rgba(90,70,30,.5);padding:18px 18px 16px 34px;display:grid;grid-template-rows:minmax(0,1fr);border-radius:3px 8px 8px 3px}
 .feuille::before{content:"";position:absolute;inset:0 0 0 0;pointer-events:none;background:repeating-linear-gradient(transparent 0 27px,rgba(70,90,150,.2) 27px 28px);border-radius:inherit}
@@ -104,6 +104,7 @@ body.calme *{animation:none!important;transition:none!important}
 .signets{position:absolute;left:100%;top:60px;display:flex;flex-direction:column;gap:6px;width:112px;z-index:1}
 .signets button{background:var(--c);color:#fff8e8;font:600 14px var(--f);padding:6px 14px 6px 12px;text-align:left;width:94px;margin-left:-6px;box-shadow:2px 2px 0 rgba(0,0,0,.45);transition:width .1s;clip-path:polygon(0 0,100% 0,90% 50%,100% 100%,0 100%);text-shadow:1px 1px 0 rgba(0,0,0,.35)}
 .signets button:hover{width:102px}
+.signets button{min-height:32px}
 .signets button[aria-selected="true"]{width:112px}
 .corps h2{font:700 1.6rem/1.15 var(--f);color:#8a2830;margin-bottom:8px;padding-right:30px}
 .corps h3{font:600 1.15rem var(--f);color:var(--stylo);margin:12px 0 6px}
@@ -231,7 +232,7 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .d[data-k=testament]{padding:42px 48px 36px}
 .tampon-p{position:absolute;right:124px;bottom:28px;width:144px;height:144px;border:4px double #2a3a8a;border-radius:50%;color:#2a3a8a;display:grid;place-content:center;justify-items:center;text-align:center;transform:rotate(-13deg);opacity:.76;mix-blend-mode:multiply}
 .tampon-p b{font:700 21px/1 var(--f)}
-.tampon-p small{font:600 11px/1.15 var(--f)}
+.tampon-p small{font:600 12.5px/1.15 var(--f)}
 .objet{background:#f4ead0 var(--grain);display:grid;justify-items:center;text-align:center;width:min(380px,100%);color:#1a1626;padding:24px;gap:8px;box-shadow:6px 8px 0 rgba(0,0,0,.5);font:600 17px/1.3 var(--f)}
 .objet h4{font:700 1.4rem var(--f)}
 .objet img{width:252px;height:252px;max-width:100%;image-rendering:pixelated}
@@ -358,7 +359,7 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .edt th,.edt td{border:2px solid #2a3a6a;padding:3px 3px;vertical-align:middle;text-align:center;font-weight:400;background:none}
 .edt thead th{font:700 16px var(--f);color:#2a3a6a}
 .edt thead th:first-child{width:clamp(70px,17cqw,120px)}
-.edt tbody th{text-align:left;font:600 clamp(11px,2.2cqw,14px) var(--f);color:#1a1626;overflow:hidden}
+.edt tbody th{text-align:left;font:600 clamp(13px,2.2cqw,15px) var(--f);color:#1a1626;overflow:hidden}
 .edt tbody th img{width:clamp(18px,4.4cqw,30px);height:auto;image-rendering:pixelated;vertical-align:middle;margin-right:5px}
 .edt td b{display:block;font-weight:400;font-size:clamp(13px,2.7cqw,18px);line-height:1.05;color:#2a3a6a}
 .edt td small{font-size:clamp(12px,2.4cqw,16px);line-height:1.05;color:#4a3a2a;display:block}
@@ -441,54 +442,6 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .calepin.appel,.marteau.appel{animation:appel .9s ease-in-out infinite}
 @keyframes appel{0%,100%{transform:scale(1)}50%{transform:scale(1.14) rotate(-3deg)}}
 @media (prefers-reduced-motion:reduce){.calepin.appel,.marteau.appel{animation:none;outline:3px solid #ffd23f}}
-/* Mur d'enquête */
-.murb{position:absolute;left:calc(max(10px,env(safe-area-inset-left,0px)) + var(--icone)*1.45);bottom:calc(8px + env(safe-area-inset-bottom,0px));width:calc(var(--icone)*1.2);height:calc(var(--icone)*.92);background-size:100% 100%;image-rendering:pixelated;pointer-events:auto;transition:transform .12s}
-.murb:hover{transform:translateY(-4px)}
-.murb.appel{animation:appel .9s ease-in-out infinite}
-.mur-v{position:absolute;inset:0;z-index:7;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:#2a1a12;color:#1a1626}
-.m-tete{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 14px;background:#3a2416;box-shadow:inset 0 -3px 0 #1f140e}
-.m-tete .croix{position:static}
-.m-ong{display:flex;gap:6px}
-.m-ong button{background:#c8b48a;color:#3a2416;font:600 clamp(14px,2.2vh,17px) var(--f);padding:5px 14px;box-shadow:2px 2px 0 rgba(0,0,0,.4)}
-.m-ong button[aria-selected=true]{background:#f6ecd0;color:#8a2830}
-.planche-m{position:relative;overflow:hidden;box-shadow:inset 0 0 0 8px #5b3820,inset 0 0 40px rgba(30,16,8,.5);touch-action:none}
-#fils{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
-.carte-m{position:absolute;width:clamp(78px,11%,128px);padding:5px 5px 7px;background:#f4ecd8;box-shadow:2px 3px 0 rgba(30,16,8,.45);display:grid;justify-items:center;text-align:center;gap:1px;cursor:grab;user-select:none;-webkit-user-select:none;transform:rotate(-1deg);touch-action:none}
-.carte-m:nth-child(2n){transform:rotate(1.2deg)}
-.carte-m.prise{cursor:grabbing;z-index:5;box-shadow:5px 7px 0 rgba(30,16,8,.45)}
-.carte-m.sel{outline:3px solid #d8302a}
-.carte-m img{width:100%;image-rendering:pixelated;pointer-events:none}
-.carte-m b{font:700 clamp(12px,1.9vh,15px)/1.1 var(--f)}
-.carte-m small{font:400 clamp(12px,1.8vh,14px)/1.05 var(--main);color:#4a3a2a}
-.carte-m.c-vic{background:#2a2430;color:#f0ecdc}.carte-m.c-vic small{color:#c8c4d8}.carte-m.c-vic img{filter:grayscale(1)}
-.carte-m.c-doc{background:#fbf3dc;box-shadow:2px 3px 0 rgba(30,16,8,.45),inset 0 -14px 0 -12px #c8b48a}
-.carte-m.c-note{background:#ffe88a}
-.epingle{position:absolute;top:-4px;left:50%;width:9px;height:9px;margin-left:-4px;border-radius:50%;background:#d8302a;box-shadow:inset 2px 2px 0 #ff9a8a,1px 2px 0 rgba(30,16,8,.5);z-index:3}
-.m-lire{background:#2a3a6a;color:#fff4e0;font:600 12px var(--f);padding:1px 7px;margin-top:2px}
-.fil-l{position:absolute;z-index:3;transform:translate(-50%,-50%);background:#fff8e4;color:#a3262a;font:700 12px var(--f);padding:0 6px;box-shadow:1px 1px 0 rgba(30,16,8,.5)}
-.m-aide{background:#3a2416;color:#e8dcc0;font:400 clamp(14px,2vh,17px) var(--main);padding:3px 14px;text-align:center}
-.m-chrono{grid-row:2/4;overflow:auto;padding:12px 14px;display:grid;align-content:start;gap:8px;min-height:0}
-.m-msg{background:#fff8e4;padding:5px 12px;font:400 19px/1.15 var(--main);box-shadow:2px 3px 0 rgba(30,16,8,.4);justify-self:center;text-align:center;max-width:760px}
-.m-msg.bon{background:#c8ecc8}
-.chrono-w{overflow-x:auto}
-.chrono{border-collapse:separate;border-spacing:4px;width:100%;min-width:560px;table-layout:fixed;margin:0 auto;max-width:1100px}
-.chrono thead th{background:#f4ecd8;font:700 16px var(--f);padding:3px;color:#2a3a6a}
-.chrono thead th:first-child{background:none;width:118px}
-.chrono thead .crime{background:#d8483e;color:#fff4e0}
-.chrono td{padding:0;vertical-align:stretch}
-.nomh{display:flex;align-items:center;gap:5px;width:100%;background:#f4ecd8;color:var(--encre);padding:2px 5px;font:600 14px var(--f);position:relative}
-.nomh img{width:32px;height:32px;image-rendering:pixelated}
-.nomh i{position:absolute;right:2px;top:-4px;font:700 11px var(--f);font-style:normal;background:#d8302a;color:#fff;padding:0 3px;transform:rotate(4deg)}
-.jet{display:grid;width:100%;height:100%;min-height:48px;align-content:center;background:#fff8e4;color:#1a1626;padding:3px;box-shadow:1px 2px 0 rgba(30,16,8,.4);text-align:center}
-.jet b{font:400 clamp(14px,2vh,17px)/1.05 var(--main);color:#2a3a6a}
-.jet small{font:400 clamp(12px,1.7vh,15px)/1.05 var(--main);color:#4a3a2a}
-.jet.sel{background:#ffe45c}
-.jet.faux{box-shadow:inset 0 0 0 3px #d8302a}
-.chrono .crime .jet{background:#fde4dc}
-.chrono .crime .jet.sel{background:#ffe45c}
-.chrono .vide{display:grid;place-items:center;height:100%;min-height:48px;color:rgba(255,248,228,.75);font:700 18px var(--f)}
-.chrono tr.hyp .jet{opacity:.55;background:#d8d0bc}
-.chrono tr.hyp .nomh{background:#ffd0c8}
 /* Fins et enquête du jour */
 .fin-nom{display:grid;gap:2px;background:#2a2430;color:#f0ecdc;padding:7px 12px;margin:4px 0}
 .fin-nom b{font:700 19px var(--f);color:#ffd23f}
@@ -496,9 +449,84 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .dossier.jour{background:#8a2830;color:#fff4e0}
 .dossier.jour .no,.dossier.jour .dif{color:#ffd23f}
 .tampon small{display:block;font-size:12px}
-@media (max-width:640px){
-  .murb{left:calc(10px + var(--icone)*1.3)}
-  .carte-m{width:20%;padding:3px}
+/* ——— Petits écrans ———
+   Règles pensées d'abord pour un téléphone : rien ne dépasse sur les côtés, tout défile en hauteur,
+   et chaque bouton se touche au doigt sans zoomer. */
+.pz,.pop{display:flex;overflow-y:auto;overscroll-behavior:contain}
+.pz>*,.pop>*{margin:auto;max-width:100%}
+.carnet,.doc,.accueil,.tribunal,.pz,.pop{overscroll-behavior:contain}
+.plan-mini span#ici{font-size:max(13px,calc(11px + .35vmin))}
+.tuto-p{font-size:14px;padding:4px 10px}
+.tampon small{font-size:13px}
+.opt input[type=range]{height:32px}
+@media (pointer:coarse){
+  .bulle .etiq,.dossier-acc .etiq{min-height:40px}
+  .signets button{min-height:38px}
+}
+@media (max-width:820px){
+  .signets button,.signets button:hover,.signets button[aria-selected="true"]{min-height:36px;padding:6px 11px;font-size:15px}
+  .livret{width:100%;margin-right:0}
+  .feuille{padding:14px 12px 12px 24px}
+  .feuille::after{left:16px}
+  .carnet{padding:8px max(8px,env(safe-area-inset-right,0px)) 8px max(8px,env(safe-area-inset-left,0px))}
+}
+@media (max-width:560px){
+  .acc-g{background:rgba(8,6,20,.78);padding:14px 16px;box-shadow:4px 5px 0 rgba(0,0,0,.5);justify-self:stretch;max-width:none}
+  .acc-ui{padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px));gap:30px}
+  .acc-g h1{font-size:clamp(3rem,17vw,4.4rem)}
+  .dossier{font-size:15px;min-height:42px;padding:5px 8px}
+  .dossier i{right:58px}
+  .doc{padding:58px 12px 12px}
+  .d{padding:30px 18px 28px 22px;font-size:20px}
+  .d .marge.haute{position:static;width:auto;transform:rotate(-2deg)}
+  .d .signe{padding-right:0}
+  .d .ent.dr{padding-left:0}
+  .bulle{font-size:18px;padding:8px 10px}
+  .bulle .choix{max-height:42vh}
+  .tampon{right:0}
+  .d .cols{grid-template-columns:minmax(0,1fr);gap:10px}
+  .d .cases{grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:4px}
+  .d table.led th,.d table.led td{padding:0 4px}
+  .d table.led th{font-size:14px}
+  .d table.led td.h{font-size:19px}
+  .d[data-k=telegramme],.d[data-k=registre]{padding:24px 14px}
+  .d .fiche-c{position:static;margin-top:10px}
+  .tampon-p{position:relative;right:auto;bottom:auto;align-self:flex-end;margin-top:8px;width:128px;height:128px}
+  .d[data-k=carte] .dem,.d[data-k=carte] .dest,.d[data-k=carte] .obl{position:static;width:auto;transform:none}
+  .d[data-k=carte] .dest{line-height:1.4}
+  .d .cote{padding-top:20px}
+  .d .bande{height:auto;line-height:1.4}
+  /* L'emploi du temps devient une fiche par suspect */
+  .edt-wrap{overflow:visible}
+  .edt,.edt tbody{display:block;background:none}
+  .edt thead{display:none}
+  .edt tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-bottom:8px;padding:5px;border:2px solid #2a3a6a;background:rgba(255,252,240,.55)}
+  .edt tbody th{grid-column:1/-1;display:flex;align-items:center;gap:6px;border:0;padding:0;font-size:16px}
+  .edt tbody th img{width:28px}
+  .edt td{display:grid;align-content:center;gap:1px;min-height:46px;padding:4px;border:1px solid rgba(42,58,106,.45)}
+  .edt td::before{content:attr(data-h);font:700 14px var(--f);color:#2a3a6a}
+  .edt td.crime::before{color:#c82a20}
+  .edt td b{font-size:17px}
+  .edt td small{font-size:15px}
+}
+@media (max-width:640px),(max-height:500px){
+  .tribunal{display:flex;flex-direction:column;overflow-y:auto}
+  .tribunal>*{flex:none}
+  .alignes{overflow:visible;min-height:auto}
+  .tribunal>footer{position:sticky;bottom:0;z-index:2}
+}
+@media (max-height:500px){
+  .alignes{grid-template-columns:repeat(var(--n),minmax(0,1fr))}
+  .aligne img{max-height:34vh}
+  .livret{height:calc(100vh - 16px)}
+  .signets{top:6px;gap:4px}
+  .bulle .choix{max-height:none}
+  .bulle{max-height:calc(100% - 16px);overflow-y:auto}
+}
+.passer{min-height:40px}
+@media (max-width:640px),(max-height:500px){
+  .aligne small{font-size:13.5px}
+  .dossier-acc .etiq{font-size:14px}
 }
 </style>
 </head>
@@ -508,7 +536,6 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
   <div id="lieu" class="lieu" hidden></div>
   <div id="hud" class="hud" hidden>
     <button id="engrenage" class="engrenage" data-a="reglages" aria-label="Options"><i id="eng1"></i></button>
-    <button id="murb" class="murb" data-a="mur" aria-label="Mur d'enquête"></button>
     <button id="marteau" class="marteau" data-a="marteau" aria-label="Accuser"><canvas id="mart" width="80" height="68"></canvas></button>
     <button id="calepin" class="calepin" data-a="onglet" data-v="calepin" aria-label="Ouvrir le calepin"><span id="neuf" class="neuf" hidden></span></button>
     <div class="plan-mini"><canvas id="mini" aria-hidden="true"></canvas><span id="ici"></span><span id="plan-nom" class="plan-nom" hidden></span></div>
@@ -521,7 +548,6 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
   <div id="bulle" class="bulle" hidden></div>
   <div id="carte" class="carte" hidden></div>
   <div id="carnet" class="carnet" hidden></div>
-  <div id="mur-v" class="mur-v" hidden></div>
   <div id="pz" class="pz" hidden></div>
   <div id="doc" class="doc" hidden></div>
   <button id="passer" class="passer" hidden>Passer la scène</button>
@@ -3088,7 +3114,6 @@ function choisirTem(k){
   let l=G.sel||[];const h=k.split('-')[1];
   if(l.includes(k))l=l.filter(q=>q!==k);else{l=l.filter(q=>q.split('-')[1]===h);l.push(k);if(l.length>2)l=l.slice(-2)}
   G.sel=l;
-  if(modal==='mur'){if(l.length===2)return comparer();return rendMur()}
   ouvrir('deduc');
 }
 function comparer(){
@@ -3099,7 +3124,7 @@ function comparer(){
     const tx=reg?(cf?`${nom(s)} dit avoir été dans une pièce verrouillée à ${HOURS[H]}. Impossible.`:`Le registre ne contredit pas ${nom(s)} à ${HOURS[H]}.`):(cf?`${nom(s)} et ${nom(t)} ne peuvent pas dire vrai tous les deux à ${HOURS[H]}.`:`${nom(s)} et ${nom(t)} peuvent dire vrai tous les deux à ${HOURS[H]}.`);
     S.liens.unshift({k:cle,c:cf,t:tx,h:H,p:reg?[s]:[s,t]});if(cf)son('bon');
   }
-  G.sel=[];save();if(modal==='mur')return rendMur();ouvrir('deduc');
+  G.sel=[];save();ouvrir('deduc');
 }
 // ——— Note de fin d'enquête ———
 function noteEnquete(ok){
@@ -3516,108 +3541,6 @@ function clemence(fin){
 }
 function pFinNom(){const f=S.fin,q=FINS[f.cle];return q?`<div class="fin-nom"><b>${esc(q[0])}</b><span>${esc(q[1])}</span></div>`:''}
 
-// Le mur d'enquête : photos et papiers à épingler, fils rouges à tendre, et la chronologie de la nuit.
-const ETIQ_FIL=['?','Alibi','Mobile','Complice','Ment'];
-function liegeURL(){
-  if(G.url.liege)return G.url.liege;
-  const[k,g]=cv(96,96);
-  for(let y=0;y<96;y++)for(let x=0;x<96;x++){const n=noise(x,y,6);R(g,n>.95?'#d8b888':n<.08?'#7a5430':tone('#a87e4c',(noise(x>>1,y>>1,5)-.5)*.22),x,y)}
-  return G.url.liege=k.toDataURL();
-}
-function murIcone(){
-  const[k,g]=cv(34,26);box(g,0,0,34,26,'#5b3820');
-  for(let y=2;y<24;y++)for(let x=2;x<32;x++)R(g,tone('#a87e4c',(noise(x,y,6)-.5)*.3),x,y);
-  [[5,5,'#ece6da'],[20,4,'#f4ecd8'],[12,14,'#ece6da']].forEach(([x,y,c0])=>{R(g,c0,x,y,9,8);R(g,'#3a4a6a',x+1,y+1,7,4)});
-  [[[9,5],[24,4]],[[24,4],[16,14]]].forEach(([a,b])=>{const n=Math.max(Math.abs(b[0]-a[0]),Math.abs(b[1]-a[1]));for(let i=0;i<=n;i++)R(g,'#d8302a',Math.round(a[0]+(b[0]-a[0])*i/n),Math.round(a[1]+(b[1]-a[1])*i/n))});
-  [[9,5],[24,4],[16,14]].forEach(([x,y])=>R(g,'#ff5a4a',x-1,y-1,3,3));
-  return outlineSprite(k).toDataURL();
-}
-function cartesMur(){
-  return[{id:'v',ty:'vic',t:c.vName,s:c.vrole,img:G.url.porV||(G.url.porV=G.porV.toDataURL())},
-   ...c.suspects.map((su,i)=>({id:'p'+i,ty:'pho',t:su.prenom,s:su.role,img:imgURL('p'+i)})),
-   ...S.papiers.map(i=>({id:'d'+i,ty:'doc',t:W.docs[i].t,lire:i})),
-   ...S.cards.filter(q=>q.k==='trace').map((q,i)=>({id:'t'+i,ty:'note',t:q.t,s:q.x}))];
-}
-function posCarte(q){
-  const m=S.mur.pos,etroit=innerWidth<640;if(m[q.id])return m[q.id];
-  if(q.id==='v')return m.v={x:etroit?38:44,y:etroit?38:36};
-  if(q.ty==='pho'){const i=+q.id.slice(1);return m[q.id]=etroit?{x:3+(i%3)*32,y:2+((i/3)|0)*17}:{x:2+i*(96/c.n),y:3}}
-  const n=Object.keys(m).filter(k=>k[0]==='d'||k[0]==='t').length;
-  return m[q.id]=etroit?{x:3+(n%4)*24,y:66+((n>>2)&1)*14}:{x:2+(n%7)*13.8,y:66+(n>>3&1)*16-(n%3)*2};
-}
-function ouvrirMur(t){
-  if(modal==='cut')return;
-  S.mur=S.mur||{pos:{},liens:[],hyp:{},tab:'mur'};if(t)S.mur.tab=t;
-  $('bulle').hidden=true;$('carnet').hidden=true;modal='mur';son('page');rendMur();
-}
-function pChrono(){
-  const hyp=S.mur.hyp,sel=G.sel||[],cf=(S.liens||[]).filter(l=>l.c&&l.p),faux=new Set(cf.flatMap(l=>[...l.p.map(p=>p+'-'+l.h),...(l.p.length===1?['r-'+l.h]:[])]));
-  const reste=cf.filter(l=>!l.p.some(p=>hyp[p])).length,nh=Object.values(hyp).filter(Boolean).length;
-  const msg=!cf.length?"Clique deux témoignages de la même heure pour les comparer.":!nh?`${cf.length} contradiction${cf.length>1?'s':''} trouvée${cf.length>1?'s':''}. Clique sur un nom pour supposer que cette personne ment.`:reste?`Avec ces menteurs, il reste ${reste} contradiction${reste>1?'s':''}.`:"Cette hypothèse explique toutes les contradictions trouvées.";
-  const tete=HOURS.map((h,i)=>`<th class="${c.win.includes(i)?'crime':''}">${h}</th>`).join('');
-  const lignes=c.suspects.map((su,s)=>`<tr class="${hyp[s]?'hyp':''}"><th><button class="nomh" data-a="hyp" data-v="${s}" aria-pressed="${!!hyp[s]}"><img alt="" src="${imgURL('p'+s)}"><span>${esc(su.prenom)}</span>${hyp[s]?'<i>Ment ?</i>':''}</button></th>${HOURS.map((_,h)=>{
-    const k=s+'-'+h,cl=c.win.includes(h)?'crime':'';
-    if(!S.asked[k])return`<td class="${cl}"><span class="vide">?</span></td>`;
-    const st=c.stmts[s][h],a=st.with.map(t=>c.suspects[t].prenom);if(st.vic)a.push(c.vName);
-    return`<td class="${cl}"><button class="jet ${sel.includes(k)?'sel':''} ${faux.has(k)?'faux':''}" data-a="tem" data-v="${k}"><b>${esc(c.set.rooms[st.room].n)}</b><small>${a.length?'avec '+esc(liste(a)):(su.g==='f'?'seule':'seul')}</small></button></td>`;
-  }).join('')}</tr>`).join('');
-  const L=c.locked,reg=L&&S.seenRooms[L.room]?`<tr class="reg"><th><span class="nomh"><span>Registre des clés</span></span></th>${HOURS.map((_,h)=>{
-    const k='r-'+h,cl=c.win.includes(h)?'crime':'';
-    return`<td class="${cl}">${h===L.h?`<button class="jet ${sel.includes(k)?'sel':''} ${faux.has(k)?'faux':''}" data-a="tem" data-v="${k}"><b>${esc(c.set.rooms[L.room].n)}</b><small>verrouillée</small></button>`:''}</td>`;
-  }).join('')}</tr>`:'';
-  return`<p class="m-msg ${reste===0&&nh&&cf.length?'bon':''}">${esc(msg)}</p><div class="chrono-w"><table class="chrono"><thead><tr><th></th>${tete}</tr></thead><tbody>${lignes}${reg}</tbody></table></div>`;
-}
-function rendMur(){
-  const e=$('mur-v'),M=S.mur;e.hidden=false;
-  const tete=`<div class="m-tete"><div class="m-ong" role="tablist"><button role="tab" aria-selected="${M.tab==='mur'}" data-a="murtab" data-v="mur">Le mur</button><button role="tab" aria-selected="${M.tab==='chrono'}" data-a="murtab" data-v="chrono">La chronologie</button></div><button class="croix claire" data-a="fermer" aria-label="Fermer le mur">${croix}</button></div>`;
-  if(M.tab==='chrono'){e.innerHTML=tete+`<div class="m-chrono" style="background-image:url(${liegeURL()})">${pChrono()}</div>`;return}
-  const cartes=cartesMur().map(q=>{const p=posCarte(q);return`<div class="carte-m c-${q.ty} ${M.sel===q.id?'sel':''}" data-id="${q.id}" style="left:${p.x}%;top:${p.y}%"><i class="epingle"></i>${q.img?`<img alt="" draggable="false" src="${q.img}">`:''}<b>${esc(q.t)}</b>${q.s?`<small>${esc(q.s)}</small>`:''}${q.lire!==undefined?`<button class="m-lire" data-a="lire" data-v="${q.lire}">Lire</button>`:''}</div>`}).join('');
-  e.innerHTML=tete+`<div class="planche-m" id="pl-m" style="background-image:url(${liegeURL()})"><svg id="fils" aria-hidden="true"></svg>${cartes}${M.liens.map((l,i)=>`<button class="fil-l" data-a="fil" data-v="${i}">${esc(ETIQ_FIL[l.e])}</button>`).join('')}</div><p class="m-aide">Glisse les cartes où tu veux. Clique deux cartes pour tendre un fil rouge, clique l'étiquette du fil pour la changer.</p>`;
-  branchePlanche();tracerFils();
-}
-function tracerFils(){
-  const pl=$('pl-m'),sv=$('fils');if(!pl||!sv)return;
-  const r=pl.getBoundingClientRect(),m={};
-  pl.querySelectorAll('.carte-m').forEach(k=>{const q=k.getBoundingClientRect();m[k.dataset.id]=[q.left-r.left+q.width/2,q.top-r.top+6]});
-  const et=[...pl.querySelectorAll('.fil-l')];let h='';
-  S.mur.liens.forEach((l,i)=>{
-    const a=m[l.a],b=m[l.b];if(!a||!b){if(et[i])et[i].hidden=true;return}
-    const cx=(a[0]+b[0])/2,cy=(a[1]+b[1])/2+26;
-    h+=`<path d="M${a[0]} ${a[1]} Q${cx} ${cy} ${b[0]} ${b[1]}" fill="none" stroke="rgba(40,20,10,.35)" stroke-width="3" transform="translate(2 3)"/><path d="M${a[0]} ${a[1]} Q${cx} ${cy} ${b[0]} ${b[1]}" fill="none" stroke="#d8302a" stroke-width="2.5"/>`;
-    if(et[i]){et[i].style.left=(cx)+'px';et[i].style.top=((a[1]+b[1])/2+13)+'px'}
-  });
-  sv.innerHTML=h;
-}
-function branchePlanche(){
-  const pl=$('pl-m');let g=null;
-  pl.addEventListener('pointerdown',e=>{
-    if(e.target.closest('button'))return;
-    const k=e.target.closest('.carte-m');if(!k)return;
-    const r=pl.getBoundingClientRect(),q=k.getBoundingClientRect();
-    g={k,id:k.dataset.id,dx:e.clientX-q.left,dy:e.clientY-q.top,r,x0:e.clientX,y0:e.clientY,mv:0};
-    try{pl.setPointerCapture(e.pointerId)}catch(_){}
-    k.classList.add('prise');
-  });
-  pl.addEventListener('pointermove',e=>{
-    if(!g)return;
-    g.mv=Math.max(g.mv,Math.hypot(e.clientX-g.x0,e.clientY-g.y0));if(g.mv<5)return;
-    const q=g.k.getBoundingClientRect(),x=Math.max(0,Math.min(100-q.width/g.r.width*100,(e.clientX-g.dx-g.r.left)/g.r.width*100)),y=Math.max(0,Math.min(100-q.height/g.r.height*100,(e.clientY-g.dy-g.r.top)/g.r.height*100));
-    g.k.style.left=x+'%';g.k.style.top=y+'%';S.mur.pos[g.id]={x,y};tracerFils();
-  });
-  pl.addEventListener('pointerup',()=>{
-    if(!g)return;
-    const id=g.id,clic=g.mv<5;g.k.classList.remove('prise');g=null;
-    if(!clic)return save();
-    const M=S.mur;
-    if(M.sel===id)M.sel=null;
-    else if(M.sel){if(!M.liens.some(l=>(l.a===M.sel&&l.b===id)||(l.b===M.sel&&l.a===id)))M.liens.push({a:M.sel,b:id,e:0});M.sel=null;son('page')}
-    else M.sel=id;
-    save();rendMur();
-  });
-}
-function filSuivant(i){const l=S.mur.liens[i];if(++l.e>=ETIQ_FIL.length)S.mur.liens.splice(i,1);save();rendMur()}
-addEventListener('resize',()=>{if(modal==='mur'&&S.mur.tab==='mur')tracerFils()});
-
 // Tutoriel en jouant : la première enquête s'apprend en faisant, une action à la fois.
 const heureTuto=()=>c.win[0];
 const temoinsTuto=()=>c.suspects.filter((su,s)=>S.asked[s+'-'+heureTuto()]).length;
@@ -3641,7 +3564,6 @@ const TUTO=[
  {t:o=>`Examine le présentoir${o?lieuTuto(o):''} : ce qui manque est peut-être l'arme`,cible:vitrineTuto,ok:()=>Object.keys(S.seenRooms).length>0},
  {t:o=>`Interroge aussi ${o?c.suspects[o.s].prenom:'quelqu\'un d\'autre'}${o?lieuTuto(o):''} sur ${HOURS[heureTuto()]}`,cible:()=>suspectTuto(),ok:()=>temoinsTuto()>=2},
  {t:()=>"Calepin, page Déductions : compare ces deux versions",ui:'calepin',ok:()=>(S.liens||[]).length>0},
- {t:()=>"Ton mur d'enquête est à côté du marteau : ouvre-le",ui:'murb',ok:()=>modal==='mur'},
  {t:()=>"Quand tu sais qui ment, frappe avec le marteau. Une seule accusation !",ui:'marteau',duree:480}
 ];
 function tutoLance(){
@@ -3650,7 +3572,7 @@ function tutoLance(){
 }
 function tutoMaj(){
   const u=S&&S.tu;$('tuto-p').hidden=!u;
-  ['calepin','marteau','murb'].forEach(n=>$(n).classList.toggle('appel',!!u&&TUTO[u.i].ui===n));
+  ['calepin','marteau'].forEach(n=>$(n).classList.toggle('appel',!!u&&TUTO[u.i].ui===n));
   if(!u){$('but').hidden=true;G.planCible=null;return}
   const q=TUTO[u.i],o=q.cible?q.cible():null,e=$('but');
   G.tutoO=o;
@@ -3768,7 +3690,7 @@ function neuf(lv,seed,intro=true){
   S={seed,lv,t:{},liens:[],aides:0,jeu:0,evDocs:[],stress:{},vues:{},sujets:{},traces:{},asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
   Object.values(W.doors).forEach(d=>{if(d.lock===null)S.open[d.id]=1});
   if(Cut)endCut();
-  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('murb').hidden=lv===10;$('but').hidden=true;$('tuto-p').hidden=true;G.planCible=null;G.tutoO=null;
+  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('but').hidden=true;$('tuto-p').hidden=true;G.planCible=null;G.tutoO=null;
   cam.x=S.p.x-VW/2;cam.y=S.p.y-VH/2;G.snap=true;
   S.papiers.push(W.iAuto);
   save();render();
@@ -3800,7 +3722,7 @@ function save(){try{localStorage.setItem(STORE,JSON.stringify({S:S&&!(c&&c.test)
 function chargeStats(){try{const o=JSON.parse(localStorage.getItem(STORE));if(o){stats=Object.assign(stats,o.stats);O=Object.assign(O,o.O);G.sauve=o.S&&!o.S.fin?o.S:null}}catch(e){}}
 function continuer(){
   try{
-    S=G.sauve;c=generate(S.seed,S.lv);habiller(c);W=buildWorld(c);prep();(S.evDocs||[]).forEach(d=>W.docs.push(d));G.choix=[];G.sel=[];G.noir=0;G.plan=null;$('marteau').hidden=false;$('murb').hidden=false;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
+    S=G.sauve;c=generate(S.seed,S.lv);habiller(c);W=buildWorld(c);prep();(S.evDocs||[]).forEach(d=>W.docs.push(d));G.choix=[];G.sel=[];G.noir=0;G.plan=null;$('marteau').hidden=false;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
     if(!S.introDone)startIntro();
   }catch(e){neuf(0)}
 }
@@ -3866,7 +3788,7 @@ function art(){
   G.portes={};
   G.ic={};G.url={};
   G.map=buildMap();G.light=buildLight();G.masks={};
-  $('calepin').style.backgroundImage=`url(${calepinSprite().toDataURL()})`;$('murb').style.backgroundImage=`url(${murIcone()})`;
+  $('calepin').style.backgroundImage=`url(${calepinSprite().toDataURL()})`;
   $('jeu').style.cursor=G.curN;
 }
 function icone(id,col){const k=id+(col||'');if(!G.ic[k])G.ic[k]=iconSprite(id,col);return G.ic[k]}
@@ -4060,7 +3982,7 @@ function typeBulle(){
   if(G.bI<G.bTxt.length){G.bI=Math.min(G.bTxt.length,G.bI+{lent:1,normal:2,rapide:5,direct:9999}[O.texte]);const e=$('btxt');if(e)e.textContent=G.bTxt.slice(0,G.bI)}
 }
 const finBulle=()=>{if(G.bI<G.bTxt.length){G.bI=G.bTxt.length;$('btxt').textContent=G.bTxt;return false}return true};
-function closeAll(){modal=null;$('bulle').hidden=true;$('pz').hidden=true;$('carnet').hidden=true;$('doc').hidden=true;$('options').hidden=true;$('tribunal').hidden=true;$('mur-v').hidden=true;G.pzT=null;G.mini=null;$('jeu').focus({preventScroll:true});if(S)render()}
+function closeAll(){modal=null;$('bulle').hidden=true;$('pz').hidden=true;$('carnet').hidden=true;$('doc').hidden=true;$('options').hidden=true;$('tribunal').hidden=true;G.pzT=null;G.mini=null;$('jeu').focus({preventScroll:true});if(S)render()}
 const at0=()=>({x:S.p.x,y:S.p.y});
 function say(nom,txt,at,por){modal='dlg';bulle({at:at||at0(),nom,txt,por,btn:[{t:'Compris',f:closeAll}]})}
 function talk(o,msg,refus,e){
@@ -4430,7 +4352,7 @@ function vue(html,apres){
 }
 function ouvrirDoc(i){
   const d=W.docs[i];
-  son('page');vue(DOC_HTML[d.k](d.p),e=>{const n=e.querySelector('.d'),[w,h]=FORMATS[d.k],u=G.url['doc'+d.k]||(G.url['doc'+d.k]=docFond(d.k));n.style.backgroundImage=`url(${u})`;n.style.width=`${w*3}px`;n.style.minHeight=`${h*3}px`;n.style.zoom=Math.min(1,(innerWidth-32)/(w*3))});
+  son('page');vue(DOC_HTML[d.k](d.p),e=>{const n=e.querySelector('.d'),[w,h]=FORMATS[d.k],u=G.url['doc'+d.k]||(G.url['doc'+d.k]=docFond(d.k));n.style.backgroundImage=`url(${u})`;const dispo=innerWidth-24,z=Math.max(.86,Math.min(1,dispo/(w*3)));n.style.width=`${Math.min(w*3,Math.floor(dispo/z))}px`;n.style.minHeight=`${Math.min(h*3,Math.round((innerHeight-24)/z))}px`;n.style.zoom=z});
   if(S.papiers.includes(i)&&d.lu)return;
   d.lu=1;
   if(!S.papiers.includes(i))S.papiers.push(i);
@@ -4493,9 +4415,9 @@ function pTemoins(){
   const tete=HOURS.map((h,i)=>`<th class="${c.win.includes(i)?'crime':''}">${h}</th>`).join('');
   const lignes=c.suspects.map((su,s)=>`<tr><th><img alt="" src="${imgURL('p'+s)}"><span>${esc(su.prenom)}</span></th>${HOURS.map((_,h)=>{
     const cl=c.win.includes(h)?'crime':'';
-    if(!S.asked[s+'-'+h])return`<td class="${cl}"><i>?</i></td>`;
+    if(!S.asked[s+'-'+h])return`<td class="${cl}" data-h="${HOURS[h]}"><i>?</i></td>`;
     const st=c.stmts[s][h],a=st.with.map(t=>c.suspects[t].prenom);if(st.vic)a.push(c.vName);
-    return`<td class="${cl}"><b>${esc(c.set.rooms[st.room].n)}</b><small>${a.length?'avec '+esc(liste(a)):(su.g==='f'?'seule':'seul')}</small></td>`;
+    return`<td class="${cl}" data-h="${HOURS[h]}"><b>${esc(c.set.rooms[st.room].n)}</b><small>${a.length?'avec '+esc(liste(a)):(su.g==='f'?'seule':'seul')}</small></td>`;
   }).join('')}</tr>`).join('');
   return`<h2>Emploi du temps</h2><p class="main">En rouge, l'heure du meurtre d'après l'autopsie.</p><div class="edt-wrap"><table class="edt"><thead><tr><th></th>${tete}</tr></thead><tbody>${lignes}</tbody></table></div><textarea id="note-t" data-n="t" rows="2" placeholder="Mes notes..." aria-label="Mes notes">${esc(S.notes.t||'')}</textarea>`;
 }
@@ -4594,7 +4516,7 @@ function render(){
 // ——— Page d'accueil ———
 function ligneJour(){const j=jourDuJour(),f=(stats.jours||{})[j.k];return`<button class="dossier jour" data-a="jour"><span class="no">J</span><span class="nom">Enquête du jour : ${esc(LEVELS[j.lv].nom)}</span><span class="dif">${f?`Faite · ${f}`:stats.serieJ?`Série : ${stats.serieJ}`:'Nouvelle'}</span></button>`}
 function accueil(){
-  closeAll();enJeu=false;$('but').hidden=true;$('tuto-p').hidden=true;['calepin','marteau','murb'].forEach(n=>$(n).classList.remove('appel'));if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
+  closeAll();enJeu=false;$('but').hidden=true;$('tuto-p').hidden=true;['calepin','marteau'].forEach(n=>$(n).classList.remove('appel'));if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
   $('accueil').hidden=false;$('prompt').hidden=true;$('lieu').hidden=true;$('amb').hidden=true;$('hud').hidden=true;
   const n=stats.gagnees,suite=LEVELS.findIndex((l,i)=>!stats.res[i]);
   const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${DIFF[l.diff].label}</span>${stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
@@ -4898,17 +4820,13 @@ function pret(){
     const b=e.target.closest('[data-a]');if(!b)return;
     const a=b.dataset.a,v=b.dataset.v;
     if(a==='vote'){const[k,x]=v.split(':');stats.sys=stats.sys||{};stats.sys[k]=x;save();return ouvrirTest()}
-    if(a==='mur')return ouvrirMur();
-    if(a==='murtab')return ouvrirMur(v);
-    if(a==='fil')return filSuivant(+v);
-    if(a==='hyp'){const M=S.mur;M.hyp[v]=!M.hyp[v];save();return rendMur()}
     if(a==='jour')return lanceJour();
     if(a==='tem')return choisirTem(v);
     if(a==='comparer')return comparer();
     if(a==='aide'){const t=aideTexte();closeAll();return say('Basile',t,null,G.porBa)}
     if(a==='test')return neuf(10,4321,false);
     if(a==='onglet')return ouvrir(v);
-    if(a==='fermer'){if(modal==='doc'&&!$('mur-v').hidden){$('doc').hidden=true;modal='mur';return}if(modal==='doc'&&G.tab&&!$('carnet').hidden){$('doc').hidden=true;modal='carnet';return}return closeAll()}
+    if(a==='fermer'){if(modal==='doc'&&G.tab&&!$('carnet').hidden){$('doc').hidden=true;modal='carnet';return}return closeAll()}
     if(a==='lire')return ouvrirDoc(+v);
     if(a==='objet')return vueObjet(v,'Dans ma poche');
     if(a==='nouvelle'||a==='niveau')return neuf(+v);

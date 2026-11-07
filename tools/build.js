@@ -1,5 +1,5 @@
 const fs=require('fs'),path=require('path'),d=path.join(__dirname,'..');
-const js=['levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','salles','vie','mur','tuto','sons','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
+const js=['levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','salles','vie','tuto','sons','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
 const css=fs.readFileSync(path.join(d,'src/style.css'),'utf8');
 const out=`<!DOCTYPE html>
 <html lang="fr">
@@ -18,7 +18,6 @@ const out=`<!DOCTYPE html>
   <div id="lieu" class="lieu" hidden></div>
   <div id="hud" class="hud" hidden>
     <button id="engrenage" class="engrenage" data-a="reglages" aria-label="Options"><i id="eng1"></i></button>
-    <button id="murb" class="murb" data-a="mur" aria-label="Mur d'enquête"></button>
     <button id="marteau" class="marteau" data-a="marteau" aria-label="Accuser"><canvas id="mart" width="80" height="68"></canvas></button>
     <button id="calepin" class="calepin" data-a="onglet" data-v="calepin" aria-label="Ouvrir le calepin"><span id="neuf" class="neuf" hidden></span></button>
     <div class="plan-mini"><canvas id="mini" aria-hidden="true"></canvas><span id="ici"></span><span id="plan-nom" class="plan-nom" hidden></span></div>
@@ -31,7 +30,6 @@ const out=`<!DOCTYPE html>
   <div id="bulle" class="bulle" hidden></div>
   <div id="carte" class="carte" hidden></div>
   <div id="carnet" class="carnet" hidden></div>
-  <div id="mur-v" class="mur-v" hidden></div>
   <div id="pz" class="pz" hidden></div>
   <div id="doc" class="doc" hidden></div>
   <button id="passer" class="passer" hidden>Passer la scène</button>
