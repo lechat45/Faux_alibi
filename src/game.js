@@ -890,7 +890,7 @@ function accueil(){
   const n=stats.gagnees,suite=LEVELS.findIndex((l,i)=>!stats.res[i]);
   const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${O.expert?'Expert':DIFF[l.diff].label}</span>${O.expert?(stats.exp&&stats.exp[i]?`<i>Expert · ${stats.exp[i]}</i>`:''):stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
   $('acc-ui').innerHTML=`<div class="acc-g"><h1>Faux<br><span>Alibi</span></h1><p>Dix lieux, cinquante pièces, et à chaque fois quelqu'un qui ment.</p>
-    <div class="ligne"><button class="etiq fort" data-a="nouvelle" data-v="${suite<0?int(Math.random,10):suite}">Nouvelle enquête</button>${G.sauve?'<button class="etiq" data-a="continuer">Continuer</button>':''}<button class="etiq ${O.expert?'actif':''}" data-a="expert" aria-pressed="${!!O.expert}">Expert : ${O.expert?'oui':'non'}</button><button class="etiq" data-a="reglages">Options</button></div></div>
+    <div class="ligne"><button class="etiq fort" data-a="nouvelle" data-v="${suite<0?int(Math.random,10):suite}">Nouvelle enquête</button>${G.sauve?'<button class="etiq" data-a="continuer">Continuer</button>':''}<button class="etiq ${O.expert?'actif':''}" data-a="expert" aria-pressed="${!!O.expert}">Expert : ${O.expert?'oui':'non'}</button><button class="etiq" data-a="reglages">Options</button>${boutonInstaller()}</div>${aideInstaller()}</div>
     <div class="acc-d"><div class="tampon"><b>${n}</b><span>enquête${n>1?'s':''} résolue${n>1?'s':''}</span><small>Fins : ${Object.keys(stats.fins||{}).length}/6</small></div><div class="dossiers">${ligneJour()}${dos}<button class="dossier essai" data-a="test"><span class="no">T</span><span class="nom">Niveau test : 6 interrogatoires</span><span class="dif">Essai</span></button></div></div>`;
 }
 // ——— Options : une fenêtre unique, depuis l'accueil comme depuis le jeu ———
@@ -1191,6 +1191,7 @@ function pret(){
     if(a==='vote'){const[k,x]=v.split(':');stats.sys=stats.sys||{};stats.sys[k]=x;save();return ouvrirTest()}
     if(a==='jour')return lanceJour();
     if(a==='partage')return partager();
+    if(a==='installer')return installer();
     if(a==='expert'){O.expert=!O.expert;save();return accueil()}
     if(a==='tem')return choisirTem(v);
     if(a==='comparer')return comparer();

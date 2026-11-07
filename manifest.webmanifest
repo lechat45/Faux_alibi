@@ -1,0 +1,38 @@
+{
+ "id": "./",
+ "name": "Faux Alibi",
+ "short_name": "Faux Alibi",
+ "description": "Jeu d'enquête en pixel art : interroge les suspects, fouille les lieux et démasque le menteur.",
+ "lang": "fr",
+ "start_url": "./",
+ "scope": "./",
+ "display": "fullscreen",
+ "display_override": [
+  "fullscreen",
+  "standalone"
+ ],
+ "orientation": "any",
+ "background_color": "#05040c",
+ "theme_color": "#0c0a1c",
+ "categories": [
+  "games"
+ ],
+ "icons": [
+  {
+   "src": "icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}

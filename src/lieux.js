@@ -84,3 +84,19 @@ function partager(){
   if(navigator.share&&matchMedia('(pointer:coarse)').matches){navigator.share({text:t}).catch(()=>{});return}
   try{const p=navigator.clipboard&&navigator.clipboard.writeText(t);if(!p)return montre();p.then(()=>toast('Résultat copié : colle-le où tu veux',true),montre)}catch(e){montre()}
 }
+
+// ——— Installer le jeu comme une application ———
+let invite=null;
+const enApp=()=>matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;
+const surIPhone=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const installable=()=>!!document.querySelector('link[rel="manifest"]')&&!enApp();
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();invite=e;if(!enJeu&&typeof accueil==='function')accueil()});
+addEventListener('appinstalled',()=>{invite=null;toast('Faux Alibi est installé',true)});
+if('serviceWorker' in navigator&&document.querySelector('link[rel="manifest"]')&&(location.protocol==='https:'||location.hostname==='localhost'))
+  addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+function boutonInstaller(){return installable()&&(invite||surIPhone())?'<button class="etiq" data-a="installer">Installer le jeu</button>':''}
+function aideInstaller(){return installable()&&surIPhone()?'<p id="aide-inst" class="aide-inst" hidden>Sur iPhone : touche <b>Partager</b> (le carré avec une flèche vers le haut), puis <b>« Sur l\'écran d\'accueil »</b>. Le jeu s\'ouvrira alors en plein écran, comme une application.</p>':''}
+function installer(){
+  if(invite){const e=invite;invite=null;e.prompt();(e.userChoice||Promise.resolve()).finally(()=>accueil());return}
+  const a=$('aide-inst');if(a)a.hidden=!a.hidden;
+}
