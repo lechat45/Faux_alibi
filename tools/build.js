@@ -23,6 +23,7 @@ const out=`<!DOCTYPE html>
     <div class="plan-mini"><canvas id="mini" aria-hidden="true"></canvas><span id="ici"></span><span id="plan-nom" class="plan-nom" hidden></span></div>
   </div>
   <div id="amb" class="amb" hidden></div>
+  <div id="but" class="but" hidden></div>
   <div id="toast" class="toast" hidden></div>
   <div id="prompt" class="prompt" hidden></div>
   <div id="bulle" class="bulle" hidden></div>

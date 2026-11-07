@@ -29,11 +29,11 @@ function neuf(lv,seed,intro=true){
   S={seed,lv,t:{},liens:[],aides:0,jeu:0,evDocs:[],asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
   Object.values(W.doors).forEach(d=>{if(d.lock===null)S.open[d.id]=1});
   if(Cut)endCut();
-  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('calepin').dataset.sys='';
+  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('but').hidden=true;
   cam.x=S.p.x-VW/2;cam.y=S.p.y-VH/2;G.snap=true;
   S.papiers.push(W.iAuto);
   save();render();
-  if(lv===10){S.introDone=true;say('Basile',"Bienvenue dans le couloir des tests. Six salles, six personnes, six façons d'interroger. Entre où tu veux : ton calepin change à chaque porte.",null,G.porBa)}
+  if(lv===10){S.introDone=true;dit(JOUEUR,"Six salles, six façons d'interroger. Tout se joue dans la pièce.",300)}
   else if(intro&&O.scenario)startIntro();else S.introDone=true;
 }
 function prep(){
@@ -250,6 +250,7 @@ function draw(){
     ctx.drawImage(G.trace||(G.trace=traceCraie()),o.x*TS,o.y*TS);
   });
   (G.rip||[]).forEach(r=>{const s=(30-r.t)>>2;ctx.fillStyle=r.o?'#ff9a6a':'#ffd23f';ctx.fillRect(r.x-s-2,r.y-s,4,1);ctx.fillRect(r.x+s-1,r.y-s,4,1);ctx.fillRect(r.x-s-2,r.y+s,4,1);ctx.fillRect(r.x+s-1,r.y+s,4,1);ctx.fillRect(r.x-s-2,r.y-s,1,3);ctx.fillRect(r.x+s+2,r.y-s,1,3);ctx.fillRect(r.x-s-2,r.y+s-2,1,3);ctx.fillRect(r.x+s+2,r.y+s-2,1,3)});
+  if(c.test)dessinSol();
   const L=[],inView=(x,y)=>x>cx-80&&x<cx+VW+80&&y>cy-60&&y<cy+VH+90;
   W.furn.forEach(f=>{const y=(f.y+f.h)*TS;if(inView(f.x*TS,y))L.push({y,d:()=>{ctx.drawImage(G.furn[f.id],f.x*TS-1,y-SH[f.name]-1);if(f.name==='fireplace')feuDessine(ctx,f.x*TS,y-SH[f.name],tick)}})});
   W.obj.forEach(o=>{
@@ -263,6 +264,7 @@ function draw(){
     if(a.down){ctx.save();ctx.translate(Math.round(a.x),Math.round(a.y-4));ctx.rotate(Math.PI/2);ctx.drawImage(G.sheet[a.sh],0,0,20,30,-15,-10,20,30);ctx.restore();return}
     shadow(a.x,a.y,12);drawChar2(G.sheet[a.sh],a.x,a.y,a.dir,a.mv?(tick>>3)&3:0)}})});
   L.sort((a,b)=>a.y-b.y).forEach(i=>i.d());
+  if(c.test)dessinDessus();
   if(G.hover&&!modal){
     const[x,y,w,h]=objRect(G.hover),q=tick>>4&1;ctx.fillStyle='#ffd23f';
     [[x-2-q,y-2-q,5,1],[x-2-q,y-2-q,1,5],[x+w-3+q,y-2-q,5,1],[x+w+1+q,y-2-q,1,5],[x-2-q,y+h+1+q,5,1],[x-2-q,y+h-3+q,1,5],[x+w-3+q,y+h+1+q,5,1],[x+w+1+q,y+h-3+q,1,5]].forEach(a=>ctx.fillRect(...a));
@@ -613,7 +615,7 @@ function npcLife(){
   W.obj.forEach(o=>{
     if(o.kind!=='suspect')return;
     if(o.em>0)o.em--;
-    gesteMaj(o);if(o.assis)return;
+    gesteMaj(o);if(o.assis||o.pilote)return;
     const near=Math.hypot(P.x-o.fx,P.y-o.fy)<58&&visible(ar,o.fx>>4,(o.fy-3)>>4);
     if(o.hold>0)o.hold--;
     if(near||o.hold>0){
@@ -632,7 +634,7 @@ function npcLife(){
       else{o.fx+=dx/d*.45;o.fy+=dy/d*.45;o.mv=true;o.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?0:2);o.x=o.fx>>4;o.y=(o.fy-3)>>4}
     }
   });
-  if(O.bavard&&tick%520===260&&!G.ambO){
+  if(O.bavard&&!c.test&&tick%520===260&&!G.ambO){
     const ici=W.obj.filter(o=>o.kind==='suspect'&&visible(ar,o.fx>>4,(o.fy-3)>>4));
     if(ici.length){const o=ici[tick%ici.length],a=$('amb'),l=VOIX(o.s).amb;a.textContent=l[(tick>>9)%l.length];a.hidden=false;G.ambO=o;G.ambT=170}
   }
@@ -653,6 +655,7 @@ function update(){
   if(modal)return;
   npcLife();
   evenements();if(modal)return;
+  if(c.test)tickTest();
   if(!G.eclair&&W.windows.length&&!O.calme&&Math.random()<.0014)eclair();
   let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0),f=dx&&dy?.72:1;
   if(G.bot){botStep();dx=G.bvx||0;dy=G.bvy||0;f=1}
@@ -676,7 +679,7 @@ function update(){
   }
   const a=areaIdx(P.x>>4,(P.y-3)>>4);
   if(a>=0&&a!==G.area){
-    G.area=a;G.hover=null;if(c.test)entreeTest(a);
+    G.area=a;G.hover=null;if(c.test)entreeTest();
     if(!S.visit[a]){S.visit[a]=1;if(a<c.set.rooms.length&&!c.test){toast(c.set.rooms[a].n,true);render()}}
     miniCarte();
   }
@@ -730,6 +733,7 @@ function enigme(o){
 const puzzleFor=o=>makePuzzle(RNG(o.id*7919+c.seed),o.ptype,{facile:0,moyen:1,difficile:2}[c.key]);
 function interact(o){
   if(!o)return;
+  if(c.test&&o.kind==='fouille')return fouilleTest(o);
   if(o.kind==='suspect')return talk(o);
   if(o.kind==='vitrine'){const n=inspecter(o.room);return say(cap(c.set.rooms[o.room].o),n.join(' '))}
   if(o.kind==='corps')return ouvrirDoc(W.iAuto);
@@ -856,7 +860,7 @@ function render(){
 
 // ——— Page d'accueil ———
 function accueil(){
-  closeAll();enJeu=false;if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
+  closeAll();enJeu=false;$('but').hidden=true;if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
   $('accueil').hidden=false;$('prompt').hidden=true;$('lieu').hidden=true;$('amb').hidden=true;$('hud').hidden=true;
   const n=stats.gagnees,suite=LEVELS.findIndex((l,i)=>!stats.res[i]);
   const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${DIFF[l.diff].label}</span>${stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
@@ -1158,8 +1162,7 @@ function pret(){
     if(e.target.closest('button'))son('clic');
     const b=e.target.closest('[data-a]');if(!b)return;
     const a=b.dataset.a,v=b.dataset.v;
-    if(a==='t')return actionTest(v);
-    if(a==='vote'){stats.sys=stats.sys||{};stats.sys[SALLES[G.area].id]=v;save();return ouvrirTest('salle')}
+    if(a==='vote'){const[k,x]=v.split(':');stats.sys=stats.sys||{};stats.sys[k]=x;save();return ouvrirTest()}
     if(a==='tem')return choisirTem(v);
     if(a==='comparer')return comparer();
     if(a==='aide'){const t=aideTexte();closeAll();return say('Basile',t,null,G.porBa)}

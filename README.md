@@ -4,7 +4,7 @@ Un jeu d'enquête en pixel art, jouable à la souris dans le navigateur. Interro
 
 **Jouer :** https://lechat45.github.io/Faux_alibi/
 
-Dix enquêtes, plus un niveau test : un couloir de six salles, chacune avec sa façon d'interroger.
+Dix enquêtes, plus un niveau test : un couloir de six salles, chacune avec sa façon d'interroger, jouée directement dans le décor.
 
 ## Le projet
 
