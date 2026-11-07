@@ -8,8 +8,11 @@ const DIFF={
 const CLASSES={
   lourd:'un coup porté avec un objet lourd',
   lame:'une blessure faite par une lame',
-  lien:'une strangulation avec un lien'
+  lien:'une strangulation avec un lien',
+  poison:'un empoisonnement'
 };
+const POISONS=['le flacon de laudanum',"la fiole d'arsenic",'le sachet de mort-aux-rats','le flacon de digitaline','le tube de cyanure'];
+const VOLS=['la collection de pièces anciennes','le collier de perles','le coffret de bijoux','la liasse de titres au porteur'];
 const NAMES=[['Inès Marchand','f'],['Paul Ferrand','m'],['Awa Diallo','f'],['Hugo Lemaire','m'],['Sofia Rinaldi','f'],['Théo Nguyen','m'],
   ['Clara Besson','f'],['Malik Haddad','m'],['Jeanne Roussel','f'],['Bastien Coste','m'],['Yuna Kerval','f'],['Nour Benali','f'],
   ['Léo Dumas','m'],['Rose Tessier','f'],['Victor Aubry','m'],['Margot Lacroix','f'],['Elias Weber','m'],['Olga Petrova','f']];
@@ -63,7 +66,7 @@ const form=(s,g)=>{const p=s.split('|');return p.length>1&&g==='f'?p[1]:p[0]};
 function otherRoom(r,excl){let x;do{x=int(r,NR)}while(excl.includes(x));return x}
 
 function attempt(r,lv){
-  const set=LEVELS[lv],key=set.diff,d=DIFF[key],H=HOURS.length,n=d.n;
+  const set=LV(lv),key=set.diff,d=DIFF[key],H=HOURS.length,n=d.n;
   const hc=1+int(r,H-1),rc=int(r,NR),k=int(r,n);
   const inn=shuffle(r,range(n).filter(i=>i!==k));
   const [X,Y,W,Z,x]=inn;
@@ -147,12 +150,21 @@ function attempt(r,lv){
   }));
 
   // L'arme : deux objets de chaque classe, un seul manque dans la classe du crime
-  const cls=pick(r,Object.keys(CLASSES).filter(k=>set.rooms.filter(q=>q.c===k).length>=2));
-  const wpn=pick(r,range(NR).filter(i=>set.rooms[i].c===cls));
-  const leurre=pick(r,range(NR).filter(i=>set.rooms[i].c!==cls));
+  // Le type d'affaire change les indices et le récit, jamais la logique des témoignages
+  let crime=pick(r,['meurtre','meurtre','poison','suicide','vol']),set1=set;
+  if(crime==='poison'){
+    set1={...set,rooms:set.rooms.map(q=>({...q}))};
+    const P=shuffle(r,POISONS);shuffle(r,range(NR)).slice(0,2).forEach((i,j)=>{set1.rooms[i].o=P[j];set1.rooms[i].c='poison'});
+  }
+  const dispo=Object.keys(CLASSES).filter(k=>set1.rooms.slice(0,NR).filter(q=>q.c===k).length>=2),sans=dispo.filter(k=>k!=='lourd');
+  if(crime==='suicide'&&!sans.length)crime='meurtre';
+  const cls=crime==='poison'?'poison':pick(r,(crime==='suicide'?sans:dispo).filter(k=>k!=='poison'));
+  const vole=pick(r,VOLS);
+  const wpn=pick(r,range(NR).filter(i=>set1.rooms[i].c===cls));
+  const leurre=pick(r,range(NR).filter(i=>set1.rooms[i].c!==cls));
   needed.push({t:'r',room:wpn});
 
-  const c={seed:0,lv,key,set,n,H,hc,rc,k,win,useWatch,locked,stmts,pos,vpos,suspects,vName,vg:vic[1],vrole:set.vr[vic[1]==='f'?1:0],
+  const c={seed:0,lv,key,set:set1,crime,vole,n,H,hc,rc,k,win,useWatch,locked,stmts,pos,vpos,suspects,vName,vg:vic[1],vrole:set.vr[vic[1]==='f'?1:0],
     cls,wpn,leurre,trait,liars:d.liars,k2,mode,tueurs:k2===null?[k]:[k,k2],type,A,X,Y,W,Z,needed,
     par:0};
   const uniq=new Map();needed.forEach(i=>uniq.set(i.t==='s'?`s${i.s}-${i.h}`:`r${i.room}`,i));

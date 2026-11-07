@@ -1,10 +1,11 @@
 // Génération de la carte : architecture, mobilier, portes, cachettes, énigmes d'objets et audit.
 let MW=62,MH=33;
-const FP={portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
+const FP={chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
   console:[3,1],labbench:[3,1],planter:[3,1],table:[3,2],rtable:[2,2],chair:[1,1],sofa:[3,1],armchair:[1,1],bed:[2,3],crate:[1,1],barrel:[1,1],plant:[1,1],mannequin:[1,1],spot:[1,1],ropes:[1,1],
   trunk:[2,1],lamp:[1,1],globe:[1,1],stool:[1,1],tank:[1,1],tub:[3,1],toilet:[1,1],shower:[2,1],desk:[3,1],pcdesk:[3,1],commode:[2,1],chevet:[1,1],lift:[2,1],medic:[1,1],washer:[1,1],copier:[1,1],roulette:[3,2],engine:[3,2],
   chairB:[1,1],chairL:[1,1],chairR:[1,1],armchairB:[1,1],armchairL:[1,1],armchairR:[1,1],sofaB:[3,1],basse:[3,1]};
-const FLAVOR={portemanteau:['Des manteaux encore humides de pluie.','Un chapeau, une écharpe, un vieux pardessus.'],parapluies:['Trois parapluies, encore mouillés.'],chaussures:["Des chaussures bien alignées. Personne n'est sorti ce soir."],videpoche:['Un vide-poches, quelques clés sans étiquette.','Une petite coupelle et le courrier du matin.'],banc:['Un banc pour se déchausser.'],shelf:['Des rangées de livres, rien de plus.','Les reliures sentent le vieux cuir.'],cabinet:['Des tiroirs bien rangés, sans surprise.'],crate:['Des clous et de la paille.'],trunk:['Des vêtements pliés et de vieux journaux.'],
+const DECO=[['chariot','valise'],['bascule','valise'],['banquette','valise'],['fontaine','fontaine'],['radio','skis'],['portant','portant'],['bouee','barre'],['perfusion','brancard'],['armure','armure'],['bandit','jetons','bandit']];
+const FLAVOR={chariot:['Des serviettes propres et de petits savons.'],valise:["Une étiquette à moitié arrachée. Elle est vide."],bascule:['Il se balance encore un peu.'],banquette:['Le velours est usé aux accoudoirs.'],fontaine:["Elle glougloute toute seule."],radio:['Rien que du grésillement.'],skis:['Les fartages sont encore frais.'],portant:['Des costumes de scène qui sentent la naphtaline.'],bouee:['Elle porte le nom du navire.'],barre:['Elle est bloquée depuis le départ.'],perfusion:["La poche est presque vide."],brancard:['Les draps sont propres.'],armure:["Il n'y a personne dedans. Enfin, j'espère."],bandit:['Trois citrons. Encore perdu.'],jetons:['Quelques jetons abandonnés en plein jeu.'],portemanteau:['Des manteaux encore humides de pluie.','Un chapeau, une écharpe, un vieux pardessus.'],parapluies:['Trois parapluies, encore mouillés.'],chaussures:["Des chaussures bien alignées. Personne n'est sorti ce soir."],videpoche:['Un vide-poches, quelques clés sans étiquette.','Une petite coupelle et le courrier du matin.'],banc:['Un banc pour se déchausser.'],shelf:['Des rangées de livres, rien de plus.','Les reliures sentent le vieux cuir.'],cabinet:['Des tiroirs bien rangés, sans surprise.'],crate:['Des clous et de la paille.'],trunk:['Des vêtements pliés et de vieux journaux.'],
  barrel:['Ça sonne plein.'],table:['Quelques papiers sans intérêt.','Des tasses encore tièdes.'],clock:['Elle tique trop fort pour être honnête.','Elle retarde de deux minutes.'],plant:['La terre est humide. Quelqu\'un en prend soin.'],
  locker:['Un casier vide, qui sent le renfermé.'],lamp:['L\'ampoule grésille.'],lift:['L\'ascenseur est à l\'arrêt, impossible de l\'appeler.','Le bouton ne répond plus. Rien à faire.'],tub:['La baignoire est sèche.'],toilet:['Rien ici. Heureusement.'],shower:['Le carrelage est encore humide.'],
  bed:['Les draps sont tirés au cordeau.','Personne n\'a dormi ici ce soir.'],sofa:['Rien entre les coussins.'],armchair:['Il garde la forme de son dernier occupant.'],chair:['Une simple chaise.'],stove:['Les plaques sont froides.'],piano:['Une touche sonne faux.'],
@@ -36,7 +37,7 @@ function buildWorld(c){
   });
   // Le mur du fond suit la forme réelle du sol, même dans un coude
   for(let y=2;y<MH;y++)for(let x=0;x<MW;x++)if(t[y][x]===1&&t[y-1][x]===0){t[y-1][x]=2;if(t[y-2][x]===0)t[y-2][x]=2}
-  w.rooms=w.areas.slice(0,5);
+  w.rooms=w.areas.slice(0,L.rooms.length);
   // Portes : déduites de la position réelle des pièces
   const doors=P.l.map(([a,b])=>{
     const A=w.areas[a],B=w.areas[b],id=nid();let d,m=null;
@@ -59,7 +60,7 @@ function buildWorld(c){
     d.a=a;d.b=b;d.lock=null;w.doors[id]=d;
     if(!d.v){d.haut=A.rects.includes(m.U)?a:b;d.bas=d.haut===a?b:a}
     // la porte dépend de la pièce qu'elle ferme : numéro de chambre, hublot de cuisine, verre dépoli...
-    const ferme=a<5&&b<5?([a,b].find(i=>L.rooms[i].t==='bain')??b):(a<5?a:b),tp=L.rooms[ferme].t;
+    const nr=L.rooms.length,ferme=a<nr&&b<nr?([a,b].find(i=>L.rooms[i].t==='bain')??b):(a<nr?a:b),tp=L.rooms[ferme].t;
     d.style=tp==='bain'?'bain':tp==='cuisine'?'cuisine':tp==='salon'?'double':tp==='chambre'?L.portech:L.porte;
     d.num=tp==='chambre'&&(L.rooms[ferme].n.match(/\d+/)||[])[0]||null;
     d.ferme=ferme;
@@ -218,6 +219,18 @@ function buildWorld(c){
     if(A.room){poseRun(A);(A.rec.g||[]).forEach(g=>poseGroupe(A,g));return}
     poseCirc(A);
     (L.ci||[]).forEach(n=>{if(A.y1-A.y0>=3)poseGroupe(A,CIRC[n])});
+  });
+  // Des objets propres à chaque lieu, contre un mur encore libre
+  (DECO[c.lv]||[]).forEach(n=>{
+    for(const A of shuffle(r,w.areas)){
+      const q=A.rects[0],fw=FP[n][0];let fait=false;
+      for(const x of shuffle(r,range(Math.max(1,q.x1-q.x0-fw+2)).map(i=>q.x0+i))){
+        let m=true;for(let k=0;k<fw;k++)if(t[q.y0-1][x+k]!==2)m=false;
+        if(!m||!libreLa(x,q.y0,fw,1))continue;
+        const f=place(n,x,q.y0,A);if(areaOK(A)){fait=true;break}unplace(f);
+      }
+      if(fait)break;
+    }
   });
 
   const used=new Set();

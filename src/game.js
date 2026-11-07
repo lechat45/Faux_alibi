@@ -6,9 +6,9 @@ const cap=s=>s[0].toUpperCase()+s.slice(1);
 const STORE='fauxalibi.v5';
 const R_=(g,c,x,y)=>R(g,c,x,y);
 const NIVEAUX=['Bavard','Méfiant','Fermé'];
-let c,S,W,G={},stats={gagnees:0,serie:0,enigmes:0,res:{}};
+let c,S,W,G={},stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{}};
 // Réglages du joueur, tous réellement appliqués
-let O={texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,sons:1,vol:50,lum:50,txt:100};
+let O={texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,sons:1,musique:1,vol:50,lum:50,txt:100};
 let AC=null;
 function son(t){
   if(!O.sons||!O.vol)return;
@@ -24,19 +24,21 @@ let tick=0,cam={x:0,y:0},parts=[],toastT=0,modal=null,VW=400,VH=250,SC=3,ctx,Cut
 // ——— État d'une partie ———
 function neuf(lv,seed,intro=true){
   seed=seed??(1000+Math.floor(Math.random()*8999));
-  c=generate(seed,lv);
-  W=buildWorld(c);prep();
-  S={seed,lv,asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
+  c=generate(seed,lv);if(lv===10)preparerTest(c);
+  W=buildWorld(c);prep();if(lv===10)finirTest();
+  S={seed,lv,t:{},liens:[],aides:0,jeu:0,evDocs:[],asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
   Object.values(W.doors).forEach(d=>{if(d.lock===null)S.open[d.id]=1});
   if(Cut)endCut();
-  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;
+  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('calepin').dataset.sys='';
   cam.x=S.p.x-VW/2;cam.y=S.p.y-VH/2;G.snap=true;
   S.papiers.push(W.iAuto);
   save();render();
-  if(intro&&O.scenario)startIntro();else S.introDone=true;
+  if(lv===10){S.introDone=true;say('Basile',"Bienvenue dans le couloir des tests. Six salles, six personnes, six façons d'interroger. Entre où tu veux : ton calepin change à chaque porte.",null,G.porBa)}
+  else if(intro&&O.scenario)startIntro();else S.introDone=true;
 }
 function prep(){
   W.obj.forEach(o=>{if(o.kind==='suspect'){W.blk[o.y][o.x]=0;o.fx=o.x*TS+8;o.fy=o.y*TS+11;o.wait=60+(o.s*97)%300;o.dir=0}});
+  asseoir();
   G.body=W.obj.find(o=>o.kind==='corps');
   W.iAuto=W.docs.length;
   W.docs.push({k:'autopsie',t:DOC_TITRES.autopsie,p:{v:c.vName,cause:cap(CLASSES[c.cls]),h:c.win.length>1?`entre ${HOURS[c.win[0]]} et ${HOURS[c.win[1]]}`:`à ${HOURS[c.hc]}`,a:detailAutopsie(c)}});
@@ -54,11 +56,11 @@ function freeNear(x,y,n=12){
   }
   return o;
 }
-function save(){try{localStorage.setItem(STORE,JSON.stringify({S:S||null,stats,O}))}catch(e){}}
+function save(){try{localStorage.setItem(STORE,JSON.stringify({S:S&&!(c&&c.test)?S:null,stats,O}))}catch(e){}}
 function chargeStats(){try{const o=JSON.parse(localStorage.getItem(STORE));if(o){stats=Object.assign(stats,o.stats);O=Object.assign(O,o.O);G.sauve=o.S&&!o.S.fin?o.S:null}}catch(e){}}
 function continuer(){
   try{
-    S=G.sauve;c=generate(S.seed,S.lv);W=buildWorld(c);prep();G.choix=[];art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
+    S=G.sauve;c=generate(S.seed,S.lv);W=buildWorld(c);prep();(S.evDocs||[]).forEach(d=>W.docs.push(d));G.choix=[];G.sel=[];G.noir=0;G.plan=null;$('marteau').hidden=false;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
     if(!S.introDone)startIntro();
   }catch(e){neuf(0)}
 }
@@ -105,6 +107,8 @@ function preuve(){
   }
   if(c.win.length>1)out.push(c.useWatch?`La montre brisée de ${c.vName} fixe la mort à ${hr}.`:`${p(c.W)} a vu ${c.vName} vivant${c.vg==='f'?'e':''} à ${HOURS[c.hc-1]}. La mort date donc de ${hr}.`);
   out.push(`${cap(r[c.wpn].o)} manquait : c'est la seule arme disparue qui correspond à ${CLASSES[c.cls]}.`);
+  if(c.crime==='vol')out.push(`Le vol de ${c.vole} a mal tourné : la victime a surpris son voleur.`);
+  if(c.crime==='suicide')out.push('La mise en scène du suicide ne tenait pas face à l\'autopsie.');
   c.tueurs.forEach(i=>out.push(`Le mobile : ${p(i)} ${c.suspects[i].mobile}.`));
   return out;
 }
@@ -116,9 +120,9 @@ function art(){
   G.look=c.suspects.map((s,i)=>lookOf(s,i,c.seed));
   G.look.forEach((L,i)=>G.sheet[i]=charSheet(L));
   G.vlook=lookOf({g:c.vg,trait:''},9,c.seed);G.sheet.v=charSheet(G.vlook);
-  G.por=G.look.map((L,i)=>portrait(L,i+1));G.porV=portrait(G.vlook,9);G.porBa=portrait(ADJOINT,7);G.porMe=portrait(INSPECTEUR,8);
+  G.porE={};G.por=G.look.map((L,i)=>portrait(L,i+1));G.porV=portrait(G.vlook,9);G.porBa=portrait(ADJOINT,7);G.porMe=portrait(INSPECTEUR,8);
   G.furn={};W.furn.forEach(f=>G.furn[f.id]=furnitureSprite(f));
-  G.vit={};['lourd','lame','lien'].forEach(k=>G.vit[k]=vitrineSprite(k,true));G.vit.vide=vitrineSprite('',false);
+  G.vit={};['lourd','lame','lien','poison'].forEach(k=>G.vit[k]=vitrineSprite(k,true));G.vit.vide=vitrineSprite('',false);
   G.portes={};
   G.ic={};G.url={};
   G.map=buildMap();G.light=buildLight();G.masks={};
@@ -231,6 +235,7 @@ function draw(){
   ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#04030a';ctx.fillRect(0,0,VW,VH);
   ctx.setTransform(1,0,0,1,-cx,-cy);
   ctx.drawImage(G.map,0,0);
+  fenetresVivantes();
   Object.values(W.doors).forEach(d=>{
     // une porte libre s'ouvre à l'approche
     const ferme=!S.open[d.id]&&!(Cut&&Cut.hideNpc),pres=Math.hypot(P.x-(d.x+d.w/2)*TS,P.y-(d.y+d.h/2)*TS)<36||(Cut&&Object.values(Cut.actors).some(a=>!a.hide&&!a.down&&Math.hypot(a.x-(d.x+d.w/2)*TS,a.y-(d.y+d.h/2)*TS)<40)),ouv=!ferme&&(pres||G.bot),col=ferme?'#c8a040':null;
@@ -250,7 +255,7 @@ function draw(){
   W.obj.forEach(o=>{
     const x=o.x*TS,y=(o.y+1)*TS;
     if(o.kind==='vitrine'&&inView(x,y))L.push({y,d:()=>ctx.drawImage((o.room===c.wpn||o.room===c.leurre)?G.vit.vide:G.vit[c.set.rooms[o.room].c],x-1,y-37)});
-    if(o.kind==='suspect'&&!(Cut&&Cut.hideNpc))L.push({y:o.fy,d:()=>{shadow(o.fx,o.fy,12);drawChar2(G.sheet[o.s],o.fx,o.fy+(o.mv?0:Math.sin(tick*.06+o.s)*.5),o.dir,o.mv?(tick>>4)&3:0);if(o.em>0)emote(Math.round(o.fx),Math.round(o.fy-29),o.emc)}});
+    if(o.kind==='suspect'&&!(Cut&&Cut.hideNpc))L.push({y:o.assis?(o.y+1)*TS+1:o.fy,d:()=>{dessinePNJ(o);if(o.em>0)emote(Math.round(o.fx),Math.round(o.fy-29),o.emc)}});
   });
   const moving=!Cut&&(keys.up||keys.down||keys.left||keys.right||G.bot||G.walk||G.moved);
   if(!Cut||(!Cut.actors.me&&!Cut.hideNpc))L.push({y:P.y,d:()=>{shadow(P.x,P.y,12);drawChar2(G.sheet.me,P.x,P.y-(moving&&(tick>>2)&1?1:0),P.dir,moving?(tick>>(G.run?2:3))&3:0);if(G.emT>0)emote(Math.round(P.x),Math.round(P.y-29),G.emC)}});
@@ -276,6 +281,8 @@ function draw(){
   ctx.globalCompositeOperation='lighter';
   const pxx=P.x-cx,pyy=P.y-cy-8,rad=70,q=ctx.createRadialGradient(pxx,pyy,2,pxx,pyy,rad);q.addColorStop(0,'rgba(95,88,70,.45)');q.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=q;ctx.fillRect(pxx-rad,pyy-rad,rad*2,rad*2);
   ctx.globalCompositeOperation='source-over';
+  if(G.eclair>10){ctx.fillStyle='rgba(200,210,255,.09)';ctx.fillRect(0,0,VW,VH)}
+  if(G.noir>0)noirDessine(pxx,pyy);
   if(G.fl>0){ctx.fillStyle=`rgba(255,240,230,${G.fl/20})`;ctx.fillRect(0,0,VW,VH)}
   if(G.fade>0){ctx.fillStyle=`rgba(4,3,10,${G.fade})`;ctx.fillRect(0,0,VW,VH)}
   posBulles();
@@ -312,7 +319,8 @@ const finBulle=()=>{if(G.bI<G.bTxt.length){G.bI=G.bTxt.length;$('btxt').textCont
 function closeAll(){modal=null;$('bulle').hidden=true;$('pz').hidden=true;$('carnet').hidden=true;$('doc').hidden=true;$('options').hidden=true;$('tribunal').hidden=true;G.pzT=null;G.mini=null;$('jeu').focus({preventScroll:true});if(S)render()}
 const at0=()=>({x:S.p.x,y:S.p.y});
 function say(nom,txt,at,por){modal='dlg';bulle({at:at||at0(),nom,txt,por,btn:[{t:'Compris',f:closeAll}]})}
-function talk(o,msg,refus){
+function talk(o,msg,refus,e){
+  if(c.test)return salleParle(o.s);
   const s=o.s,su=c.suspects[s],V=VOIX(s),need=su.niveau-1,pret=()=>(S.conf[s]||0)>=need;
   o.mv=false;modal='dlg';
   const btn=HOURS.map((h,i)=>({t:(S.asked[s+'-'+i]?'✓ ':'Et à ')+h+(S.asked[s+'-'+i]?'':' ?'),f:()=>{
@@ -320,11 +328,11 @@ function talk(o,msg,refus){
     apprendre(s,i);talk(o,parole(s,i));
   }}));
   btn.push({t:`Et ${c.vName} ?`,cl:'alt',f:()=>{if(!S.rel[s]){S.rel[s]=1;S.conf[s]=(S.conf[s]||0)+1}talk(o,V.rel)}});
-  if(S.docs[s])btn.push({t:'Montrer le papier',cl:'fort',f:()=>{if(S.rel[s]!==2){S.rel[s]=2;S.conf[s]=(S.conf[s]||0)+2}talk(o,su.aveu)}});
+  btn.push({t:'Montrer un document',cl:'fort',f:()=>montrer(o)});
   if(refus)btn.push({t:'Insister',cl:'alt',f:()=>{S.conf[s]=(S.conf[s]||0)+1;talk(o,pret()?'Bon, très bien. Je vous écoute.':V.non,!pret())}});
   btn.push({t:'À plus tard',cl:'alt',f:closeAll});
   const accord=t=>su.g==='f'?t.replace(/\bsûr\b/g,'sûre').replace(/\bennuyé\b/g,'ennuyée').replace(/\ballé\b/g,'allée').replace(/\bfurieux\b/g,'furieuse'):t;
-  bulle({at:{x:o.fx,y:o.fy},nom:`${su.prenom}, ${su.role}`,txt:accord(msg||V.hi[(tick>>6)%V.hi.length]),por:G.por[s],btn});
+  bulle({at:{x:o.fx,y:o.fy},nom:`${su.prenom}, ${su.role}`,txt:accord(msg||V.hi[(tick>>6)%V.hi.length]),por:visage(s,e||(refus?(V.nom==='nerveux'?'inquiet':'colere'):null)),btn});
 }
 
 // ——— Scènes ———
@@ -418,7 +426,8 @@ function startIntro(){
     ba(`Ah, inspecteur ! Vous voilà enfin. Bienvenue ${c.set.lieu}.`),
     moi("Basile. Que s'est-il passé ?"),
     ba(`Voici ${V}, ${c.vrole}. Retrouvé${e} mort${e} ici même, à minuit pile.`),
-    ba(`Le légiste parle d'${CLASSES[c.cls].slice(3)}. La mort remonte à ${win}. J'ai glissé son rapport dans votre calepin.`),
+    ba(`Le légiste parle d'${CLASSES[c.cls]}. La mort remonte à ${win}. J'ai glissé son rapport dans votre calepin.`),
+    ...(c.crime==='suicide'?[ba("Tout a été arrangé pour faire croire à un suicide. Le légiste n'y croit pas une seconde.")]:c.crime==='vol'?[ba(`Et ${c.vole} a disparu. La victime a sans doute surpris son voleur.`)]:c.crime==='poison'?[ba("Aucune blessure, juste un verre renversé près du corps. Quelqu'un a versé quelque chose dedans.")]:[]),
     moi("L'assassin a pu filer ?"),
     ba("Impossible, tout est bloqué. Il est encore là, parmi eux."),
     ba(c.liars===1?"Écoutez bien : chaque suspect peut vous dire où il était, heure par heure. Les innocents disent la vérité. Un seul ment : l'assassin.":"Écoutez bien : chaque suspect peut vous dire où il était, heure par heure. Ils sont deux, et ils ont agi ensemble : deux personnes mentent, ce sont les deux assassins."),
@@ -428,6 +437,7 @@ function startIntro(){
     ba("Certains parlent facilement, d'autres non. Si quelqu'un se ferme, insistez, parlez de la victime ou montrez-lui un papier qui le compromet."),
     ba("Fouillez les tiroirs, les armoires et les bibliothèques. Il faudra parfois ranger des livres, crocheter une serrure ou résoudre une énigme. Dans les caisses, videz tout : personne ne vous dira ce qui compte."),
     ba("Gardez vos trouvailles : un même objet peut ouvrir plusieurs cachettes différentes."),
+    ba("Dans le calepin, la page Déductions vous aide à comparer deux témoignages. Et si vous séchez, demandez-moi un indice, mais votre note en souffrira."),
     ba("Chaque pièce a son présentoir. Ce qui manque est peut-être l'arme du crime."),
     ba("Tout s'écrit dans votre calepin, là, en bas à droite : notes, témoignages, objets et documents. La carte, en haut à droite, vous montre où vous êtes."),
     {fn:()=>{const k=$('calepin');k.classList.remove('frise');void k.offsetWidth;k.classList.add('frise')}},
@@ -448,8 +458,8 @@ function motDossier(){
 }
 function startVerite(qui){
   const K=c.tueurs.map(i=>c.suspects[i]),A=qui.map(i=>c.suspects[i]),ok=memes(qui,c.tueurs),b=G.body,cells=freeNear(b.x,b.y,16),noms=l=>liste(l.map(q=>q.prenom));
-  S.fin={win:ok,qui,arme:G.armeC??null,heure:G.heureC??null};
-  if(!G.robot){if(ok){stats.gagnees++;stats.serie++;stats.res[S.lv]=1}else stats.serie=0}
+  S.fin={win:ok,qui,arme:G.armeC??null,heure:G.heureC??null};S.fin.note=noteEnquete(ok);
+  if(!G.robot){if(ok){stats.gagnees++;stats.serie++;stats.res[S.lv]=1;stats.notes=stats.notes||{};const a=stats.notes[S.lv];if(!a||S.fin.note.l<a)stats.notes[S.lv]=S.fin.note.l}else stats.serie=0}
   G.sauve=null;save();
   const fin=()=>{render();ouvrir('fin')};
   if(G.noCut)return fin();
@@ -603,6 +613,7 @@ function npcLife(){
   W.obj.forEach(o=>{
     if(o.kind!=='suspect')return;
     if(o.em>0)o.em--;
+    gesteMaj(o);if(o.assis)return;
     const near=Math.hypot(P.x-o.fx,P.y-o.fy)<58&&visible(ar,o.fx>>4,(o.fy-3)>>4);
     if(o.hold>0)o.hold--;
     if(near||o.hold>0){
@@ -629,7 +640,9 @@ function npcLife(){
 }
 function update(){
   tick++;
+  if(tick%15===0)sonMaj();
   if(!enJeu)return;
+  if(G.eclair>0)G.eclair--;if(G.noir>0&&--G.noir===0)toast('La lumière revient',true);
   if(G.fl>0)G.fl--;if(G.emT>0)G.emT--;
   (G.rip||[]).forEach(r=>r.t--);if(G.rip)G.rip=G.rip.filter(r=>r.t>0);
   if(toastT>0&&--toastT===0)$('toast').hidden=true;
@@ -639,6 +652,8 @@ function update(){
   if(modal==='cut'&&Cut){stepCut();return}
   if(modal)return;
   npcLife();
+  evenements();if(modal)return;
+  if(!G.eclair&&W.windows.length&&!O.calme&&Math.random()<.0014)eclair();
   let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0),f=dx&&dy?.72:1;
   if(G.bot){botStep();dx=G.bvx||0;dy=G.bvy||0;f=1}
   else if(G.walk){
@@ -661,8 +676,8 @@ function update(){
   }
   const a=areaIdx(P.x>>4,(P.y-3)>>4);
   if(a>=0&&a!==G.area){
-    G.area=a;G.hover=null;
-    if(!S.visit[a]){S.visit[a]=1;if(a<5){toast(c.set.rooms[a].n,true);render()}}
+    G.area=a;G.hover=null;if(c.test)entreeTest(a);
+    if(!S.visit[a]){S.visit[a]=1;if(a<c.set.rooms.length&&!c.test){toast(c.set.rooms[a].n,true);render()}}
     miniCarte();
   }
   const nom=G.area!=null&&W.areas[G.area]?W.areas[G.area].name:'';
@@ -736,7 +751,7 @@ function interact(o){
 function pion(i,cl=''){return`<span class="pion ${cl}" title="${esc(c.suspects[i].nom)}">${c.suspects[i].ini}</span>`}
 function pNotes(){
   const n=S.cards.length,cases=S.cards.map(k=>`<${k.doc!==undefined?`button data-a="lire" data-v="${k.doc}"`:'div'} class="case k-${k.k}"><span class="t"><img alt="" src="${imgURL(k.ic)}"><span>${esc(k.t)}</span></span><span>${esc(k.x)}</span></${k.doc!==undefined?'button':'div'}>`).join('');
-  return`<h2>Mes découvertes</h2>${n?`<div class="cases">${cases}</div>`:'<p class="main">Rien pour l\'instant. Parle aux suspects et fouille les pièces.</p>'}`;
+  return`<h2>Mes découvertes</h2>${S.fin?'':'<div class="ligne"><button class="etiq alt" data-a="aide">Demander un indice à Basile</button><span class="petitp">Chaque indice baisse ta note.</span></div>'}${n?`<div class="cases">${cases}</div>`:'<p class="main">Rien pour l\'instant. Parle aux suspects et fouille les pièces.</p>'}`;
 }
 function pTemoins(){
   const tete=HOURS.map((h,i)=>`<th class="${c.win.includes(i)?'crime':''}">${h}</th>`).join('');
@@ -815,20 +830,21 @@ function tribunal(){
 }
 function pFin(){
   const f=S.fin;
-  return`<h2>${f.win?'Affaire résolue !':(c.tueurs.length>1?"Les assassins m'ont échappé":"L'assassin m'a échappé")}</h2>
+  return`<h2>${f.win?'Affaire résolue !':(c.tueurs.length>1?"Les assassins m'ont échappé":"L'assassin m'a échappé")}</h2>${pNote()}
   <div class="gens">${c.tueurs.map(i=>`<div class="fiche"><img alt="" src="${imgURL('p'+i)}"><span><b>${esc(c.suspects[i].nom)}</b>${f.win?(c.suspects[i].g==='f'?'Démasquée.':'Démasqué.'):'Ce n\'est pas cette personne que j\'ai arrêtée.'}</span></div>`).join('')}</div>
   ${f.arme!=null||f.heure!=null?`<p class="main">${esc(motDossier())}</p>`:''}<ul class="main">${preuve().map(l=>`<li>${esc(l)}</li>`).join('')}</ul>
   <div class="ligne"><button class="etiq fort" data-a="suite">Enquête suivante</button><button class="etiq" data-a="accueil">Accueil</button></div>`;
 }
-const TABS={notes:['Notes','#d8483e',pNotes],temoins:['Témoins','#3a7ad8',pTemoins],gens:['Personnes','#58a65a',pGens],objets:['Objets','#e0a03a',pObjets],papiers:['Documents','#8a5ac8',pPapiers],fin:['Verdict','#ffd23f',pFin]};
+const TABS={notes:['Notes','#d8483e',pNotes],temoins:['Témoins','#3a7ad8',pTemoins],deduc:['Déductions','#b0406a',pDeduc],gens:['Personnes','#58a65a',pGens],objets:['Objets','#e0a03a',pObjets],papiers:['Documents','#8a5ac8',pPapiers],fin:['Verdict','#ffd23f',pFin]};
 function ouvrir(t){
   if(modal==='cut')return;
-  if(!t||t==='calepin')t=G.tab&&['notes','temoins','gens','objets','papiers'].includes(G.tab)?G.tab:'notes';
+  if(c&&c.test)return ouvrirTest(t);
+  if(!t||t==='calepin')t=G.tab&&['notes','temoins','deduc','gens','objets','papiers'].includes(G.tab)?G.tab:'notes';
   $('bulle').hidden=true;$('pz').hidden=true;$('doc').hidden=true;G.pzT=null;G.mini=null;
   G.tab=t;modal='carnet';son('page');
   const e=$('carnet');e.hidden=false;
   // Marteau, carte et engrenage ont leur icône : ils ne figurent plus parmi les onglets
-  const tabs=[...(S.fin?['fin']:[]),'notes','temoins','gens','objets','papiers'];
+  const tabs=[...(S.fin?['fin']:[]),'notes','temoins','deduc','gens','objets','papiers'];
   e.innerHTML=`<div class="livret"><div class="spirale" aria-hidden="true"></div><div class="feuille"><button class="croix" data-a="fermer" aria-label="Fermer le calepin">${croix}</button><div class="corps">${TABS[t][2]()}</div></div><nav class="signets" role="tablist">${tabs.map(k=>`<button role="tab" aria-selected="${k===t}" data-a="onglet" data-v="${k}" style="--c:${TABS[k][1]}">${TABS[k][0]}</button>`).join('')}</nav></div>`;
   G.lu=S.cards.length;render();
 }
@@ -840,13 +856,13 @@ function render(){
 
 // ——— Page d'accueil ———
 function accueil(){
-  closeAll();enJeu=false;if(S&&!S.fin)G.sauve=S;
+  closeAll();enJeu=false;if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
   $('accueil').hidden=false;$('prompt').hidden=true;$('lieu').hidden=true;$('amb').hidden=true;$('hud').hidden=true;
   const n=stats.gagnees,suite=LEVELS.findIndex((l,i)=>!stats.res[i]);
-  const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${DIFF[l.diff].label}</span>${stats.res[i]?'<i>Résolu</i>':''}</button>`).join('');
+  const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${DIFF[l.diff].label}</span>${stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
   $('acc-ui').innerHTML=`<div class="acc-g"><h1>Faux<br><span>Alibi</span></h1><p>Dix lieux, cinquante pièces, et à chaque fois quelqu'un qui ment.</p>
     <div class="ligne"><button class="etiq fort" data-a="nouvelle" data-v="${suite<0?int(Math.random,10):suite}">Nouvelle enquête</button>${G.sauve?'<button class="etiq" data-a="continuer">Continuer</button>':''}<button class="etiq" data-a="reglages">Options</button></div></div>
-    <div class="acc-d"><div class="tampon"><b>${n}</b><span>enquête${n>1?'s':''} résolue${n>1?'s':''}</span></div><div class="dossiers">${dos}</div></div>`;
+    <div class="acc-d"><div class="tampon"><b>${n}</b><span>enquête${n>1?'s':''} résolue${n>1?'s':''}</span></div><div class="dossiers">${dos}<button class="dossier essai" data-a="test"><span class="no">T</span><span class="nom">Niveau test : 6 interrogatoires</span><span class="dif">Essai</span></button></div></div>`;
 }
 // ——— Options : une fenêtre unique, depuis l'accueil comme depuis le jeu ———
 const OPTS=[
@@ -859,7 +875,8 @@ const OPTS=[
   ['parts','Poussière et particules',[[1,'Oui'],[0,'Non']]],
   ['pluie',"Pluie sur l'accueil",[[1,'Oui'],[0,'Non']]],
   ['calme','Animations réduites',[[0,'Non'],[1,'Oui']]],
-  ['sons','Sons',[[1,'Oui'],[0,'Non']]]
+  ['sons','Sons',[[1,'Oui'],[0,'Non']]],
+  ['musique','Musique',[[1,'Oui'],[0,'Non']]]
 ];
 const CURSEURS=[['vol','Volume',0,100],['lum','Lumière des pièces',0,100],['txt','Taille du texte',90,130]];
 function appliqueOpts(){
@@ -975,7 +992,7 @@ function openCaisse(o){
 }
 
 // ——— Mini-jeux de fouille : courts, adaptés au meuble, sans échec définitif ———
-const MINIS={livres:'Ranger les livres',cintres:'Fouiller les poches',poussiere:'Dégager les cendres',crochet:'Crocheter le tiroir',memo:'Paires de flacons',tatons:'Chercher à tâtons'};
+const MINIS={ecriture:'Comparer les écritures',empreinte:'Relever une empreinte',dechiree:'Recoller une lettre',livres:'Ranger les livres',cintres:'Fouiller les poches',poussiere:'Dégager les cendres',crochet:'Crocheter le tiroir',memo:'Paires de flacons',tatons:'Chercher à tâtons'};
 function livreImg(b){
   const[k,g]=cv(16,64),h=b.h;
   box(g,1,64-h,14,h,b.col);R(g,tone(b.col,.3),3,64-h+2,1,h-4);R(g,'#e0c060',2,64-h+6,12,1);R(g,'#e0c060',2,64-h+8,12,1);R(g,'#e0c060',2,62,12,1);
@@ -989,11 +1006,13 @@ function habitImg(i){
   return k.toDataURL();
 }
 function openMini(type,win,free,o){
+  G.ic=G.ic||{};G.url=G.url||{};
   PZ=null;G.mini=null;G.pzT=null;pzOpen();son('page');
-  const fam=(o&&FOND_MEUBLE[o.name])||FOND_DEFAUT[type],s=o?(o.id*13+c.seed)%9973:7,cle='f'+fam+s,fond=G.url[cle]||(G.url[cle]=fondMeuble(fam,s).toDataURL());
+  const fam=['ecriture','empreinte','dechiree'].includes(type)?'tiroir':(o&&FOND_MEUBLE[o.name])||FOND_DEFAUT[type],s=o?(o.id*13+c.seed)%9973:7,cle='f'+fam+s,fond=G.url[cle]||(G.url[cle]=fondMeuble(fam,s).toDataURL());
   const nom=o&&NOM_F[o.name]?cap(NOM_F[o.name]):MINIS[type],q0=o&&o.loot,spr=icone(q0?(q0.t==='obj'?q0.id:q0.t==='cle'?'cle':'lettre'):'lettre');
   const done=()=>{G.pzT=null;G.mini=null;if(free){closeAll();toast('Bien joué',true);return}win()};
   const shell=(txt,inner)=>{$('pz').innerHTML=`<div class="fiche-pz"><h3>${esc(nom)}</h3><p id="mg-t">${esc(txt)}</p><div class="meuble" style="background-image:url(${fond})">${inner}</div><div class="ligne"><button class="etiq alt" data-x="ferme">Refermer</button></div></div>`};
+  if(miniPlus(type,shell,done))return;
   if(type==='livres'){
     const cols=['#a33a3a','#d8703a','#d8b83a','#3d7a4c','#2e6a8c','#6b3d78'],nb=6;
     const regles=[['Du plus petit au plus grand.',b=>b.h],["Dans l'ordre des numéros au dos.",b=>b.n],["Dans l'ordre des couleurs : rouge, orange, jaune, vert, bleu, violet.",b=>cols.indexOf(b.col)]];
@@ -1139,6 +1158,12 @@ function pret(){
     if(e.target.closest('button'))son('clic');
     const b=e.target.closest('[data-a]');if(!b)return;
     const a=b.dataset.a,v=b.dataset.v;
+    if(a==='t')return actionTest(v);
+    if(a==='vote'){stats.sys=stats.sys||{};stats.sys[SALLES[G.area].id]=v;save();return ouvrirTest('salle')}
+    if(a==='tem')return choisirTem(v);
+    if(a==='comparer')return comparer();
+    if(a==='aide'){const t=aideTexte();closeAll();return say('Basile',t,null,G.porBa)}
+    if(a==='test')return neuf(10,4321,false);
     if(a==='onglet')return ouvrir(v);
     if(a==='fermer'){if(modal==='doc'&&G.tab&&!$('carnet').hidden){$('doc').hidden=true;modal='carnet';return}return closeAll()}
     if(a==='lire')return ouvrirDoc(+v);
@@ -1182,6 +1207,8 @@ function pret(){
   $('jeu').addEventListener('click',onMapClick);
   $('jeu').addEventListener('mousemove',onMapHover);
   $('jeu').addEventListener('mouseleave',()=>{G.hover=null;G.mx=undefined});
+  const nomCarte=e=>{const k=$('mini'),T=G.planT,n=$('plan-nom');if(!T||!W)return;const r=k.getBoundingClientRect(),f=k.width/r.width,a=areaIdx(Math.floor((e.clientX-r.left)*f/T.s+T.x0),Math.floor((e.clientY-r.top)*f/T.s+T.y0));n.hidden=a<0;if(a>=0)n.textContent=W.areas[a].name;clearTimeout(G.pnT);if(e.pointerType!=='mouse')G.pnT=setTimeout(()=>{n.hidden=true},1800)};
+  $('mini').addEventListener('pointermove',nomCarte);$('mini').addEventListener('pointerdown',nomCarte);$('mini').addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')$('plan-nom').hidden=true});
   $('pz').addEventListener('click',pzClick);
   $('pz').addEventListener('input',e=>{if(e.target.id==='pz-sh'){PZ.p.shift=+e.target.value;PZ.input=($('pz-in')||{}).value||'';pzRender()}else if(e.target.id==='pz-in')PZ.input=e.target.value});
   chargeStats();appliqueOpts();

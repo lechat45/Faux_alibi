@@ -135,3 +135,15 @@ const TAPIS_C=['#7a2f35',null,null,null,'#c8a040',null,'#2e4a78','#5a9a7a','#7a2
 const SOLS_C=['parquet','parquet','tapis','marbre','metal','scene','planche','lino','marbre','marbre'];
 const PORTES=[['bois','hotel'],['bois','bois'],['train','train'],['verre','verre'],['metal','metal'],['theatre','loge'],['metal','hotel'],['clinique','hotel'],['double','double'],['double','hotel']];
 LEVELS.forEach((l,i)=>{l.porte=PORTES[i][0];l.portech=PORTES[i][1];l.runner=TAPIS_C[i];l.floor=SOLS_C[i]});
+
+// Le niveau test : un couloir et six salles, hors de la liste des dix enquêtes
+const NIVEAU_TEST=Object.assign(lvl('difficile','Couloir des interrogatoires','au couloir des interrogatoires',['directeur','directrice'],
+  ['comptable','retraitée','libraire','chimiste','gardien de nuit','serveuse','notaire'],'#4a5a6a','tapis','#6d4628',['plant','clock','plant','commode','plant'],[],
+  {r:[[2,3,11,7],[14,3,11,7],[26,3,11,7],[2,19,11,7],[14,19,11,7],[26,19,11,7]],c:[[2,13,35,3,'Couloir']],l:[[0,6],[1,6],[2,6],[3,6],[4,6],[5,6]]},[
+  ["Salle d'audience","à la salle d'audience",'le marteau de bois','lourd','salon','s_grand','#3a4a6a'],
+  ['Salon de thé','au salon de thé','le couteau à gâteau','lame','salon','s_class','#6b3f58'],
+  ['Bibliothèque','à la bibliothèque','le coupe-papier','lame','libre','l_biblio','#35543f'],
+  ['Laboratoire','au laboratoire','le cordon électrique','lien','libre','l_labo','#5d8f92'],
+  ['Salle des archives','à la salle des archives',"l'agrafeuse de fonte",'lourd','libre','l_openspace','#7a5a3c'],
+  ['Atelier du dessinateur',"à l'atelier du dessinateur",'la cordelette','lien','libre','l_veranda','#8a6a3a']]),{porte:'bois',portech:'bois',runner:'#7a2f35',floor:'parquet'});
+const LV=i=>i===10?NIVEAU_TEST:LEVELS[i];

@@ -1,5 +1,5 @@
 const fs=require('fs'),path=require('path'),d=path.join(__dirname,'..');
-const js=['levels','data','engine','puzzles','world','art','art2','meubles','tableaux','art3','interieur','fonds','documents','papiers','accueil','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
+const js=['levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','salles','sons','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
 const css=fs.readFileSync(path.join(d,'src/style.css'),'utf8');
 const out=`<!DOCTYPE html>
 <html lang="fr">
@@ -20,7 +20,7 @@ const out=`<!DOCTYPE html>
     <button id="engrenage" class="engrenage" data-a="reglages" aria-label="Options"><i id="eng1"></i></button>
     <button id="marteau" class="marteau" data-a="marteau" aria-label="Accuser"><canvas id="mart" width="80" height="68"></canvas></button>
     <button id="calepin" class="calepin" data-a="onglet" data-v="calepin" aria-label="Ouvrir le calepin"><span id="neuf" class="neuf" hidden></span></button>
-    <div class="plan-mini" aria-hidden="true"><canvas id="mini"></canvas><span id="ici"></span></div>
+    <div class="plan-mini"><canvas id="mini" aria-hidden="true"></canvas><span id="ici"></span><span id="plan-nom" class="plan-nom" hidden></span></div>
   </div>
   <div id="amb" class="amb" hidden></div>
   <div id="toast" class="toast" hidden></div>

@@ -53,10 +53,12 @@ function detailAutopsie(c){
   const r=RNG((c.seed*7+13)>>>0),n=(a,b)=>a+int(r,b-a+1),T={
    lourd:{les:"Plaie contuse du cuir chevelu, région pariétale gauche, avec enfoncement de la boîte crânienne sur 4 cm. Hématome sous-dural étendu.",int:"Coup unique porté de haut en bas, avec une violence certaine.",obj:"objet lourd et dur"},
    lame:{les:"Plaie thoracique unique de 3 cm sous le mamelon gauche, profonde de 9 cm. Péricarde et ventricule gauche transpercés.",int:"Coup porté de face, à courte distance, sans trace de lutte.",obj:"lame étroite à un seul tranchant"},
-   lien:{les:"Sillon horizontal continu autour du cou, pétéchies conjonctivales, fracture de la corne droite de l'os hyoïde.",int:"Strangulation exercée par-derrière. Aucune défense notable.",obj:"lien souple et résistant"}}[c.cls];
+   lien:{les:"Sillon horizontal continu autour du cou, pétéchies conjonctivales, fracture de la corne droite de l'os hyoïde.",int:"Strangulation exercée par-derrière. Aucune défense notable.",obj:"lien souple et résistant"},
+   poison:{les:"Aucune plaie. Pupilles très contractées, lèvres bleuies, odeur âcre dans la bouche.",int:"Toxique pris avec une boisson, moins d'une heure avant la mort.",obj:"toxique violent"}}[c.cls];
+  const faux=c.crime==='suicide'?" La mise en scène d'un suicide ne résiste pas à l'examen.":'';
   const f=c.vg==='f';
   return{dos:`IML-${n(1000,9899)}`,req:n(1000,4999),med:pick(r,LEGISTES),asst:pick(r,ASSISTANTS),jour:pick(r,JOURS),ht:`${n(7,9)} h ${n(10,55)}`,age:n(42,71),taille:`${f?1:1},${f?n(58,72):n(68,86)} m`,poids:`${f?n(54,72):n(68,94)} kg`,
-   piece:c.set.rooms[c.rc].n,lieu:c.set.nom,rect:`${n(29,32)},${n(1,9)} °C`,les:T.les,int:T.int,obj:T.obj,alc:`0,${n(2,9)} g/l`,ville:pick(r,VILLES),casier:n(2,14),ongle:n(0,1)?'Aucun tissu étranger sous les ongles.':'Rien d\'exploitable sous les ongles.',f};
+   piece:c.set.rooms[c.rc].n,lieu:c.set.nom,rect:`${n(29,32)},${n(1,9)} °C`,les:T.les,int:T.int+faux,obj:T.obj,tox:c.cls==='poison'?'présence massive d\'un alcaloïde':'recherche négative',alc:`0,${n(2,9)} g/l`,ville:pick(r,VILLES),casier:n(2,14),ongle:n(0,1)?'Aucun tissu étranger sous les ongles.':'Rien d\'exploitable sous les ongles.',f};
 }
 const DOC_HTML={
  testament:p=>{const a=alea(p),not=a.c(NOTAIRES),vil=a.c(VILLES);return`<div class="d" data-k="testament"><p class="ent">Déposé en l'étude de ${not}, notaire à ${vil} · Minute n° ${a.n(1200,8900)}</p><h4>Testament olographe</h4>
@@ -102,7 +104,7 @@ const DOC_HTML={
   <div class="ligne2"><p><i>Médecin légiste :</i> <b>${a.med}</b></p><p><i>Assisté de :</i> ${a.asst}</p><p><i>Requis par :</i> Police judiciaire</p><p><i>Examen :</i> le ${a.jour}, ${a.ht}</p></div>
   <h5>I. Identité du défunt</h5><div class="ligne2"><p><i>Nom :</i> <b>${esch(p.v)}</b></p><p><i>Âge :</i> ${a.age} ans</p><p><i>Taille :</i> ${a.taille}</p><p><i>Poids :</i> ${a.poids}</p></div><p><i>Découvert :</i> ${esch(a.piece)}, ${esch(a.lieu)}, à minuit.</p>
   <h5>II. Examen du corps</h5><p><i>Température rectale :</i> ${a.rect} à l'arrivée. <i>Rigidité :</i> installée à la nuque et aux mâchoires. <i>Lividités :</i> postérieures, encore mobiles.</p><p><i>Lésions :</i> ${a.les} ${a.ongle}</p>
-  <h5>III. Analyses</h5><p><i>Alcoolémie :</i> ${a.alc}. <i>Toxiques :</i> recherche négative. <i>Estomac :</i> repas pris environ trois heures avant la mort.</p>
+  <h5>III. Analyses</h5><p><i>Alcoolémie :</i> ${a.alc}. <i>Toxiques :</i> ${a.tox}. <i>Estomac :</i> repas pris environ trois heures avant la mort.</p>
   <h5>IV. Conclusions</h5><p><i>Cause du décès :</i> ${m_(p.cause)}. Instrument : ${a.obj}. ${a.int}</p><p><i>Heure de la mort :</i> ${m_(p.h)}.</p><p>La mort est criminelle. Le corps est tenu à la disposition de la justice.</p>
   <p class="signe">${a.med}</p><div class="tampon-p"><b>POLICE<br>JUDICIAIRE</b><small>Reçu et enregistré</small><small>Brigade criminelle</small></div></div>`},
  carte:p=>{const a=alea(p);return`<div class="d" data-k="carte"><p class="main dem">${esch(p.txt)}<br><br>${a.c(['À bientôt.','Tu sais qui je suis.','Bien à toi.'])}</p><p class="dest">${esch(p.v)}<br>${esch(p.lieu)}<br>${a.c(VILLES)}</p><p class="obl">${a.c(VILLES)} · ${a.n(6,22)} h · ${a.c(JOURS2)}</p></div>`}

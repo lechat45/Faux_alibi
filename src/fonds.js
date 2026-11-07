@@ -47,6 +47,8 @@ function fondMeuble(fam,s){
     else{R(g,'#8a939e',150,0,20,74);R(g,'#c8ccd4',153,0,3,74);for(let a=0;a<3.2;a+=.03)R(g,'#8a939e',118+Math.cos(a)*42-10,74+Math.sin(a)*38,20,4);R(g,'#8a939e',66,40,20,36);R(g,'#c8ccd4',69,40,3,36);R(g,'#5a636e',60,36,32,5);
      R(g,'#3a6a8c',222,136,50,54);R(g,'#5a8aac',224,136,8,52);ellipseP(g,247,136,25,5,'#22384a');R(g,'#8a939e',222,134,50,2)}
     for(let j=0;j<H0;j+=2)for(let i=(j%4);i<W0;i+=4)if(Math.hypot((i-160)/170,(j-100)/110)>.72)R(g,'rgba(6,4,10,.5)',i,j,2,2);
+  }else if(fam==='tiroir'){
+    bois(g,0,0,W0,H0,tone(c,-.34),s,true);for(let i=0;i<22;i++){const a=tone(c,.2-i/22*.5);R(g,a,i,i,W0-i*2,1);R(g,tone(a,-.1),i,H0-1-i,W0-i*2,1);R(g,tone(a,.08),i,i,1,H0-i*2);R(g,tone(a,-.14),W0-1-i,i,1,H0-i*2)}
   }else if(fam==='tambour'){
     for(let j=0;j<H0;j++)R(g,tone('#a8b0ba',-j*.002),0,j,W0,1);ellipseP(g,160,100,100,92,'#5a636e');ellipseP(g,160,100,92,84,'#c8ccd4');ellipseP(g,160,100,84,77,'#1a1c24');ellipseP(g,160,100,78,71,'#343a44');
     for(let j=-68;j<=68;j+=12)for(let i=-72+((j%24)?6:0);i<=72;i+=12)if((i*i)/(76*76)+(j*j)/(70*70)<1)R(g,'#0c0e14',159+i,99+j,3,3);

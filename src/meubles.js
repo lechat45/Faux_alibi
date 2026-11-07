@@ -121,6 +121,7 @@ function paysage(g,x,y,w,h,lv,s){
   ][lv%10]();
 }
 function fenetre(g,x,y,lv,seed){
+  if(lv%10===6)return hublot(g,x,y,lv,seed);
   box(g,x+1,y+3,30,20,'#8a6a44');paysage(g,x+3,y+5,26,16,lv,seed);
   R(g,'#8a6a44',x+15,y+5,2,16);R(g,'#8a6a44',x+3,y+11,26,1);R(g,'#c8a468',x,y+22,32,2);R(g,'#e8c888',x,y+22,32,1);
   [x-2,x+27].forEach((c,i)=>{for(let j=0;j<22;j++){R(g,tone('#7a2f35',((j+i)%4===0?.14:0)),c,y+2+j,6,1)}R(g,'#b34a50',c+1,y+2,1,22);R(g,'#b34a50',c+4,y+2,1,22)});

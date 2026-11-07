@@ -270,7 +270,8 @@ function vitrineSprite(o,present){
   for(let j=0;j<15;j++)R(g,tone('#2a3a55',j*.01),2,1+j,12,1);
   R(g,'#d8e8f4',1,0,14,1);R(g,'#d8e8f4',1,0,1,16);R(g,'#d8e8f4',14,0,1,16);R(g,'#ffffff',4,2,1,8);R(g,'#ffffff',5,2,1,3);
   R(g,'#a33a3a',3,13,10,3);
-  if(present){const c=o==='lame'?'#d8e0e8':o==='lien'?'#c8a468':'#b08a3a';if(o==='lame'){for(let i=0;i<8;i++)R(g,c,5+i>>0,12-i>>0,1,1);R(g,'#5b3820',4,12,3,2)}else if(o==='lien'){for(let i=0;i<9;i++)R(g,c,4+i,8+Math.round(Math.sin(i)*3),1,2)}else{box(g,4,6,8,7,c)}}
+  if(present&&o==='poison'){R(g,'#d8e8f4',6,5,4,3);R(g,'#8a5a34',6,3,4,2);box(g,4,8,8,6,'#7ac05a');R(g,'#ffffff',5,9,1,4)}
+  else if(present){const c=o==='lame'?'#d8e0e8':o==='lien'?'#c8a468':'#b08a3a';if(o==='lame'){for(let i=0;i<8;i++)R(g,c,5+i>>0,12-i>>0,1,1);R(g,'#5b3820',4,12,3,2)}else if(o==='lien'){for(let i=0;i<9;i++)R(g,c,4+i,8+Math.round(Math.sin(i)*3),1,2)}else{box(g,4,6,8,7,c)}}
   else{R(g,'#7a6a6a',7,14,3,1);R(g,'#ff8a7a',6,4,4,1);R(g,'#ff8a7a',9,5,1,2);R(g,'#ff8a7a',7,7,2,1);R(g,'#ff8a7a',7,8,1,2);R(g,'#ff8a7a',7,11,1,1)}
   return outlineSprite(k);
 }
