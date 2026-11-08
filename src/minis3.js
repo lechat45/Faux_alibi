@@ -20,6 +20,9 @@ function plaque(g,x,y,w,h,txt,taille=6){
 }
 
 function miniHD(type,shell,done,spr,o){
+  if(type==='horloge')return horlogeHD(shell,done,spr,o);
+  if(type==='pot')return potHD(shell,done,spr,o);
+  if(type==='coussins')return coussinsHD(shell,done,spr,o);
   if(type!=='moteur')return false;
   let fini=false;
   const gagne=t=>{if(fini)return;fini=true;dire(t);son('bon');setTimeout(()=>{if(G.mini||G.pzT)done()},1100)};

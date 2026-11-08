@@ -1,5 +1,5 @@
 const fs=require('fs'),path=require('path'),d=path.join(__dirname,'..');
-const js=['cartes','levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','salles','vie','tuto','sons','mobilier','mobilier2','minis2','minis3','lieux','rendu','editeur','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
+const js=['cartes','levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','salles','vie','tuto','sons','mobilier','mobilier2','minis2','minis3','minis4','lieux','rendu','editeur','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
 const SIG=require('crypto').createHash('sha1').update(['cartes','levels','data','engine','puzzles','world'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('')).digest('hex').slice(0,10);
 const css=fs.readFileSync(path.join(d,'src/style.css'),'utf8');
 const out=`<!DOCTYPE html>
