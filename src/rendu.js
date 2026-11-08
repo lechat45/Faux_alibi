@@ -117,20 +117,59 @@ function mursTour(g){
   gg.putImageData(img,0,0);g.drawImage(kk,0,0);
 }
 
-// ——— Le calepin : la page tourne quand on change d'onglet ———
+// ——— Le calepin : on tourne la page comme on corne une feuille ———
+// Le coin du bas se soulève et se replie : on voit l'envers du papier, son ombre sur la page,
+// puis le pli balaie toute la feuille et découvre la page suivante. En arrière, la feuille revient se poser.
 const ORDRE_ONGLETS=['fin','notes','temoins','deduc','gens','objets','papiers'];
 function tournePage(vieux,avance,defil){
   if(document.body.classList.contains('calme')||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const neuf=$('carnet').querySelector('.feuille');if(!neuf||!vieux)return;
-  const livret=neuf.parentElement;
-  Object.assign(vieux.style,{left:neuf.offsetLeft+'px',top:neuf.offsetTop+'px',width:neuf.offsetWidth+'px',height:neuf.offsetHeight+'px'});
-  vieux.classList.add('page-vole');vieux.setAttribute('aria-hidden','true');vieux.querySelectorAll('button').forEach(b=>b.tabIndex=-1);
-  const ombre=document.createElement('i');ombre.className='ombre-page';
-  if(avance){vieux.appendChild(ombre);vieux.classList.add('part');livret.appendChild(vieux)}
-  else{vieux.classList.add('dessous');livret.insertBefore(vieux,neuf);neuf.appendChild(ombre);neuf.classList.add('vient')}
-  const k=vieux.querySelector('.corps');if(k)k.scrollTop=defil||0;
-  const fin=()=>{vieux.remove();ombre.remove();neuf.classList.remove('vient')};
-  (avance?vieux:neuf).addEventListener('animationend',fin,{once:true});setTimeout(fin,900);
+  const livret=neuf.parentElement,X0=neuf.offsetLeft,Y0=neuf.offsetTop,Wp=neuf.offsetWidth,Hp=neuf.offsetHeight;
+  if(Wp<40||Hp<40)return;
+  Object.assign(vieux.style,{left:X0+'px',top:Y0+'px',width:Wp+'px',height:Hp+'px'});
+  vieux.classList.add('page-vole');vieux.setAttribute('aria-hidden','true');vieux.querySelectorAll('button,textarea,input').forEach(b=>b.tabIndex=-1);
+  // la feuille qui se plie : l'ancienne quand on avance, la nouvelle quand on revient en arrière
+  const pli=avance?vieux:neuf;
+  if(avance){vieux.style.zIndex=1;livret.appendChild(vieux)}else{vieux.style.zIndex=0;livret.insertBefore(vieux,neuf);neuf.style.zIndex=1}
+  const k0=vieux.querySelector('.corps');if(k0)k0.scrollTop=defil||0;
+  // une toile au-dessus, assez grande pour le rabat qui sort de la feuille
+  const mx=Wp*1.15,my=Hp*.55,CW=Wp+mx+Wp*.08,CH=Hp+my+Hp*.12,dpr=Math.min(2,window.devicePixelRatio||1),k=document.createElement('canvas');
+  k.className='pli-page';Object.assign(k.style,{left:(X0-mx)+'px',top:(Y0-my)+'px',width:CW+'px',height:CH+'px'});k.width=Math.round(CW*dpr);k.height=Math.round(CH*dpr);livret.appendChild(k);
+  const g=k.getContext('2d'),D=Math.hypot(Wp,Hp),C=[Wp,Hp],FIN=[-D*1.1,Hp*.15],RECT=[[0,0],[Wp,0],[Wp,Hp],[0,Hp]];
+  // garde la partie d'un polygone d'un côté d'une droite (passant par M, de normale n)
+  const coupe=(l,M,n,cote)=>{const s=p=>((p[0]-M[0])*n[0]+(p[1]-M[1])*n[1])*cote,o=[];
+    for(let i=0;i<l.length;i++){const a=l[i],b=l[(i+1)%l.length],sa=s(a),sb=s(b);if(sa>=0)o.push(a);if((sa>=0)!==(sb>=0)){const t=sa/(sa-sb);o.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t])}}return o};
+  const trace=l=>{g.beginPath();l.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath()};
+  const dessine=t=>{
+    const e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+    g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,k.width,k.height);g.setTransform(dpr,0,0,dpr,mx*dpr,my*dpr);
+    const P=[C[0]+(FIN[0]-C[0])*e,C[1]+(FIN[1]-C[1])*e-Math.sin(Math.PI*e)*Hp*.2],dx=C[0]-P[0],dy=C[1]-P[1],L=Math.hypot(dx,dy);
+    if(L<1){pli.style.clipPath='';return}
+    const n=[dx/L,dy/L],M=[(C[0]+P[0])/2,(C[1]+P[1])/2];
+    const reste=coupe(RECT,M,n,-1),decouvert=coupe(RECT,M,n,1),rabat=decouvert.map(([x,y])=>{const d=(x-M[0])*n[0]+(y-M[1])*n[1];return[x-2*d*n[0],y-2*d*n[1]]});
+    pli.style.clipPath=reste.length>2?`polygon(${reste.map(([x,y])=>x.toFixed(1)+'px '+y.toFixed(1)+'px').join(',')})`:'polygon(0 0,0 0,0 0)';
+    const deg=(a,b,stops)=>{const q=g.createLinearGradient(a[0],a[1],b[0],b[1]);stops.forEach(([o,c])=>q.addColorStop(o,c));return q};
+    // la page découverte : une ombre douce sous la feuille soulevée
+    if(decouvert.length>2){trace(decouvert);g.fillStyle=deg(M,[M[0]+n[0]*80,M[1]+n[1]*80],[[0,'rgba(40,25,5,.34)'],[1,'rgba(40,25,5,0)']]);g.fill()}
+    // la feuille encore à plat s'assombrit un peu en approchant du pli
+    if(reste.length>2){trace(reste);g.fillStyle=deg(M,[M[0]-n[0]*46,M[1]-n[1]*46],[[0,'rgba(70,48,14,.22)'],[1,'rgba(70,48,14,0)']]);g.fill()}
+    // le rabat : l'envers du papier, son ombre portée, plus sombre au creux du pli
+    if(rabat.length>2){
+      const loin=rabat.reduce((m,p)=>Math.max(m,-((p[0]-M[0])*n[0]+(p[1]-M[1])*n[1])),1),bout=[M[0]-n[0]*loin,M[1]-n[1]*loin];
+      g.save();g.shadowColor='rgba(30,20,5,.42)';g.shadowBlur=18;g.shadowOffsetX=-n[0]*7;g.shadowOffsetY=-n[1]*7+3;trace(rabat);g.fillStyle='#e4d6b0';g.fill();g.restore();
+      trace(rabat);g.fillStyle=deg(M,bout,[[0,'rgba(110,85,40,.5)'],[.12,'rgba(150,120,70,.22)'],[.45,'rgba(255,250,232,.18)'],[1,'rgba(236,224,192,.4)']]);g.fill();
+      // les lignes du cahier, vues par transparence à l'envers
+      g.save();trace(rabat);g.clip();g.strokeStyle='rgba(70,90,150,.09)';g.lineWidth=1;
+      g.beginPath();for(let y=28;y<Hp;y+=28){const a=[0,y],b=[Wp,y],r=p=>{const d=(p[0]-M[0])*n[0]+(p[1]-M[1])*n[1];return[p[0]-2*d*n[0],p[1]-2*d*n[1]]},A=r(a),B=r(b);g.moveTo(A[0],A[1]);g.lineTo(B[0],B[1])}g.stroke();g.restore();
+      trace(rabat);g.strokeStyle='rgba(90,66,26,.4)';g.lineWidth=1;g.stroke();
+    }
+    k.style.opacity=e>.88?Math.max(0,(1-e)/.12):1;
+  };
+  const DUR=640,T0=performance.now();let fini=false;
+  const fin=()=>{if(fini)return;fini=true;k.remove();vieux.remove();neuf.style.clipPath='';neuf.style.zIndex=''};
+  const pas=now=>{if(fini)return;let t=Math.min(1,(now-T0)/DUR);dessine(avance?t:1-t);if(t<1)requestAnimationFrame(pas);else fin()};
+  tournePage.essai={dessine,fin,pli,k};// pour les tests
+  dessine(avance?0:1);requestAnimationFrame(pas);setTimeout(fin,DUR+500);
 }
 
 // ——— Le rouage des options : un engrenage en laiton, biseauté, à rayons ———
