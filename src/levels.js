@@ -114,7 +114,7 @@ const LEVELS=[
   ['Chambre 8','à la chambre 8','le scalpel oublié','lame','chambre','ch_clinique','#a8b5b5'],
   ['Pharmacie','à la pharmacie','le mortier en marbre','lourd','libre','l_pharmacie','#c0c8c0']]),
  lvl('difficile',"Château de Vauclair","au château de Vauclair, pont-levis bloqué par la crue",['comte','comtesse'],
-  ['intendant|intendante','héritier|héritière','abbé|abbesse','généalogiste','garde-chasse','majordome','précepteur|préceptrice'],'#5a2a2a','tapis','#54331f',['clock','commode','plant','clock'],['galerie'],
+  ['intendant|intendante','héritier|héritière','abbé|abbesse','généalogiste','garde-chasse','majordome','précepteur|préceptrice'],'#5a2a2a','tapis','#54331f',['clock','commode','plant','armure'],['galerie'],
   {r:[[3,3,14,8],[18,3,22,8],[17,21,8,7],[3,21,13,7],[26,21,14,7]],c:[[3,14,37,4,'Grande galerie']],l:[[0,5],[1,5],[3,5],[3,2],[4,5]]},[
   ['Cuisines','aux cuisines','le couperet','lame','cuisine','c_pro','#7a6a5a'],
   ['Grand salon','au grand salon',"le chandelier d'argent",'lourd','salon','s_grand','#7a2230'],
@@ -170,13 +170,13 @@ const ETAGES={
 
 // ——— Petites pièces sans enquête : elles rendent les lieux plus vrais ———
 Object.assign(RECIPES,{
-  a_wc:{f:'damier',run:['sink','toilet'],g:[coin('BD',[['plant',0,0]])],porte:'bain'},
+  a_wc:{f:'damier',run:['toilet','sink'],g:[coin('BD',[['plant',0,0]])],porte:'bain'},
   a_service:{f:'lino',run:['shelf','locker'],g:[coin('BG',[['crate',0,0],['barrel',1,0]]),coin('BD',[['crate',0,0]])]},
   a_cellier:{f:'planche',run:['shelf','shelf'],g:[coin('BG',[['barrel',0,0],['crate',1,0]]),coin('BD',[['crate',0,0]])]},
   a_vestiaire:{f:'parquet',run:['portant','wardrobe'],g:[coin('C',[['banc',0,0]])]},
   a_controleur:{f:'planche',run:['desk','shelf'],g:[sous('desk',[['chairB',1,0]])]}
 });
-const TAILLES_ANNEXE={a_wc:[6,4],a_service:[6,4],a_cellier:[6,4],a_vestiaire:[7,4],a_controleur:[7,6],hall:[8,5]};
+const TAILLES_ANNEXE={a_wc:[8,4],a_service:[6,4],a_cellier:[6,4],a_vestiaire:[7,4],a_controleur:[7,6],hall:[8,5]};
 // Où chaque petite pièce a sa place : le cellier près de la cuisine, toilettes et vestiaire près de l'entrée
 const PREF_ANNEXE={a_cellier:'cuisine',a_wc:'entree',a_vestiaire:'entree'};
 const ANNEXES={

@@ -589,3 +589,10 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .entoure::after{content:"";position:absolute;inset:-5px -9px -4px -9px;border:2px solid #b8302a;border-radius:50%;transform:rotate(-4deg);pointer-events:none}
 .lacere{position:absolute;inset:0;pointer-events:none;background:linear-gradient(118deg,transparent 52%,rgba(30,20,10,.35) 52.1%,#f4ecd6 52.2%,#f4ecd6 52.35%,rgba(30,20,10,.3) 52.45%,transparent 52.6%),linear-gradient(108deg,transparent 71%,rgba(30,20,10,.3) 71.1%,#f4ecd6 71.2%,#f4ecd6 71.32%,rgba(30,20,10,.25) 71.42%,transparent 71.55%)}
 @media (max-width:560px){.j-cols{grid-template-columns:minmax(0,1fr)}.j-cote{border-left:0;padding-left:0}.j-titre{font-size:38px}.d .j-une{font-size:24px}.lt-meta{flex-direction:column}.lt-dest{text-align:left}.d[data-k=renvoi]{padding:26px 18px 24px}}
+/* Chasse aux bugs : cibles tactiles et textes minimum sur téléphone */
+.touche{font-size:max(13px,min(16px,2.8cqw))}
+.partition span{font-size:max(14px,min(21px,3.6cqw))}
+.meuble:has(.piano-m){width:min(760px,100%)}
+.pz input[type=range]{height:34px}
+.lt-reco{font-size:13px}
+@media (max-height:500px){.meuble{width:min(760px,100%,calc((100vh - 110px)*1.6))}}

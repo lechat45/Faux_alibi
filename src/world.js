@@ -24,6 +24,8 @@ const avecAnnexes=(P,liste,types)=>{
   const libre=q=>q.y0>=3&&q.x0>=1&&R.every(o=>q.x0>o.x1+1||q.x1<o.x0-1||q.y0>o.y1+3||q.y1<o.y0-3);
   const dehors=q=>!R.some(o=>o.x1>=q.x0&&o.x0<=q.x1&&o.y1<q.y0);
   const entree=o=>o.nom&&(o.hall||/entrée|hall|sas|vestibule/i.test(o.nom));
+  // sans couloir (un train), une petite pièce ne peut que prolonger le convoi par un bout
+  const sansCouloir=!R.some(o=>o.nom);
   liste.forEach(([nom,cle])=>{
     const[w,h]=TAILLES_ANNEXE[cle],pref=PREF_ANNEXE[cle],circ=R.filter(o=>o.nom&&(!o.annexe||o.hall)),pieces=R.filter(o=>o.ri!=null&&(cle==='a_wc'||o.t!=='bain'));
     // les cibles par ordre de préférence : jamais une autre petite pièce, sauf un hall
@@ -32,7 +34,7 @@ const avecAnnexes=(P,liste,types)=>{
     for(const groupe of groupes){
       for(const o of groupe){
         const cand=[],bout=q=>Math.min(Math.abs((q.x0+q.x1)/2-o.x0),Math.abs((q.x0+q.x1)/2-o.x1));
-        for(let x=o.x0-w+4;x<=o.x1-3;x++)cand.push({x0:x,y0:o.y1+4,x1:x+w-1,y1:o.y1+3+h});
+        if(!sansCouloir)for(let x=o.x0-w+4;x<=o.x1-3;x++)cand.push({x0:x,y0:o.y1+4,x1:x+w-1,y1:o.y1+3+h});
         for(let y=o.y0-h+3;y<=o.y1-2;y++){cand.push({x0:o.x1+2,y0:y,x1:o.x1+1+w,y1:y+h-1,cote:1});cand.push({x0:o.x0-1-w,y0:y,x1:o.x0-2,y1:y+h-1,cote:1})}
         for(const q of cand){if(!libre(q))continue;const sc=bout(q)*(q.cote?.5:1)+(cle==='hall'&&!dehors(q)?200:0)+Math.abs(q.y0-o.y0)*.1;if(!best||sc<best.sc)best={...q,sc,cible:o}}
       }

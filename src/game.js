@@ -165,7 +165,7 @@ function buildMap(){
   });
   g.fillStyle='rgba(12,10,32,.32)';W.furn.forEach(f=>g.fillRect(f.x*TS,(f.y+f.h)*TS-1,f.w*TS,3));
   // Tapis de couloir : un seul tapis qui suit les coudes, bordé d'or tout autour
-  if(L.runner)W.areas.filter(A=>!A.room&&!(A.etage&&!A.palier)).forEach(A=>{
+  if(L.runner)W.areas.filter(A=>!A.room&&!A.annexe&&!(A.etage&&!A.palier)).forEach(A=>{
     const bandes=[];
     A.rects.forEach(q=>{
       const hz=q.x1-q.x0>=q.y1-q.y0,e=hz?q.y1-q.y0+1:q.x1-q.x0+1;if(e<3)return;

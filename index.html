@@ -607,6 +607,13 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .entoure::after{content:"";position:absolute;inset:-5px -9px -4px -9px;border:2px solid #b8302a;border-radius:50%;transform:rotate(-4deg);pointer-events:none}
 .lacere{position:absolute;inset:0;pointer-events:none;background:linear-gradient(118deg,transparent 52%,rgba(30,20,10,.35) 52.1%,#f4ecd6 52.2%,#f4ecd6 52.35%,rgba(30,20,10,.3) 52.45%,transparent 52.6%),linear-gradient(108deg,transparent 71%,rgba(30,20,10,.3) 71.1%,#f4ecd6 71.2%,#f4ecd6 71.32%,rgba(30,20,10,.25) 71.42%,transparent 71.55%)}
 @media (max-width:560px){.j-cols{grid-template-columns:minmax(0,1fr)}.j-cote{border-left:0;padding-left:0}.j-titre{font-size:38px}.d .j-une{font-size:24px}.lt-meta{flex-direction:column}.lt-dest{text-align:left}.d[data-k=renvoi]{padding:26px 18px 24px}}
+/* Chasse aux bugs : cibles tactiles et textes minimum sur téléphone */
+.touche{font-size:max(13px,min(16px,2.8cqw))}
+.partition span{font-size:max(14px,min(21px,3.6cqw))}
+.meuble:has(.piano-m){width:min(760px,100%)}
+.pz input[type=range]{height:34px}
+.lt-reco{font-size:13px}
+@media (max-height:500px){.meuble{width:min(760px,100%,calc((100vh - 110px)*1.6))}}
 </style>
 </head>
 <body>
@@ -752,7 +759,7 @@ const LEVELS=[
   ['Chambre 8','à la chambre 8','le scalpel oublié','lame','chambre','ch_clinique','#a8b5b5'],
   ['Pharmacie','à la pharmacie','le mortier en marbre','lourd','libre','l_pharmacie','#c0c8c0']]),
  lvl('difficile',"Château de Vauclair","au château de Vauclair, pont-levis bloqué par la crue",['comte','comtesse'],
-  ['intendant|intendante','héritier|héritière','abbé|abbesse','généalogiste','garde-chasse','majordome','précepteur|préceptrice'],'#5a2a2a','tapis','#54331f',['clock','commode','plant','clock'],['galerie'],
+  ['intendant|intendante','héritier|héritière','abbé|abbesse','généalogiste','garde-chasse','majordome','précepteur|préceptrice'],'#5a2a2a','tapis','#54331f',['clock','commode','plant','armure'],['galerie'],
   {r:[[3,3,14,8],[18,3,22,8],[17,21,8,7],[3,21,13,7],[26,21,14,7]],c:[[3,14,37,4,'Grande galerie']],l:[[0,5],[1,5],[3,5],[3,2],[4,5]]},[
   ['Cuisines','aux cuisines','le couperet','lame','cuisine','c_pro','#7a6a5a'],
   ['Grand salon','au grand salon',"le chandelier d'argent",'lourd','salon','s_grand','#7a2230'],
@@ -808,13 +815,13 @@ const ETAGES={
 
 // ——— Petites pièces sans enquête : elles rendent les lieux plus vrais ———
 Object.assign(RECIPES,{
-  a_wc:{f:'damier',run:['sink','toilet'],g:[coin('BD',[['plant',0,0]])],porte:'bain'},
+  a_wc:{f:'damier',run:['toilet','sink'],g:[coin('BD',[['plant',0,0]])],porte:'bain'},
   a_service:{f:'lino',run:['shelf','locker'],g:[coin('BG',[['crate',0,0],['barrel',1,0]]),coin('BD',[['crate',0,0]])]},
   a_cellier:{f:'planche',run:['shelf','shelf'],g:[coin('BG',[['barrel',0,0],['crate',1,0]]),coin('BD',[['crate',0,0]])]},
   a_vestiaire:{f:'parquet',run:['portant','wardrobe'],g:[coin('C',[['banc',0,0]])]},
   a_controleur:{f:'planche',run:['desk','shelf'],g:[sous('desk',[['chairB',1,0]])]}
 });
-const TAILLES_ANNEXE={a_wc:[6,4],a_service:[6,4],a_cellier:[6,4],a_vestiaire:[7,4],a_controleur:[7,6],hall:[8,5]};
+const TAILLES_ANNEXE={a_wc:[8,4],a_service:[6,4],a_cellier:[6,4],a_vestiaire:[7,4],a_controleur:[7,6],hall:[8,5]};
 // Où chaque petite pièce a sa place : le cellier près de la cuisine, toilettes et vestiaire près de l'entrée
 const PREF_ANNEXE={a_cellier:'cuisine',a_wc:'entree',a_vestiaire:'entree'};
 const ANNEXES={
@@ -1340,6 +1347,8 @@ const avecAnnexes=(P,liste,types)=>{
   const libre=q=>q.y0>=3&&q.x0>=1&&R.every(o=>q.x0>o.x1+1||q.x1<o.x0-1||q.y0>o.y1+3||q.y1<o.y0-3);
   const dehors=q=>!R.some(o=>o.x1>=q.x0&&o.x0<=q.x1&&o.y1<q.y0);
   const entree=o=>o.nom&&(o.hall||/entrée|hall|sas|vestibule/i.test(o.nom));
+  // sans couloir (un train), une petite pièce ne peut que prolonger le convoi par un bout
+  const sansCouloir=!R.some(o=>o.nom);
   liste.forEach(([nom,cle])=>{
     const[w,h]=TAILLES_ANNEXE[cle],pref=PREF_ANNEXE[cle],circ=R.filter(o=>o.nom&&(!o.annexe||o.hall)),pieces=R.filter(o=>o.ri!=null&&(cle==='a_wc'||o.t!=='bain'));
     // les cibles par ordre de préférence : jamais une autre petite pièce, sauf un hall
@@ -1348,7 +1357,7 @@ const avecAnnexes=(P,liste,types)=>{
     for(const groupe of groupes){
       for(const o of groupe){
         const cand=[],bout=q=>Math.min(Math.abs((q.x0+q.x1)/2-o.x0),Math.abs((q.x0+q.x1)/2-o.x1));
-        for(let x=o.x0-w+4;x<=o.x1-3;x++)cand.push({x0:x,y0:o.y1+4,x1:x+w-1,y1:o.y1+3+h});
+        if(!sansCouloir)for(let x=o.x0-w+4;x<=o.x1-3;x++)cand.push({x0:x,y0:o.y1+4,x1:x+w-1,y1:o.y1+3+h});
         for(let y=o.y0-h+3;y<=o.y1-2;y++){cand.push({x0:o.x1+2,y0:y,x1:o.x1+1+w,y1:y+h-1,cote:1});cand.push({x0:o.x0-1-w,y0:y,x1:o.x0-2,y1:y+h-1,cote:1})}
         for(const q of cand){if(!libre(q))continue;const sc=bout(q)*(q.cote?.5:1)+(cle==='hall'&&!dehors(q)?200:0)+Math.abs(q.y0-o.y0)*.1;if(!best||sc<best.sc)best={...q,sc,cible:o}}
       }
@@ -4581,7 +4590,7 @@ function buildMap(){
   });
   g.fillStyle='rgba(12,10,32,.32)';W.furn.forEach(f=>g.fillRect(f.x*TS,(f.y+f.h)*TS-1,f.w*TS,3));
   // Tapis de couloir : un seul tapis qui suit les coudes, bordé d'or tout autour
-  if(L.runner)W.areas.filter(A=>!A.room&&!(A.etage&&!A.palier)).forEach(A=>{
+  if(L.runner)W.areas.filter(A=>!A.room&&!A.annexe&&!(A.etage&&!A.palier)).forEach(A=>{
     const bandes=[];
     A.rects.forEach(q=>{
       const hz=q.x1-q.x0>=q.y1-q.y0,e=hz?q.y1-q.y0+1:q.x1-q.x0+1;if(e<3)return;
