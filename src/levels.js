@@ -167,3 +167,27 @@ const ETAGES={
  8:{nom:'Étage',palier:'Galerie haute',p:[['Bibliothèque de la tour','l_biblio','#3a2a1a'],['Grenier','e_grenier','#5a4a34']]},
  9:{nom:'Étage privé',palier:'Couloir privé',p:[['Salon privé','s_grand','#4a1a24'],['Bureau du gérant','e_bureau','#3a2418']]}
 };
+
+// ——— Petites pièces sans enquête : elles rendent les lieux plus vrais ———
+Object.assign(RECIPES,{
+  a_wc:{f:'damier',run:['sink','toilet'],g:[coin('BD',[['plant',0,0]])],porte:'bain'},
+  a_service:{f:'lino',run:['shelf','locker'],g:[coin('BG',[['crate',0,0],['barrel',1,0]]),coin('BD',[['crate',0,0]])]},
+  a_cellier:{f:'planche',run:['shelf','shelf'],g:[coin('BG',[['barrel',0,0],['crate',1,0]]),coin('BD',[['crate',0,0]])]},
+  a_vestiaire:{f:'parquet',run:['portant','wardrobe'],g:[coin('C',[['banc',0,0]])]},
+  a_controleur:{f:'planche',run:['desk','shelf'],g:[sous('desk',[['chairB',1,0]])]}
+});
+const TAILLES_ANNEXE={a_wc:[6,4],a_service:[6,4],a_cellier:[6,4],a_vestiaire:[7,4],a_controleur:[7,6],hall:[8,5]};
+// Où chaque petite pièce a sa place : le cellier près de la cuisine, toilettes et vestiaire près de l'entrée
+const PREF_ANNEXE={a_cellier:'cuisine',a_wc:'entree',a_vestiaire:'entree'};
+const ANNEXES={
+ 0:[["Toilettes de l'étage",'a_wc'],['Local de service','a_service']],
+ 1:[['Toilettes','a_wc'],['Cellier','a_cellier']],
+ 2:[['Compartiment du contrôleur','a_controleur']],
+ 3:[['Toilettes','a_wc'],['Vestiaire','a_vestiaire']],
+ 4:[["Sas d'entrée",'hall'],['Local technique','a_service']],
+ 5:[["Hall d'entrée",'hall'],['Toilettes','a_wc']],
+ 6:[['Toilettes','a_wc'],['Soute à bagages','a_cellier']],
+ 7:[["Hall d'entrée",'hall'],['Toilettes','a_wc']],
+ 8:[["Vestibule d'entrée",'hall'],["Lieux d'aisance",'a_wc']],
+ 9:[['Vestiaire','a_vestiaire'],['Toilettes','a_wc']]
+};

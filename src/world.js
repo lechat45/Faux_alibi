@@ -17,12 +17,38 @@ const FLAVOR={chariot:['Des serviettes propres et de petits savons.'],valise:["U
  chevet:['Un livre corné et un verre d\'eau.','Le tiroir est vide.'],fridge:['Un reste de fromage, rien d\'intéressant.','Ça sent un peu le renfermé.'],sink:['Le siphon est propre.','Une goutte tombe du robinet.'],counter:['Des miettes et un torchon humide.','Rien dans les placards, à part de la vaisselle.'],
  medic:['Des pansements et de l\'aspirine.','Quelques flacons ordinaires.'],vanity:['Du maquillage et une brosse.','Rien derrière le miroir.'],fireplace:['Le feu crépite. Rien de caché dans les braises.','Rien dans l\'âtre, à part les bûches.'],bar:['Des verres propres et des bouteilles entamées.'],washer:['Le tambour est vide.'],sewing:['Du fil et des aiguilles.']};
 const LOCKS=[['rouge','#e8504a'],['bleue','#4aa8ff'],['verte','#58d67a']];
+// Les petites pièces se posent toutes seules là où elles ont du sens : le long d'une circulation,
+// de préférence au bout, sans jamais toucher une autre pièce. Un hall d'entrée garde un mur sur l'extérieur.
+const avecAnnexes=(P,liste,types)=>{
+  const R=[...P.r.map((q,i)=>({x0:q[0],y0:q[1],x1:q[0]+q[2]-1,y1:q[1]+q[3]-1,ri:i,t:types[i]})),...P.c.map(q=>({x0:q[0],y0:q[1],x1:q[0]+q[2]-1,y1:q[1]+q[3]-1,nom:q[4]}))],c2=[...P.c],aj=[];
+  const libre=q=>q.y0>=3&&q.x0>=1&&R.every(o=>q.x0>o.x1+1||q.x1<o.x0-1||q.y0>o.y1+3||q.y1<o.y0-3);
+  const dehors=q=>!R.some(o=>o.x1>=q.x0&&o.x0<=q.x1&&o.y1<q.y0);
+  const entree=o=>o.nom&&(o.hall||/entrée|hall|sas|vestibule/i.test(o.nom));
+  liste.forEach(([nom,cle])=>{
+    const[w,h]=TAILLES_ANNEXE[cle],pref=PREF_ANNEXE[cle],circ=R.filter(o=>o.nom&&(!o.annexe||o.hall)),pieces=R.filter(o=>o.ri!=null&&(cle==='a_wc'||o.t!=='bain'));
+    // les cibles par ordre de préférence : jamais une autre petite pièce, sauf un hall
+    const groupes=[pref==='entree'?circ.filter(entree):pref?pieces.filter(o=>o.t===pref):[],circ.filter(o=>!entree(o)||cle!=='hall'),pieces];
+    let best=null;
+    for(const groupe of groupes){
+      for(const o of groupe){
+        const cand=[],bout=q=>Math.min(Math.abs((q.x0+q.x1)/2-o.x0),Math.abs((q.x0+q.x1)/2-o.x1));
+        for(let x=o.x0-w+4;x<=o.x1-3;x++)cand.push({x0:x,y0:o.y1+4,x1:x+w-1,y1:o.y1+3+h});
+        for(let y=o.y0-h+3;y<=o.y1-2;y++){cand.push({x0:o.x1+2,y0:y,x1:o.x1+1+w,y1:y+h-1,cote:1});cand.push({x0:o.x0-1-w,y0:y,x1:o.x0-2,y1:y+h-1,cote:1})}
+        for(const q of cand){if(!libre(q))continue;const sc=bout(q)*(q.cote?.5:1)+(cle==='hall'&&!dehors(q)?200:0)+Math.abs(q.y0-o.y0)*.1;if(!best||sc<best.sc)best={...q,sc,cible:o}}
+      }
+      if(best)break;
+    }
+    if(!best)return;
+    R.push({...best,nom,annexe:true,hall:cle==='hall'});c2.push([best.x0,best.y0,best.x1-best.x0+1,best.y1-best.y0+1,nom]);aj.push({nom,cle,cible:best.cible});
+  });
+  return{P:{r:P.r,l:P.l,c:c2},aj};
+};
 const avecEtage=(P,E)=>{const X=Math.max(...[...P.r,...P.c].map(q=>q[0]+q[2]))+5;return{r:P.r,l:P.l,c:[...P.c,[X,12,21,3,E.palier],[X,3,10,6,E.p[0][0]],[X+11,3,10,6,E.p[1][0]]]}};
 const SH_HAUT=['escalier','secours','shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
 const DIFFW={facile:{lock:1,eni:2,pz:2,bonus:1},moyen:{lock:1,eni:3,pz:3,bonus:1},difficile:{lock:2,eni:4,pz:3,bonus:2},expert:{lock:2,eni:4,pz:3,bonus:2}};
 
 function buildWorld(c){
-  const L=c.set,r=RNG((c.seed*2654435761+c.lv*97+11)>>>0),D=DIFFW[c.key],ET=!c.test&&c.key==='expert'&&typeof ETAGES!=='undefined'?ETAGES[c.lv]:null,P=ET?avecEtage(L.plan,ET):L.plan;
+  const L=c.set,r=RNG((c.seed*2654435761+c.lv*97+11)>>>0),D=DIFFW[c.key],ET=!c.test&&c.key==='expert'&&typeof ETAGES!=='undefined'?ETAGES[c.lv]:null,AN=!c.test&&typeof ANNEXES!=='undefined'&&ANNEXES[c.lv]?avecAnnexes(L.plan,ANNEXES[c.lv],L.rooms.map(q=>q.t)):{P:L.plan,aj:[]},P=ET?avecEtage(AN.P,ET):AN.P;
   const rects=[...P.r,...P.c];
   MW=Math.max(...rects.map(q=>q[0]+q[2]))+3;MH=Math.max(...rects.map(q=>q[1]+q[3]))+3;
   const grid=v=>range(MH).map(()=>Array(MW).fill(v)),t=grid(0),blk=grid(0),res=grid(0),gate=grid(0);
@@ -38,12 +64,13 @@ function buildWorld(c){
     A.view=rs.map(q=>[q.x0-1,q.y0-2,q.x1+1,q.y1+1]);
     return A;
   });
+  AN.aj.forEach(a=>{const A=w.areas.find(z=>!z.room&&z.name===a.nom);if(!A)return;A.annexe=true;a.i=A.i;a.ci=a.cible.nom?w.areas.findIndex(z=>!z.room&&z.name===a.cible.nom):a.cible.ri;if(a.cle==='hall'){A.hall=true;A.rec={f:L.floor,cw:['plant']}}else A.rec=RECIPES[a.cle]});
   if(ET){const n=w.areas.length;[n-3,n-2,n-1].forEach((i,k)=>{const A=w.areas[i];A.etage=true;if(!k){A.palier=true;A.rec={f:L.floor,cw:[]}}else{const p=ET.p[k-1];A.rec=RECIPES[p[1]];A.tint=p[2]}})}
   // Le mur du fond suit la forme réelle du sol, même dans un coude
   for(let y=2;y<MH;y++)for(let x=0;x<MW;x++)if(t[y][x]===1&&t[y-1][x]===0){t[y-1][x]=2;if(t[y-2][x]===0)t[y-2][x]=2}
   w.rooms=w.areas.slice(0,L.rooms.length);
   // Portes : déduites de la position réelle des pièces
-  const nA=w.areas.length,doors=[...P.l,...(ET?[[nA-2,nA-3],[nA-1,nA-3]]:[])].map(([a,b])=>{
+  const nA=w.areas.length,doors=[...P.l,...AN.aj.filter(a=>a.i!=null&&a.ci>=0).map(a=>[a.i,a.ci]),...(ET?[[nA-2,nA-3],[nA-1,nA-3]]:[])].map(([a,b])=>{
     const A=w.areas[a],B=w.areas[b],id=nid();let d,m=null;
     for(const ra of A.rects)for(const rb of B.rects){
       const[g0,h0]=ra.x0<rb.x0?[ra,rb]:[rb,ra],[u0,l0]=ra.y0<rb.y0?[ra,rb]:[rb,ra];
@@ -181,13 +208,11 @@ function buildWorld(c){
     if(/entrée|hall/i.test(A.name))poseEntree(A,()=>{if(lift)poseAscenseur(A,haut);else if(ET)poseAscenseur(A,haut,'escalier')});
     else if(lift)poseAscenseur(A,haut);
     boutsCouloir(A);
-    const W0=long.x1-long.x0+1;
-    list.forEach((name,i)=>{
-      const fw=FP[name][0];let X=long.x0+Math.floor((i+.5)*W0/list.length);
-      for(let k=0;k<W0&&X+k+fw-1<=long.x1;k++){
-        const x=X+k;let ok=libreLa(x,long.y0,fw,1);for(let q=0;q<fw;q++)if(t[long.y0-1][x+q]!==2)ok=false;
-        if(!ok)continue;
-        const f=place(name,x,long.y0,A);if(areaOK(A))break;unplace(f);
+    list.forEach(name=>{
+      const fw=FP[name][0];
+      for(const p of pansDeMur(A).filter(p=>p.n>=fw+2).sort((a,b)=>b.n-a.n)){
+        const X=p.x0+((p.n-fw)>>1);if(!libreLa(X,p.q.y0,fw,1))continue;
+        const f=place(name,X,p.q.y0,A);if(areaOK(A))break;unplace(f);
       }
     });
   };
@@ -255,13 +280,14 @@ function buildWorld(c){
   w.areas.forEach(A=>{
     A.flip=r()<.5;
     if(A.etage){poseEtage(A);return}
+    if(A.annexe){if(A.hall)poseCirc(A);else{poseRun(A);(A.rec.g||[]).forEach(g=>poseGroupe(A,g))}return}
     if(A.room){poseRun(A);(A.rec.g||[]).forEach(g=>poseGroupe(A,g));return}
     poseCirc(A);
     (L.ci||[]).forEach(n=>{if(A.y1-A.y0>=3)poseGroupe(A,CIRC[n])});
   });
   // Des objets propres à chaque lieu, contre un mur encore libre
   (DECO[c.lv]||[]).forEach(n=>{
-    for(const A of shuffle(r,w.areas)){
+    for(const A of shuffle(r,w.areas.filter(A=>!A.annexe&&!A.etage))){
       const q=A.rects[0],fw=FP[n][0];let fait=false;
       for(const x of shuffle(r,range(Math.max(1,q.x1-q.x0-fw+2)).map(i=>q.x0+i))){
         let m=true;for(let k=0;k<fw;k++)if(t[q.y0-1][x+k]!==2)m=false;
@@ -272,6 +298,35 @@ function buildWorld(c){
     }
   });
 
+  // Une lampe sert à éclairer quelqu'un : on la rapproche d'un siège, d'un lit ou d'un bureau de la même pièce
+  const ASSISE=/^(armchair|sofa|chair|bed|desk|pcdesk|chevet|piano|vanity)/;
+  w.furn.filter(f=>f.name==='lamp').forEach(l0=>{
+    let l=l0;const A=w.areas[l.room];
+    if(!A||w.furn.some(s=>s!==l&&s.room===l.room&&ASSISE.test(s.name)&&s.x<=l.x+1&&s.x+s.w>=l.x&&s.y<=l.y+1&&s.y+s.h>=l.y))return;
+    for(const s of shuffle(r,w.furn.filter(s=>s.room===l.room&&ASSISE.test(s.name)))){
+      for(const[x,y]of[[s.x-1,s.y],[s.x+s.w,s.y],[s.x-1,s.y+s.h-1],[s.x+s.w,s.y+s.h-1]]){
+        if(!dans(A,x,y))continue;
+        const ox=l.x,oy=l.y,v=l.v;unplace(l);
+        if(libreLa(x,y,1,1)){const n=place('lamp',x,y,A);n.v=v;if(areaOK(A))return;unplace(n)}
+        l=place('lamp',ox,oy,A);l.v=v;
+      }
+    }
+  });
+  // Accès à l'étage : l'ascenseur s'il y en a un, sinon un escalier, posé au besoin contre un mur libre
+  w.etage=null;
+  if(ET){
+    const sol=f=>!w.areas[f.room].etage,desc=w.furn.find(f=>f.acces==='descend');
+    let acc=w.furn.find(f=>f.name==='lift'&&sol(f))||w.furn.find(f=>f.name==='escalier'&&sol(f));
+    for(const A of [...w.areas.filter(A=>!A.room&&!A.etage),...w.areas.filter(A=>A.room)]){
+      if(acc)break;
+      for(const q of A.rects)for(let x=q.x0;x<q.x1&&!acc;x++){
+        if(t[q.y0-1][x]!==2||t[q.y0-1][x+1]!==2||t[q.y0-2][x]!==2||t[q.y0-2][x+1]!==2||!libreLa(x,q.y0,2,1))continue;
+        const f=place('escalier',x,q.y0,A);if(areaOK(A))acc=f;else unplace(f);
+      }
+    }
+    const devant=f=>{for(const[x,y]of[[f.x+((f.w-1)>>1),f.y+1],[f.x+(f.w>>1),f.y+1],[f.x-1,f.y],[f.x+f.w,f.y],[f.x,f.y+2]])if(t[y]&&t[y][x]===1&&!blk[y][x]&&!gate[y][x])return[x,y];return null};
+    if(acc&&desc&&devant(acc)&&devant(desc)){acc.acces='monte';if(acc.name==='escalier')acc.v=1e7+acc.v%1e6;desc.v=2e7;w.etage={nom:ET.nom,haut:devant(desc),bas:devant(acc)}}
+  }
   const used=new Set();
   const freeIn=a=>{const o=[];for(let y=a.y0;y<=a.y1;y++)for(let x=a.x0;x<=a.x1;x++)if(t[y][x]===1&&!blk[y][x]&&!res[y][x]&&!gate[y][x]&&!used.has(y*MW+x))o.push([x,y]);return o};
   const takeCell=a=>{const o=freeIn(a);if(!o.length)return null;const q=pick(r,o);used.add(q[1]*MW+q[0]);return q};
@@ -297,21 +352,6 @@ function buildWorld(c){
     const ri=homes[i%NR],cell=takeSolid(zoneOf(ri))||takeSolid(zoneOf(homes[(i+1)%NR]));
     w.obj.push({id:nid(),kind:'suspect',s:i,x:cell[0],y:cell[1],w:1,h:1,room:ri});
   });
-  // Accès à l'étage : l'ascenseur s'il y en a un, sinon un escalier, posé au besoin contre un mur libre
-  w.etage=null;
-  if(ET){
-    const sol=f=>!w.areas[f.room].etage,desc=w.furn.find(f=>f.acces==='descend');
-    let acc=w.furn.find(f=>f.name==='lift'&&sol(f))||w.furn.find(f=>f.name==='escalier'&&sol(f));
-    for(const A of [...w.areas.filter(A=>!A.room&&!A.etage),...w.areas.filter(A=>A.room)]){
-      if(acc)break;
-      for(const q of A.rects)for(let x=q.x0;x<q.x1&&!acc;x++){
-        if(t[q.y0-1][x]!==2||t[q.y0-1][x+1]!==2||t[q.y0-2][x]!==2||t[q.y0-2][x+1]!==2||!libreLa(x,q.y0,2,1))continue;
-        const f=place('escalier',x,q.y0,A);if(areaOK(A))acc=f;else unplace(f);
-      }
-    }
-    const devant=f=>{for(const[x,y]of[[f.x+((f.w-1)>>1),f.y+1],[f.x+(f.w>>1),f.y+1],[f.x-1,f.y],[f.x+f.w,f.y],[f.x,f.y+2]])if(t[y]&&t[y][x]===1&&!blk[y][x]&&!gate[y][x])return[x,y];return null};
-    if(acc&&desc&&devant(acc)&&devant(desc)){acc.acces='monte';if(acc.name==='escalier')acc.v=1e7+acc.v%1e6;desc.v=2e7;w.etage={nom:ET.nom,haut:devant(desc),bas:devant(acc)}}
-  }
   // Tout meuble se fouille. Les cachettes sont les meubles à tiroirs, armoires, bibliothèques...
   // Tout se fouille, mais seuls quelques meubles cachent vraiment quelque chose
   const fou=w.furn.filter(f=>w.etage||!w.areas[f.room].etage).map(f=>({id:nid(),kind:'fouille',acces:w.etage?f.acces:undefined,x:f.x,y:f.y,w:f.w,h:f.h,room:f.room,name:f.name,text:pick(r,FLAVOR[f.name.replace(/[BLR]$/,'')]||['Rien de particulier.'])}));
@@ -326,7 +366,8 @@ function buildWorld(c){
 
   // Portes verrouillées : la clé se trouve toujours du côté déjà accessible
   const zone=(ouverts)=>{const z=new Set([c.rc]);let ch=true;while(ch){ch=false;doors.forEach(d=>{if(d.lock!==null&&!ouverts.has(d.lock))return;if(z.has(d.a)!==z.has(d.b)){z.add(d.a);z.add(d.b);ch=true}})}return z};
-  const cand=shuffle(r,doors.filter(d=>!w.areas[d.a].etage&&!w.areas[d.b].etage));let nb=0;
+  doors.forEach(d=>{const an=[w.areas[d.a],w.areas[d.b]].find(A=>A.annexe&&A.rec&&A.rec.porte);if(an)d.style=an.rec.porte});
+  const cand=shuffle(r,doors.filter(d=>![d.a,d.b].some(i=>w.areas[i].etage||w.areas[i].annexe)));let nb=0;
   for(const d of cand){
     if(nb>=D.lock)break;
     d.lock=nb;

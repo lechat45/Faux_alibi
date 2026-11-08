@@ -123,7 +123,7 @@ function asseoir(){
     if(o.kind!=='suspect'||o.s%2)return;
     const f=W.furn.find(q=>q.room===o.room&&q.name in DIR_SIEGE&&!pris.has(q.id)&&[[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>!solidCell(W,q.x+a,q.y+b,{})));
     if(!f)return;
-    pris.add(f.id);Object.assign(o,{x:f.x,y:f.y,fx:f.x*TS+8,fy:f.y*TS+8,assis:1,dir:DIR_SIEGE[f.name]});
+    pris.add(f.id);Object.assign(o,{x:f.x,y:f.y,fx:f.x*TS+8,fy:f.y*TS+8,assis:1,siege:f,dir:DIR_SIEGE[f.name]});
   });
 }
 function gesteMaj(o){
@@ -133,10 +133,34 @@ function gesteMaj(o){
   o.geste=['lit','boit',null,'boit','lit'][Math.floor(Math.random()*5)];
 }
 function dessinePNJ(o){
-  if(o.assis)ctx.drawImage(G.sheet[o.s],0,o.dir*30,20,23,Math.round(o.fx-10),Math.round(o.fy-27+Math.sin(tick*.05+o.s)*.5),20,23);
+  if(o.assis)dessineAssis(o);
   else{shadow(o.fx,o.fy,12);drawChar2(G.sheet[o.s],o.fx,o.fy+(o.mv?0:Math.sin(tick*.06+o.s)*.5),o.dir,o.mv?(tick>>4)&3:0)}
   if(!o.geste||o.dir!==0)return;
-  const x=Math.round(o.fx),y=Math.round(o.fy-(o.assis?4:0));
+  const x=Math.round(o.fx),y=o.assis&&o.siege?(o.siege.y+o.siege.h)*TS-(SIEGE_H[o.siege.name]||12)+7:Math.round(o.fy);
   if(o.geste==='lit'){ctx.fillStyle='#7a2f35';ctx.fillRect(x-5,y-13,10,6);ctx.fillStyle='#ece4d0';ctx.fillRect(x-4,y-12,4,4);ctx.fillRect(x+1,y-12,3,4);ctx.fillStyle='#8a8fa8';ctx.fillRect(x-3,y-11,2,1);ctx.fillRect(x+2,y-10,1,1)}
   if(o.geste==='boit'){const l=(tick>>5)%6===0?7:0;ctx.fillStyle='#f4efe2';ctx.fillRect(x+3,y-12-l,4,4);ctx.fillRect(x+7,y-11-l,1,2);ctx.fillStyle='#3a2212';ctx.fillRect(x+3,y-12-l,4,1)}
+}
+// Hauteur de l'assise de chaque siège, depuis le sol
+const SIEGE_H={chair:12,chairB:12,chairL:12,chairR:12,armchair:13,armchairB:13,armchairL:13,armchairR:13,stool:15};
+function dessineAssis(o){
+  const f=o.siege;if(!f){ctx.drawImage(G.sheet[o.s],0,o.dir*30,20,23,Math.round(o.fx-10),Math.round(o.fy-27),20,23);return}
+  const Lk=G.look[o.s],bas=(f.y+f.h)*TS,sy=bas-(SIEGE_H[f.name]||12),x=Math.round(o.fx),d=o.dir,res=Math.round(Math.sin(tick*.05+o.s)*.4);
+  const jambe=Lk.dress&&!Lk.trench?tone(Lk.skin,-.1):Lk.bot,soul='#1e1a24',P=(c0,a,b,w,h)=>{ctx.fillStyle=c0;ctx.fillRect(a,b,w,h)},pied=f.name==='stool'?bas-7:bas-2,haut=f.name==='armchairB'?5:0;
+  // le haut du corps, les hanches posées sur l'assise
+  ctx.drawImage(G.sheet[o.s],0,d*30,20,18,x-10,sy-18+res-haut,20,18);
+  // de dos : le dossier du siège passe devant le corps
+  if(d===2){ctx.drawImage(G.furn[f.id],f.x*TS-1,bas-SH[f.name]-1);return}
+  if(d===0){
+    P(jambe,x-4,sy,8,3);P(tone(jambe,.14),x-4,sy,8,1);P(tone(jambe,-.28),x-4,sy+3,8,1);
+    P(jambe,x-4,sy+4,3,pied-sy-5);P(jambe,x+1,sy+4,3,pied-sy-5);P(tone(jambe,-.3),x-2,sy+4,1,pied-sy-5);
+    P(soul,x-5,pied-1,4,2);P(soul,x+1,pied-1,4,2);
+    if(f.name==='stool'){P('#5b3820',x-4,pied+1,2,bas-pied-1);P('#5b3820',x+2,pied+1,2,bas-pied-1);P('#8a5a34',x-5,pied+1,10,1)}
+    // les accoudoirs du fauteuil restent devant
+    if(/armchair/.test(f.name)){const k=G.furn[f.id],y0=bas-SH[f.name]-1;ctx.drawImage(k,0,9,5,15,f.x*TS-1,y0+9,5,15);ctx.drawImage(k,13,9,5,15,f.x*TS+12,y0+9,5,15)}
+    return;
+  }
+  // de profil : la cuisse à l'horizontale, le tibia qui descend jusqu'au sol
+  const s=d===1?1:-1,kx=s>0?x+4:x-7;
+  P(jambe,s>0?x-1:x-7,sy,8,3);P(tone(jambe,.14),s>0?x-1:x-7,sy,8,1);
+  P(jambe,kx,sy+3,3,pied-sy-4);P(tone(jambe,-.25),s>0?kx+2:kx,sy+3,1,pied-sy-4);P(soul,s>0?kx:kx-2,pied-1,5,2);
 }

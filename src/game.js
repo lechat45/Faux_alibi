@@ -23,12 +23,13 @@ let tick=0,cam={x:0,y:0},parts=[],toastT=0,modal=null,VW=400,VH=250,SC=3,ctx,Cut
 
 // ——— État d'une partie ———
 function neuf(lv,seed,intro=true,mode=O.expert&&lv<10?'expert':null){
-  seed=seed??(1000+Math.floor(Math.random()*8999));
-  c=generate(seed,lv,mode);habiller(c);if(lv===10)preparerTest(c);
+  if(seed==null){const rec=stats.mobRec||[];for(let n=0;n<25;n++){seed=1000+Math.floor(Math.random()*8999);if(lv>=10)break;try{const q=generate(seed,lv,mode);if(!rec.includes(q.suspects[q.k].mid))break}catch(x){}}}
+  c=generate(seed,lv,mode);habiller(c);
+  if(lv<10&&!G.robot)stats.mobRec=[c.suspects[c.k].mid,...(stats.mobRec||[])].slice(0,6);if(lv===10)preparerTest(c);
   W=buildWorld(c);prep();if(lv===10)finirTest();
   S={seed,lv,mode,t:{},liens:[],aides:0,jeu:0,evDocs:[],stress:{},vues:{},sujets:{},traces:{},asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
   Object.values(W.doors).forEach(d=>{if(d.lock===null)S.open[d.id]=1});
-  if(Cut)endCut();
+  if(Cut){Cut.onEnd=null;endCut()}
   closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.retour=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('but').hidden=true;$('tuto-p').hidden=true;G.planCible=null;G.tutoO=null;
   cam.x=S.p.x-VW/2;cam.y=S.p.y-VH/2;G.snap=true;
   S.papiers.push(W.iAuto);
@@ -274,7 +275,7 @@ function draw(){
   });
   const moving=!Cut&&(keys.up||keys.down||keys.left||keys.right||G.bot||G.walk||G.moved);
   if(!Cut||(!Cut.actors.me&&!Cut.hideNpc))L.push({y:P.y,d:()=>{shadow(P.x,P.y,12);drawChar2(G.sheet.me,P.x,P.y-(moving&&(tick>>2)&1?1:0),P.dir,moving?(tick>>(G.run?2:3))&3:0);if(G.emT>0)emote(Math.round(P.x),Math.round(P.y-29),G.emC)}});
-  if(Cut)Object.values(Cut.actors).forEach(a=>{if(a.hide)return;L.push({y:a.y,d:()=>{
+  if(Cut)Object.values(Cut.actors).forEach(a=>{if(a.hide||!G.sheet[a.sh])return;L.push({y:a.y,d:()=>{
     if(a.down){ctx.save();ctx.translate(Math.round(a.x),Math.round(a.y-4));ctx.rotate(Math.PI/2);ctx.drawImage(G.sheet[a.sh],0,0,20,30,-15,-10,20,30);ctx.restore();return}
     shadow(a.x,a.y,12);drawChar2(G.sheet[a.sh],a.x,a.y,a.dir,a.mv?(tick>>3)&3:0)}})});
   L.sort((a,b)=>a.y-b.y).forEach(i=>i.d());

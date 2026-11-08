@@ -30,6 +30,14 @@ const MOTIVES=[
   {k:'contrat',dl:["D'un coup de stylo, tu m'as rayé de ma propre affaire, {V}.","Les affaires sont les affaires.","Les affaires sont les affaires, {V}. Celle-ci est réglée."],m:"s'est fait évincer d'une affaire par {v}",doc:"Un contrat déchiré : le nom de {n} est rayé, remplacé par celui de {v}.",a:"Il m'a pris la moitié de ma vie avec un coup de stylo. Je le détestais. C'est tout ce que vous aurez."},
   {k:'article',dl:["Dix ans que je garde ton article, {V}. Dix ans que je le relis.","Je n'ai écrit que la vérité. Tu n'avais aucun talent.","Tu aimais tant avoir le dernier mot, {V}. Cette fois, il est pour moi."],m:'a vu sa carrière ruinée par {v} il y a dix ans',doc:"Un vieil article signé {v} qui démolit {n}. Quelqu'un l'a lacéré au couteau.",a:"Je garde cet article pour ne pas oublier. Ça ne veut pas dire que je passe à l'acte."}
 ];
+MOTIVES.push(
+ {k:'dette',dl:["Tu m'as tout pris à la table de jeu, {V}. Jusqu'à ma maison.","Tu connaissais les règles.","Moi aussi, maintenant, je connais les règles, {V}."],m:"avait tout perdu au jeu contre {v} et lui devait encore une fortune",doc:"Une reconnaissance de dette de jeu signée par {n} au profit de {v}.",a:"J'ai perdu gros contre cette personne, c'est vrai. Mais je n'ai tué personne."},
+ {k:'renvoi',dl:["Je n'ai jamais rien volé, {V}. Tu le sais très bien.","Les preuves disaient le contraire.","Il n'y aura pas de preuves ce soir, {V}."],m:"venait de perdre son emploi : {v} l'accusait d'un vol jamais prouvé",doc:"Une lettre de renvoi adressée à {n} par {v}, pour un vol jamais prouvé.",a:"J'ai perdu ma place pour un vol que je n'ai pas commis. Ça ne fait pas de moi un assassin."},
+ {k:'brevet',dl:["Cette découverte, c'est toute ma vie, {V}. Et tu l'as signée de ton nom.","Les idées appartiennent à ceux qui savent les vendre.","Alors je reprends la mienne, {V}."],m:"a vu {v} déposer à son nom la découverte de toute une vie",doc:"Un brevet au nom de {v}, couvert de notes de la main de {n}.",a:"Cette invention est la mienne. Ça ne veut pas dire que j'ai tué pour ça."},
+ {k:'chantage',dl:["Chaque mois je te paie, {V}. Chaque mois tu en demandes plus.","Le silence coûte cher.","Le mien ne te coûtera plus rien, {V}."],m:"versait chaque mois de l'argent à {v} pour acheter son silence",doc:"Une lettre de {v} à {n} : « Le prochain versement, ou tout le monde saura. »",a:"Oui, je payais pour qu'on se taise. Je n'avais pas besoin de tuer pour ça."},
+ {k:'testament',dl:["Sans ton héritage, {V}, je n'ai plus rien.","Tu attendras, comme tout le monde.","Je n'ai plus le temps d'attendre, {V}."],m:"attendait l'héritage de {v} pour éponger ses dettes",doc:"Un testament de {v} qui fait de {n} l'un de ses héritiers.",a:"J'attends cet héritage, je ne le cache pas. Mais je n'ai rien fait."},
+ {k:'contrat',dl:["Une clause cachée, {V}. Une seule ligne, et j'ai tout perdu.","Il fallait lire avant de signer.","Cette fois, c'est toi qui aurais dû lire, {V}."],m:"a perdu toutes ses parts dans l'affaire à cause d'une clause cachée de {v}",doc:"Un contrat entre {v} et {n}, une clause soulignée trois fois en rouge.",a:"Ce contrat m'a tout pris. Je n'ai pas tué pour autant."}
+);
 // Chaque suspect a sa manière de parler : la forme change, jamais les faits.
 const VOICES=[
   {nom:'nerveux',hi:["Oh ! Vous m'avez fait peur. C'est... c'est à quel sujet ?","Pardon, je ne tiens pas en place ce soir. Vous vouliez savoir quoi ?"],
@@ -141,14 +149,14 @@ function attempt(r,lv,modeJeu){
   for(const nm of shuffle(r,NAMES)){if(!seen.has(nm[0][0])){seen.add(nm[0][0]);pool.push(nm)}}
   const roles=shuffle(r,set.roles),vic=pick(r,VICTIMS);
   const vName=(vic[1]==='f'?'Mme ':'M. ')+vic[0];
-  const motives=shuffle(r,MOTIVES),voices=shuffle(r,range(VOICES.length)),niveaux=shuffle(r,range(n).map(q=>key==='expert'?2+q%2:1+q%3));
+  const motives=(()=>{const par={};shuffle(r,MOTIVES).forEach(m=>(par[m.k]=par[m.k]||[]).push(m));return shuffle(r,Object.keys(par)).map(k=>par[k][0])})(),voices=shuffle(r,range(VOICES.length)),niveaux=shuffle(r,range(n).map(q=>key==='expert'?2+q%2:1+q%3));
   const trait=pick(r,TRAITS);
   const sharers=shuffle(r,inn).slice(0,1+int(r,2));
   const suspects=range(n).map(i=>({
     nom:pool[i][0],prenom:pool[i][0].split(' ')[0],ini:pool[i][0][0],g:pool[i][1],
     role:form(roles[i],pool[i][1]),
     trait:(i===k||sharers.includes(i))?form(trait.t,pool[i][1]):null,
-    mobile:motives[i].m.replace('{v}',vName),
+    mid:MOTIVES.indexOf(motives[i]),mobile:motives[i].m.replace('{v}',vName),
     doc:motives[i].doc.replace('{v}',vName).replace('{n}',pool[i][0]),dk:motives[i].k,aveu:motives[i].a,dl:motives[i].dl,voice:voices[i%voices.length],niveau:niveaux[i]
   }));
 
