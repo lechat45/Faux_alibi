@@ -59,7 +59,7 @@ function freeNear(x,y,n=12){
   return o;
 }
 function save(){try{localStorage.setItem(STORE,JSON.stringify({S:S&&!(c&&c.test)?S:null,stats,O}))}catch(e){}}
-function chargeStats(){try{const o=JSON.parse(localStorage.getItem(STORE));if(o){stats=Object.assign(stats,o.stats);O=Object.assign(O,o.O);const enCours=o.S&&!o.S.fin;G.sauve=enCours&&o.S.sig===GEN_SIG?o.S:null;G.sauveVieille=enCours&&o.S.sig!==GEN_SIG}}catch(e){}}
+function chargeStats(){try{const o=JSON.parse(localStorage.getItem(STORE));if(o){stats=Object.assign(stats,o.stats);O=Object.assign(O,o.O);const enCours=o.S&&!o.S.fin;G.sauve=enCours&&o.S.sig===GEN_SIG&&!o.S.perso?o.S:null;G.sauveVieille=enCours&&o.S.sig!==GEN_SIG}}catch(e){}}
 function continuer(){
   try{
     S=G.sauve;c=generate(S.seed,S.lv,S.mode);habiller(c);W=buildWorld(c);prep();
@@ -883,11 +883,13 @@ function ouvrir(t){
   if(c&&c.test)return ouvrirTest(t);
   if(!t||t==='calepin')t=G.tab&&['notes','temoins','deduc','gens','objets','papiers'].includes(G.tab)?G.tab:'notes';
   $('bulle').hidden=true;$('pz').hidden=true;$('doc').hidden=true;G.pzT=null;G.mini=null;
+  const e=$('carnet'),ancien=modal==='carnet'&&!e.hidden&&G.tab!==t?G.tab:null,vieux=ancien?e.querySelector('.feuille'):null,defil=vieux&&vieux.querySelector('.corps')?vieux.querySelector('.corps').scrollTop:0;
   G.tab=t;modal='carnet';son('page');
-  const e=$('carnet');e.hidden=false;
+  e.hidden=false;
   // Marteau, carte et engrenage ont leur icône : ils ne figurent plus parmi les onglets
   const tabs=[...(S.fin?['fin']:[]),'notes','temoins','deduc','gens','objets','papiers'];
   e.innerHTML=`<div class="livret"><div class="spirale" aria-hidden="true"></div><div class="feuille"><button class="croix" data-a="fermer" aria-label="Fermer le calepin">${croix}</button><div class="corps">${TABS[t][2]()}</div></div><nav class="signets" role="tablist">${tabs.map(k=>`<button role="tab" aria-selected="${k===t}" data-a="onglet" data-v="${k}" style="--c:${TABS[k][1]}">${TABS[k][0]}</button>`).join('')}</nav></div>`;
+  if(vieux)tournePage(vieux,ORDRE_ONGLETS.indexOf(t)>ORDRE_ONGLETS.indexOf(ancien),defil);
   G.lu=S.cards.length;render();
 }
 function render(){
@@ -1183,6 +1185,7 @@ function startBot(){skipCut();closeAll();S.introDone=true;G.robot=true;G.bot=tru
 // ——— Entrées ———
 const KEYMAP={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',z:'up',w:'up',s:'down',q:'left',a:'left',d:'right',Z:'up',W:'up',S:'down',Q:'left',A:'left',D:'right'};
 function onKey(e,v){
+  if(ED.on)return;
   const tag=e.target.tagName;
   if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA'){if(e.key==='Escape'&&v&&modal)closeAll();return}
   if(!enJeu)return;
@@ -1264,16 +1267,18 @@ function pret(){
   $('pz').addEventListener('click',pzClick);
   $('pz').addEventListener('input',e=>{if(e.target.id==='pz-sh'){PZ.p.shift=+e.target.value;PZ.input=($('pz-in')||{}).value||'';pzRender()}else if(e.target.id==='pz-in')PZ.input=e.target.value});
   chargeStats();appliqueOpts();
-  $('eng1').style.backgroundImage=`url(${gearSprite(44,10,'#d8a840').toDataURL()})`;
+  $('eng1').style.backgroundImage=`url(${rouage(56,12,'#d8a840').toDataURL()})`;$('eng2').style.backgroundImage=`url(${rouage(30,8,'#c88a5a',4).toDataURL()})`;
   poseMarteau($('mart'),A_REPOS);
   $('marteau').addEventListener('mouseenter',()=>{if(!G.frappe)poseMarteau($('mart'),A_SURVOL)});
   $('marteau').addEventListener('mouseleave',()=>{if(!G.frappe)poseMarteau($('mart'),A_REPOS)});
   accueil();
+  if(enEditeur())ouvrirEditeur();
   let last=performance.now(),acc=0;
   // La boucle ne s'arrête jamais : une image ratée ne doit pas figer toute la partie
   const vues=new Set(),signale=e=>{const k=String(e&&e.stack||e);if(!vues.has(k)){vues.add(k);console.error(e)}};
   const loop=n=>{
     requestAnimationFrame(loop);
+    if(ED.on){last=n;return}
     acc+=Math.min(100,n-last);last=n;
     try{while(acc>=16.6){update();acc-=16.6}}catch(e){acc=0;signale(e)}
     try{draw()}catch(e){signale(e)}

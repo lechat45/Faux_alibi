@@ -1,6 +1,6 @@
 const fs=require('fs'),path=require('path'),d=path.join(__dirname,'..');
-const js=['levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','salles','vie','tuto','sons','mobilier','minis2','lieux','rendu','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
-const SIG=require('crypto').createHash('sha1').update(['levels','data','engine','puzzles','world'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('')).digest('hex').slice(0,10);
+const js=['cartes','levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','salles','vie','tuto','sons','mobilier','minis2','lieux','rendu','editeur','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
+const SIG=require('crypto').createHash('sha1').update(['cartes','levels','data','engine','puzzles','world'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('')).digest('hex').slice(0,10);
 const css=fs.readFileSync(path.join(d,'src/style.css'),'utf8');
 const out=`<!DOCTYPE html>
 <html lang="fr">
@@ -20,7 +20,7 @@ const out=`<!DOCTYPE html>
   <canvas id="jeu" tabindex="0" aria-label="Carte du jeu. Clique pour te déplacer et agir."></canvas>
   <div id="lieu" class="lieu" hidden></div>
   <div id="hud" class="hud" hidden>
-    <button id="engrenage" class="engrenage" data-a="reglages" aria-label="Options"><i id="eng1"></i></button>
+    <button id="engrenage" class="engrenage" data-a="reglages" aria-label="Options"><i id="eng2"></i><i id="eng1"></i></button>
     <button id="marteau" class="marteau" data-a="marteau" aria-label="Accuser"><canvas id="mart" width="80" height="68"></canvas></button>
     <button id="calepin" class="calepin" data-a="onglet" data-v="calepin" aria-label="Ouvrir le calepin"><span id="neuf" class="neuf" hidden></span></button>
     <div class="plan-mini"><canvas id="mini" aria-hidden="true"></canvas><span id="ici"></span><span id="plan-nom" class="plan-nom" hidden></span></div>

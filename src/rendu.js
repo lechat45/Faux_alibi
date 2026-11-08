@@ -116,3 +116,51 @@ function mursTour(g){
   }
   gg.putImageData(img,0,0);g.drawImage(kk,0,0);
 }
+
+// ——— Le calepin : la page tourne quand on change d'onglet ———
+const ORDRE_ONGLETS=['fin','notes','temoins','deduc','gens','objets','papiers'];
+function tournePage(vieux,avance,defil){
+  if(document.body.classList.contains('calme')||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const neuf=$('carnet').querySelector('.feuille');if(!neuf||!vieux)return;
+  const livret=neuf.parentElement;
+  Object.assign(vieux.style,{left:neuf.offsetLeft+'px',top:neuf.offsetTop+'px',width:neuf.offsetWidth+'px',height:neuf.offsetHeight+'px'});
+  vieux.classList.add('page-vole');vieux.setAttribute('aria-hidden','true');vieux.querySelectorAll('button').forEach(b=>b.tabIndex=-1);
+  const ombre=document.createElement('i');ombre.className='ombre-page';
+  if(avance){vieux.appendChild(ombre);vieux.classList.add('part');livret.appendChild(vieux)}
+  else{vieux.classList.add('dessous');livret.insertBefore(vieux,neuf);neuf.appendChild(ombre);neuf.classList.add('vient')}
+  const k=vieux.querySelector('.corps');if(k)k.scrollTop=defil||0;
+  const fin=()=>{vieux.remove();ombre.remove();neuf.classList.remove('vient')};
+  (avance?vieux:neuf).addEventListener('animationend',fin,{once:true});setTimeout(fin,900);
+}
+
+// ——— Le rouage des options : un engrenage en laiton, biseauté, à rayons ———
+function rouage(Z,dents,col,rayons=5){
+  const[k,g]=cv(Z,Z),c0=Z/2-.5,Rr=Z/2-1.5,plein=new Uint8Array(Z*Z),zone=new Float32Array(Z*Z);
+  for(let y=0;y<Z;y++)for(let x=0;x<Z;x++){
+    const dx=x-c0,dy=y-c0,d=Math.hypot(dx,dy)/Rr,a=Math.atan2(dy,dx);
+    const ph=Math.abs(((a/(2*Math.PI)*dents)%1+1)%1-.5),pr=Math.abs(((a/(2*Math.PI)*rayons+.5)%1+1)%1-.5);
+    let p=0;
+    if(d<=1&&d>.8){if(ph<.3-(d-.8)/.2*.12)p=1}            // dents en trapèze
+    else if(d<=.8&&d>.56)p=2;                                 // jante
+    else if(d<=.56&&d>.3){if(pr<.15+(.56-d)*.35)p=3}          // rayons, plus larges vers le moyeu
+    else if(d<=.3&&d>.11)p=4;                                // moyeu
+    else if(d<=.11)p=5;                                      // axe
+    plein[y*Z+x]=p;zone[y*Z+x]=d;
+  }
+  const vide=(x,y)=>x<0||y<0||x>=Z||y>=Z||!plein[y*Z+x];
+  for(let y=0;y<Z;y++)for(let x=0;x<Z;x++){
+    const p=plein[y*Z+x];if(!p)continue;const d=zone[y*Z+x],dx=x-c0,dy=y-c0;
+    let t=(-dx-dy)/Rr*.22;
+    if(p===5){R(g,d<.06?'#1a1208':tone('#3a2a14',(-dx-dy)/Rr*.8),x,y);continue}
+    if(p===4)t+=.1-(Math.abs(d-.2)<.03?.28:0);
+    if(p===2&&Math.abs(d-.68)<.025)t-=.12;
+    if(p===3)t-=.04;
+    // biseau : clair du côté de la lumière, sombre de l'autre
+    if(vide(x-1,y-1)||vide(x-1,y)&&vide(x,y-1))t+=.3;else if(vide(x+1,y+1)||vide(x+1,y)&&vide(x,y+1))t-=.32;
+    if((p===2)&&noise(x,y,11)>.93)t+=.08;
+    R(g,tone(col,t),x,y);
+  }
+  // petits rivets sur la jante
+  for(let i=0;i<rayons;i++){const a=(i+.5)/rayons*2*Math.PI,x=Math.round(c0+Math.cos(a)*Rr*.68),y=Math.round(c0+Math.sin(a)*Rr*.68);R(g,tone(col,-.45),x,y);R(g,tone(col,.45),x-1,y-1)}
+  return outlineSprite(k);
+}

@@ -49,8 +49,17 @@ const avecEtage=(P,E)=>{const X=Math.max(...[...P.r,...P.c].map(q=>q[0]+q[2]))+5
 const SH_HAUT=['escalier','secours','shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
 const DIFFW={facile:{lock:1,eni:2,pz:2,bonus:1},moyen:{lock:1,eni:3,pz:3,bonus:1},difficile:{lock:2,eni:4,pz:3,bonus:2},expert:{lock:2,eni:4,pz:3,bonus:2}};
 
+// Un agencement fait à l'éditeur remplace la carte générée ; s'il ne permet pas une partie complète, on garde la carte générée
+let CARTES_PERSO=null;
+const carteDe=c=>!c||c.test?null:(CARTES_PERSO&&CARTES_PERSO[c.lv])||(typeof CARTES!=='undefined'&&CARTES[c.lv])||null;
+const planDe=(CU,P0,et)=>{if(et&&!CU.etage)return P0;const nc=CU.plan.c.length-(CU.etage&&!et?3:0);return{r:CU.plan.r.map(q=>q.slice(0,4)),c:CU.plan.c.slice(0,nc).map(q=>q.slice()),l:P0.l}};
 function buildWorld(c){
-  const L=c.set,r=RNG((c.seed*2654435761+c.lv*97+11)>>>0),D=DIFFW[c.key],ET=!c.test&&c.key==='expert'&&typeof ETAGES!=='undefined'?ETAGES[c.lv]:null,AN=!c.test&&typeof ANNEXES!=='undefined'&&ANNEXES[c.lv]?avecAnnexes(L.plan,ANNEXES[c.lv],L.rooms.map(q=>q.t)):{P:L.plan,aj:[]},P=ET?avecEtage(AN.P,ET):AN.P;
+  const CU=carteDe(c);
+  if(CU){try{const w=construireMonde(c,CU);if(!auditWorld(w,c).length)return w}catch(e){}}
+  return construireMonde(c,null);
+}
+function construireMonde(c,CU=null,decor=false){
+  const L=c.set,r=RNG((c.seed*2654435761+c.lv*97+11)>>>0),D=DIFFW[c.key],ET=!c.test&&c.key==='expert'&&typeof ETAGES!=='undefined'?ETAGES[c.lv]:null,AN=!c.test&&typeof ANNEXES!=='undefined'&&ANNEXES[c.lv]?avecAnnexes(L.plan,ANNEXES[c.lv],L.rooms.map(q=>q.t)):{P:L.plan,aj:[]},P0=ET?avecEtage(AN.P,ET):AN.P,P=CU&&CU.plan?planDe(CU,P0,!!ET):P0;
   const rects=[...P.r,...P.c];
   MW=Math.max(...rects.map(q=>q[0]+q[2]))+3;MH=Math.max(...rects.map(q=>q[1]+q[3]))+3;
   const grid=v=>range(MH).map(()=>Array(MW).fill(v)),t=grid(0),blk=grid(0),res=grid(0),gate=grid(0);
@@ -72,6 +81,7 @@ function buildWorld(c){
   for(let y=2;y<MH;y++)for(let x=0;x<MW;x++)if(t[y][x]===1&&t[y-1][x]===0){t[y-1][x]=2;if(t[y-2][x]===0)t[y-2][x]=2}
   w.rooms=w.areas.slice(0,L.rooms.length);
   // Portes : déduites de la position réelle des pièces
+  const porteCU=(a,b)=>CU&&CU.portes&&CU.portes[a+'-'+b];
   const nA=w.areas.length,doors=[...P.l,...AN.aj.filter(a=>a.i!=null&&a.ci>=0).map(a=>[a.i,a.ci]),...(ET?[[nA-2,nA-3],[nA-1,nA-3]]:[])].map(([a,b])=>{
     const A=w.areas[a],B=w.areas[b],id=nid();let d,m=null;
     for(const ra of A.rects)for(const rb of B.rects){
@@ -81,11 +91,11 @@ function buildWorld(c){
     }
     if(!m)throw new Error('plan sans porte possible '+a+'-'+b);
     if(m.v){
-      const{G:G0,H}=m,gx=G0.x1+1,y0=Math.max(G0.y0,H.y0)+1,y1=Math.min(G0.y1,H.y1)-1,y=y0+int(r,Math.max(1,y1-y0));
+      const{G:G0,H}=m,gx=G0.x1+1,y0=Math.max(G0.y0,H.y0)+1,y1=Math.min(G0.y1,H.y1)-1,yr=y0+int(r,Math.max(1,y1-y0)),pc=porteCU(a,b),y=pc&&pc[0]===gx&&pc[1]>=y0&&pc[1]<=Math.max(y0,y1-1)?pc[1]:yr;
       [y,y+1].forEach(q=>{t[q][gx]=1;gate[q][gx]=id;res[q][gx-1]=1;res[q][gx+1]=1;res[q][gx-2]=1;res[q][gx+2]=1});
       d={id,kind:'door',v:true,x:gx,y,w:1,h:2};
     }else{
-      const{U,F}=m,x0=Math.max(U.x0,F.x0)+1,x1=Math.min(U.x1,F.x1)-2,x=x0+int(r,Math.max(1,x1-x0+1)),ry=U.y1+1;
+      const{U,F}=m,x0=Math.max(U.x0,F.x0)+1,x1=Math.min(U.x1,F.x1)-2,ry=U.y1+1,xr=x0+int(r,Math.max(1,x1-x0+1)),pc=porteCU(a,b),x=pc&&pc[1]===ry&&pc[0]>=x0&&pc[0]<=Math.max(x0,x1)?pc[0]:xr;
       for(let q=0;q<3;q++){t[ry+q][x]=1;t[ry+q][x+1]=1;gate[ry+q][x]=id;gate[ry+q][x+1]=id}
       for(let k=-1;k<3;k++){res[U.y1][x+k]=1;res[U.y1-1][x+k]=1;res[F.y0][x+k]=1;res[F.y0+1][x+k]=1}
       d={id,kind:'door',v:false,x,y:ry,w:2,h:3};
@@ -148,8 +158,32 @@ function buildWorld(c){
       }
       return out;
     };
+    // Pièce « centrée » : la cheminée, le canapé ou le lit au milieu du mur, ses voisins collés de chaque côté,
+    // le reste réparti pour que les deux côtés pèsent pareil
+    const pivot=A.rec.centre&&((A.rec.g||[]).find(g=>g.rug&&g.at&&g.at.sous)||{at:{}}).at.sous;
+    const rangeCentre=(noms,pv)=>{
+      const i=noms.indexOf(pv),[fw,fh]=FP[pv],cx=A.x0+((W0-fw)>>1);
+      let fx=null;for(const d of [0,1,-1,2,-2,3,-3,4,-4])if(cx+d>=A.x0&&cx+d+fw-1<=A.x1&&libreLa(cx+d,A.y0,fw,fh)){fx=cx+d;break}
+      if(fx==null)return null;
+      // ses voisins dans la liste restent collés à lui (les tables de chevet !) ; les autres vont du côté qui équilibre le mieux
+      const larg=l=>l.reduce((n,k)=>n+FP[k][0],0),reste=noms.filter((_,j)=>Math.abs(j-i)>1),essais=[];
+      for(let m=0;m<1<<reste.length;m++){
+        const Gs=i>0?[noms[i-1]]:[],Ds=i<noms.length-1?[noms[i+1]]:[];
+        reste.forEach((n,j)=>(m>>j&1?Ds:Gs).push(n));essais.push([Math.abs(larg(Gs)-larg(Ds)),Gs,Ds]);
+      }
+      essais.sort((a,b)=>a[0]-b[0]);
+      for(const[,Gs,Ds]of essais){
+        const out=[[pv,fx]];let x=fx,ok=true;
+        for(const n of Gs){const[w0,h0]=FP[n];let X=x-w0;while(X>=A.x0&&!libreLa(X,A.y0,w0,h0))X--;if(X<A.x0){ok=false;break}out.push([n,X]);x=X}
+        x=fx+fw;
+        for(const n of Ds){if(!ok)break;const[w0,h0]=FP[n];while(x+w0-1<=A.x1&&!libreLa(x,A.y0,w0,h0))x++;if(x+w0-1>A.x1){ok=false;break}out.push([n,x]);x+=w0}
+        if(ok)return out;
+      }
+      return null;
+    };
     let plan=null;
     while(list.length&&!plan){
+      if(pivot&&list.includes(pivot)){plan=rangeCentre(list,pivot);if(plan)break}
       const tot=list.reduce((n,k)=>n+FP[k][0],0),marge=W0-tot;
       const deps=[...(A.rec.centre?[A.x0+(marge>>1)]:A.flip?[A.x0+marge]:[A.x0]),A.x0];
       for(const d of deps){plan=range_(list,Math.max(A.x0,d));if(plan)break}
@@ -232,7 +266,7 @@ function buildWorld(c){
     if(!serre)for(let y=oy+b.y0-1;y<=oy+b.y0+b.h;y++)for(let x=ox+b.x0-1;x<=ox+b.x0+b.w;x++)if(y>=A.y0&&y<=A.y1&&x>=A.x0&&x<=A.x1&&blk[y][x])return false;
     const faits=p.map(([n,dx,dy])=>{const f=place(n,ox+dx,oy+dy,A);f.v=v;return f});
     if(!areaOK(A)){faits.forEach(unplace);return false}
-    if(rug)A.tapis={x:Math.max(A.x0,ox+b.x0-1),y:Math.max(A.y0+1,oy+b.y0),x1:Math.min(A.x1,ox+b.x0+b.w),y1:Math.min(A.y1,oy+b.y0+b.h)};
+    if(rug)A.tapis={x:Math.max(A.x0,ox+b.x0-1),y:Math.max(A.y0+1,oy+b.y0-1),x1:Math.min(A.x1,ox+b.x0+b.w),y1:Math.min(A.y1,oy+b.y0+b.h)};
     return true;
   };
   const poseGroupe=(A,g)=>{
@@ -251,10 +285,11 @@ function buildWorld(c){
       const cibles=w.furn.filter(f=>f.room===A.i&&f.name===g.at.sous);
       (g.tous?cibles:cibles.slice(0,1)).forEach(f=>{
         for(let k=g.p.length;k>0;k--){
-          const p=g.p.slice(0,k),b=boite(p),ox=f.x+((f.w-b.w)>>1)-b.x0,oy=f.y+f.h+(g.dy||0);
+          const p=g.p.slice(0,k),b=boite(p),ox=f.x+((f.w-b.w)>>1)-b.x0,oy0=f.y+f.h+(g.dy||0),haut=f.y+f.h,libre=A.y1-haut+1;
+          const oy=g.dy&&g.rug?Math.max(oy0,haut+((libre-b.h)>>1)-b.y0):oy0;
           // on reste au plus près du meuble visé, mais une porte peut obliger à glisser
           const essais=g.dy?[0,1,-1,2,-2,3,-3,4,-4,5,-5,6,-6].flatMap(d=>[[d,0],[d,-1]]):[[0,0]];
-          if(essais.some(([ax,ay])=>poseBloc(A,p,ox+ax,oy+ay,!g.dy,g.rug)))break;
+          if(essais.some(([ax,ay])=>poseBloc(A,p,ox+ax,oy+ay,!g.dy,g.rug))||oy!==oy0&&essais.some(([ax,ay])=>poseBloc(A,p,ox+ax,oy0+ay,!g.dy,g.rug)))break;
         }
       });
       return;
@@ -279,6 +314,20 @@ function buildWorld(c){
     for(let X=q.x1-1;X>=q.x0;X--){if(t[q.y0-1][X]!==2||t[q.y0-1][X+1]!==2||!libreLa(X,q.y0,2,1))continue;const f=place('escalier',X,q.y0,A);if(areaOK(A)){f.acces='descend';break}unplace(f)}
     ['plant','commode','clock','lamp','plant'].forEach((name,i)=>{const fw=FP[name][0];for(let k=0;k<4;k++){const x=q.x0+1+i*4+k;let ok=x+fw-1<=q.x1&&libreLa(x,q.y0,fw,1);for(let j=0;j<fw&&ok;j++)if(t[q.y0-1][x+j]!==2)ok=false;if(!ok)continue;const f=place(name,x,q.y0,A);if(areaOK(A))break;unplace(f)}});
   };
+  // Agencement de l'éditeur : chaque meuble à sa place exacte, sols, couleurs et tapis choisis à la main
+  const poseCarte=()=>{
+    const aire=(x,y)=>w.areas.findIndex(A=>dans(A,x,y));
+    CU.furn.forEach(([n,x,y,v],ci)=>{
+      if(!FP[n])return;const[fw,fh]=FP[n],ai=aire(x,y);if(ai<0)return;const A=w.areas[ai];
+      for(let a=0;a<fh;a++)for(let b=0;b<fw;b++){const X=x+b,Y=y+a;if(!t[Y]||t[Y][X]!==1||gate[Y][X]||blk[Y][X]||!dans(A,X,Y))return}
+      const f=place(n,x,y,A);if(v!=null)f.v=v;f.ci=ci;
+    });
+    const pal=w.areas.find(A=>A.palier),e=pal&&w.furn.find(f=>f.room===pal.i&&f.name==='escalier');if(e)e.acces='descend';
+    (CU.ent||[]).forEach(([X,y])=>{if(!t[y+1]||t[y+1][X]!==2||t[y+1][X+1]!==2)return;w.entrees.push({x:X,y});for(let k=-1;k<3;k++){if(t[y+2]&&t[y+2][X+k]===1)res[y+2][X+k]=1;if(t[y+3]&&t[y+3][X+k]===1)res[y+3][X+k]=1}});
+    w.areas.forEach((A,i)=>{const z=CU.aires&&CU.aires[i];if(!z)return;A.rec={...A.rec};if(z.f)A.rec.f=z.f;if(z.t)A.tint=z.t;
+      if(z.tapis){const[x,y,x1,y1,col]=z.tapis;A.tapis={x,y,x1,y1};A.rec.rug=col||A.rec.rug||'#7a2f35'}else A.tapis=null});
+  };
+  if(CU&&CU.furn)poseCarte();else{
   w.areas.forEach(A=>{
     A.flip=r()<.5;
     if(A.etage){poseEtage(A);return}
@@ -314,6 +363,7 @@ function buildWorld(c){
       }
     }
   });
+  }
   // Accès à l'étage : l'ascenseur s'il y en a un, sinon un escalier, posé au besoin contre un mur libre
   w.etage=null;
   if(ET){
@@ -329,6 +379,7 @@ function buildWorld(c){
     const devant=f=>{for(const[x,y]of[[f.x+((f.w-1)>>1),f.y+1],[f.x+(f.w>>1),f.y+1],[f.x-1,f.y],[f.x+f.w,f.y],[f.x,f.y+2]])if(t[y]&&t[y][x]===1&&!blk[y][x]&&!gate[y][x])return[x,y];return null};
     if(acc&&desc&&devant(acc)&&devant(desc)){acc.acces='monte';if(acc.name==='escalier')acc.v=1e7+acc.v%1e6;desc.v=2e7;w.etage={nom:ET.nom,haut:devant(desc),bas:devant(acc)}}
   }
+  if(!decor){
   const used=new Set();
   const freeIn=a=>{const o=[];for(let y=a.y0;y<=a.y1;y++)for(let x=a.x0;x<=a.x1;x++)if(t[y][x]===1&&!blk[y][x]&&!res[y][x]&&!gate[y][x]&&!used.has(y*MW+x))o.push([x,y]);return o};
   const takeCell=a=>{const o=freeIn(a);if(!o.length)return null;const q=pick(r,o);used.add(q[1]*MW+q[0]);return q};
@@ -420,6 +471,7 @@ function buildWorld(c){
   w.entrees.forEach(q=>w.obj.push({id:nid(),kind:'entree',x:q.x,y:q.y,w:2,h:2}));
   w.collectTotal=w.obj.filter(o=>o.loot&&o.loot.t==='obj').length;
 
+  }
   const dehors=(x,y)=>{for(let j=y-1;j>=0;j--)if(t[j][x]===1)return false;return true};
   w.areas.forEach(A=>{
     A.rects.forEach(q=>{
@@ -436,8 +488,21 @@ function buildWorld(c){
       w.lamps.push({x:(q.x0+q.x1)/2,y:(q.y0+q.y1)/2,warm:true});
     });
   });
+  if(CU){
+    const mur=(x,y,l)=>{for(let i=0;i<l;i++)if(!t[y]||t[y][x+i]!==2||!t[y+1]||t[y+1][x+i]!==2)return false;return true};
+    if(CU.fen)w.windows=CU.fen.filter(([x,y])=>mur(x,y,2)).map(([x,y])=>({x,y}));
+    if(CU.tab)w.tableaux=CU.tab.filter(([x,y,n])=>mur(x,y,TAB_ETROITS.includes(n)?2:4)).map(([x,y,n])=>({x,y,n}));
+  }
+  w.plan=P;w.carte=CU;
   w.byId=Object.fromEntries(w.obj.map(o=>[o.id,o]));
   return w;
+}
+// Ce que l'éditeur garde d'une carte : tout ce qui se voit, rien de ce qui sert au jeu
+function extraireCarte(w,lv,etage){
+  return{v:1,lv,etage,plan:{r:w.plan.r.map(q=>q.slice(0,4)),c:w.plan.c.map(q=>q.slice())},
+    portes:Object.fromEntries(Object.values(w.doors).map(d=>[d.a+'-'+d.b,[d.x,d.y]])),
+    furn:w.furn.map(f=>[f.name,f.x,f.y,f.v]),fen:w.windows.map(q=>[q.x,q.y]),tab:w.tableaux.map(q=>[q.x,q.y,q.n]),ent:w.entrees.map(q=>[q.x,q.y]),
+    aires:w.areas.map(A=>({f:A.rec.f,t:A.tint,tapis:A.tapis&&A.rec.rug?[A.tapis.x,A.tapis.y,A.tapis.x1,A.tapis.y1,A.rec.rug]:null}))};
 }
 const solidCell=(w,x,y,open)=>{
   if(x<0||y<0||x>=w.mw||y>=w.mh||w.t[y][x]!==1||w.blk[y][x])return true;

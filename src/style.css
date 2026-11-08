@@ -48,6 +48,23 @@ h1,h2,h3,h4,p{margin:0}
 .engrenage:hover i{transform:rotate(18deg)}
 .engrenage i{will-change:transform;transition:transform .2s}
 .engrenage.tourne i{animation:tourne .7s cubic-bezier(.22,.8,.3,1)}
+/* le petit pignon engrène le grand : il tourne en sens inverse, plus vite */
+.engrenage #eng2{inset:auto;left:58%;top:58%;width:56%;height:56%}
+.engrenage:hover #eng2{transform:rotate(-27deg)}
+.engrenage.tourne #eng2{animation:tourne2 .7s cubic-bezier(.22,.8,.3,1)}
+@keyframes tourne2{to{transform:rotate(-540deg)}}
+/* calepin : la page tourne autour de la spirale */
+.livret{perspective:1800px}
+.page-vole{position:absolute;margin:0;pointer-events:none;transform-origin:0 50%;backface-visibility:hidden}
+.page-vole.part{z-index:1;animation:page-part .5s cubic-bezier(.5,.05,.6,.95) forwards}
+.page-vole.dessous{z-index:0}
+.feuille.vient{z-index:1;transform-origin:0 50%;animation:page-vient .5s cubic-bezier(.4,.05,.5,.95)}
+.ombre-page{position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(to left,rgba(40,25,5,.45),rgba(40,25,5,.08) 60%,transparent)}
+.part .ombre-page{animation:ombre-in .5s forwards}
+.vient .ombre-page{animation:ombre-in .5s reverse forwards}
+@keyframes page-part{to{transform:rotateY(-104deg)}}
+@keyframes page-vient{from{transform:rotateY(-104deg)}to{transform:rotateY(0)}}
+@keyframes ombre-in{from{opacity:0}to{opacity:1}}
 @keyframes tourne{to{transform:rotate(360deg)}}
 .marteau{position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));width:calc(var(--icone)*1.32);height:calc(var(--icone)*1.12)}
 #mart{display:block;width:100%;height:100%;image-rendering:pixelated}
@@ -596,3 +613,34 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .pz input[type=range]{height:34px}
 .lt-reco{font-size:13px}
 @media (max-height:500px){.meuble{width:min(760px,100%,calc((100vh - 110px)*1.6))}}
+
+/* ——— Éditeur de cartes (réservé à l'auteur : ?editeur) ——— */
+.ed{position:fixed;inset:0;z-index:200;display:grid;grid-template-rows:auto minmax(0,1fr) auto;background:#0d0b18;color:#efe4c8;font:14px/1.3 system-ui,sans-serif;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.ed button{font:inherit;color:inherit;background:#2a2540;border:1px solid #4a4268;border-radius:4px;padding:5px 9px;cursor:pointer;min-height:32px}
+.ed button:hover{background:#3a3358}.ed button:disabled{opacity:.4;cursor:default}
+.ed button[aria-pressed="true"],.ed button.pris{background:#ffd23f;color:#1a1408;border-color:#ffd23f}
+.ed button.fort{background:#3a7a4a;border-color:#58a65a}.ed button.danger{background:#6a2830;border-color:#a8404a}.ed button.sur{background:#a8404a}
+.ed-barre{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:8px 10px;background:#17142a;border-bottom:1px solid #2e2846}
+.ed-barre select{font:inherit;background:#2a2540;color:inherit;border:1px solid #4a4268;border-radius:4px;padding:5px;min-height:32px;max-width:220px}
+.ed-outils,.ed-groupe{display:flex;flex-wrap:wrap;gap:4px}
+.ed-corps{display:grid;grid-template-columns:minmax(0,1fr) 270px;min-height:0}
+#ed-c{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;min-width:0}
+.ed-panneau{overflow-y:auto;padding:10px;background:#141126;border-left:1px solid #2e2846;display:flex;flex-direction:column;gap:8px}
+.ed-panneau h3{font:600 16px system-ui;color:#ffd23f;margin:4px 0 0}
+.ed-aide{color:#cbbf9f;font-size:13px}.ed .petit{font-size:12px;color:#a89f88}.ed .rouge{color:#ff7070}
+.ed-boutons{display:flex;flex-wrap:wrap;gap:5px}
+.ed kbd{font-size:10px;opacity:.7;margin-left:3px}
+.ed-cherche{font:inherit;padding:6px 8px;background:#0d0b18;color:inherit;border:1px solid #4a4268;border-radius:4px;width:100%}
+.ed-palette,.ed-sols{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:5px}
+.ed-palette button,.ed-sols button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px;font-size:11px;line-height:1.1}
+.ed-palette img{height:48px;max-width:100%;object-fit:contain;image-rendering:pixelated}
+.ed-sols img{width:40px;height:40px;image-rendering:pixelated}
+.ed-tableaux{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}.ed-tableaux img{height:44px;image-rendering:pixelated}
+.ed-champs{display:grid;grid-template-columns:1fr 1fr;gap:6px}.ed-champs label{display:flex;flex-direction:column;font-size:12px;gap:2px}
+.ed-champs input{font:inherit;background:#0d0b18;color:inherit;border:1px solid #4a4268;border-radius:4px;padding:4px;width:100%}
+.ed-couleur{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}.ed-couleur input{width:44px;height:30px;border:0;background:none}
+.ed-texte{width:100%;height:240px;font:11px monospace;background:#0d0b18;color:#cfe;border:1px solid #4a4268}
+.ed-etat{display:flex;flex-wrap:wrap;gap:4px 14px;padding:6px 10px;background:#17142a;border-top:1px solid #2e2846;font-size:13px;max-height:84px;overflow-y:auto}
+.ed-etat .ok{color:#7ad88a}.ed-etat .ko,.ed-etat .pb{color:#ff9a8a}.ed-etat .msg{color:#ffd23f}
+.ed-retour{position:fixed;z-index:190;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:#ffd23f;color:#1a1408;font:600 14px system-ui;padding:8px 14px;border-radius:6px;box-shadow:0 2px 0 rgba(0,0,0,.5)}
+@media (max-width:760px){.ed-corps{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) minmax(0,38vh)}.ed-panneau{border-left:0;border-top:1px solid #2e2846}.ed-barre{max-height:30vh;overflow-y:auto}}
