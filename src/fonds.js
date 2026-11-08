@@ -1,6 +1,6 @@
 // ——— Le fond de chaque mini-jeu : l'intérieur du meuble qu'on vient d'ouvrir ———
 const FOND_MEUBLE={wardrobe:'armoire',locker:'casier',shelf:'etagere',commode:'facade',chevet:'facade',desk:'facade',pcdesk:'facade',cabinet:'facade',counter:'placard',bar:'placard',sink:'evier',washer:'tambour',fridge:'frigo',medic:'pharmacie',vanity:'pharmacie',fireplace:'foyer'};
-const FOND_DEFAUT={couches:'facade',coussins:'facade',horloge:'facade',pot:'facade',piano:'facade',livres:'etagere',cintres:'armoire',poussiere:'foyer',crochet:'facade',memo:'pharmacie',tatons:'placard'};
+const FOND_DEFAUT={moteur:'facade',couches:'facade',coussins:'facade',horloge:'facade',pot:'facade',piano:'facade',livres:'etagere',cintres:'armoire',poussiere:'foyer',crochet:'facade',memo:'pharmacie',tatons:'placard'};
 function fondMeuble(fam,s){
   const W0=SCENE_W,H0=SCENE_H,[k,g]=cv(W0,H0),c='#6d4628',ombre=(n,a)=>{for(let i=0;i<n;i++){const f=(a*(n-i)/n).toFixed(2);R(g,`rgba(6,4,10,${f})`,i,0,1,H0);R(g,`rgba(6,4,10,${f})`,W0-1-i,0,1,H0);R(g,`rgba(6,4,10,${f})`,0,i,W0,1)}};
   if(fam==='armoire'){

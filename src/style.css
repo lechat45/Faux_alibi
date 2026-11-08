@@ -286,6 +286,7 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .tatons button:hover{background:rgba(255,255,255,.14)}
 .tatons .proche{background:rgba(216,72,62,.62)}.tatons .moyen{background:rgba(224,160,58,.5)}.tatons .loin{background:rgba(90,122,216,.42)}
 .cendres{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;touch-action:none;cursor:grab}
+.cendres.hd{image-rendering:auto;cursor:pointer}
 
 /* Page d'accueil */
 .accueil{position:absolute;inset:0;z-index:10;overflow:auto}

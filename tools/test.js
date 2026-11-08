@@ -31,7 +31,7 @@ function verifie(w,c,err){
   });
   w.rooms.forEach(A=>{
     const R=REQUIS[c.set.rooms[A.i].t],noms=w.furn.filter(f=>f.room===A.i).map(f=>f.name);
-    if(R&&!(c.set.rooms[A.i].t==='bain'?R.every(x=>noms.includes(x)):R.some(x=>noms.includes(x))))k('piece sans son meuble : '+A.name+' '+noms.join(','));
+    if(R&&!(c.set.rooms[A.i].t==='bain'?R.every(x=>noms.includes(x)||x==='toilet'&&noms.includes('cabine')):R.some(x=>noms.includes(x))))k('piece sans son meuble : '+A.name+' '+noms.join(','));
     if(c.set.rooms[A.i].t==='chambre'&&!noms.includes('bed'))k('chambre sans lit '+A.name);
   });
   return n;

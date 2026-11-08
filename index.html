@@ -304,6 +304,7 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .tatons button:hover{background:rgba(255,255,255,.14)}
 .tatons .proche{background:rgba(216,72,62,.62)}.tatons .moyen{background:rgba(224,160,58,.5)}.tatons .loin{background:rgba(90,122,216,.42)}
 .cendres{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;touch-action:none;cursor:grab}
+.cendres.hd{image-rendering:auto;cursor:pointer}
 
 /* Page d'accueil */
 .accueil{position:absolute;inset:0;z-index:10;overflow:auto}
@@ -691,7 +692,7 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
   <section id="accueil" class="accueil"><canvas id="ciel"></canvas><div id="acc-ui" class="acc-ui"></div></section>
 </main>
 <script>
-const GEN_SIG='891874ff5b';
+const GEN_SIG='e4c9df0db3';
 // Agencements faits à la main avec l'éditeur (?editeur) : un par lieu, ils remplacent la carte générée.
 // Le jeu y place toujours lui-même les suspects, les indices, les cachettes et les énigmes.
 const CARTES={};
@@ -721,7 +722,7 @@ const RECIPES={
   s_grand:{f:'marbre',rug:'#8d6a23',centre:true,run:['shelf','fireplace','cabinet','clock'],g:[sous('fireplace',FOYER,{dy:1,rug:true}),coin('BG',[['piano',0,0],['stool',1,2]]),coin('BD',[['lamp',1,0],['globe',0,0]])]},
   b_marbre:{f:'marbre',run:['tub','sink','medic','toilet'],g:[coin('BG',[['stool',0,0]]),coin('BD',[['plant',0,0]])]},
   b_simple:{f:'lino',run:['shower','sink','medic','toilet','cabinet'],g:[coin('BG',[['stool',0,0]])]},
-  b_collectif:{f:'lino',run:['sink','sink','medic','toilet','toilet','shower','locker'],g:[coin('B',[['stool',0,0],['stool',2,0]]),coin('BD',[['crate',0,0]])]},
+  b_collectif:{f:'lino',run:['sink','sink','medic','cabine','cabine','shower','locker'],g:[coin('B',[['stool',0,0],['stool',2,0]]),coin('BD',[['crate',0,0]])]},
   ch_hotel:{f:'tapis',centre:true,run:['wardrobe','chevet','bed','chevet','commode','vanity'],g:[sous('bed',[['trunk',0,0]]),sous('vanity',[['stool',0,0]]),coin('BD',LECTURE)]},
   ch_luxe:{f:'parquet',rug:'#3f2a5c',centre:true,run:['wardrobe','chevet','bed','chevet','fireplace','commode','vanity'],g:[sous('bed',[['trunk',0,0]],{rug:true}),sous('vanity',[['stool',0,0]]),coin('BG',LECTURE)]},
   ch_dortoir:{f:'metal',run:['bed','chevet','bed','chevet','bed','locker','locker','commode','wardrobe'],g:[sous('bed',[['trunk',0,0]],{tous:true})]},
@@ -868,7 +869,7 @@ const ETAGES={
 
 // ——— Petites pièces sans enquête : elles rendent les lieux plus vrais ———
 Object.assign(RECIPES,{
-  a_wc:{f:'damier',run:['toilet','sink'],g:[coin('BD',[['plant',0,0]])],porte:'bain'},
+  a_wc:{f:'damier',run:['cabine','sink'],g:[coin('BD',[['plant',0,0]])],porte:'bain'},
   a_service:{f:'lino',run:['shelf','locker'],g:[coin('BG',[['crate',0,0],['barrel',1,0]]),coin('BD',[['crate',0,0]])]},
   a_cellier:{f:'planche',run:['shelf','shelf'],g:[coin('BG',[['barrel',0,0],['crate',1,0]]),coin('BD',[['crate',0,0]])]},
   a_vestiaire:{f:'parquet',run:['portant','wardrobe'],g:[coin('C',[['banc',0,0]])]},
@@ -935,7 +936,7 @@ const ENIGMES={
 };
 const TAG_NOM={levier:'levier',fil:'crochet',optique:'loupe',chaleur:'chaleur',lumiere:'lumière',electrique:'courant',aimant:'aimant',coupe:'lame',colle:'colle',mine:'mine'};
 // Chaque meuble à cachette se fouille de l'intérieur, selon sa nature
-const MG_BY={shelf:'livres',wardrobe:'cintres',locker:'cintres',cabinet:'ecriture',commode:'crochet',chevet:'crochet',desk:'dechiree',pcdesk:'crochet',counter:'tatons',bar:'tatons',washer:'tatons',
+const MG_BY={engine:'moteur',shelf:'livres',wardrobe:'cintres',locker:'cintres',cabinet:'ecriture',commode:'crochet',chevet:'crochet',desk:'dechiree',pcdesk:'crochet',counter:'tatons',bar:'tatons',washer:'tatons',
   fridge:'memo',medic:'memo',vanity:'empreinte',sink:'tatons',trunk:'caisse',crate:'caisse',barrel:'caisse',fireplace:'poussiere',
   bed:'couches',sofa:'coussins',sofaB:'coussins',armchair:'coussins',armchairL:'coussins',armchairR:'coussins',armchairB:'coussins',clock:'horloge',plant:'pot',piano:'piano'};
 
@@ -1376,12 +1377,12 @@ function puzzleSolve(p){
 
 // Génération de la carte : architecture, mobilier, portes, cachettes, énigmes d'objets et audit.
 let MW=62,MH=33;
-const FP={escalier:[2,1],secours:[2,1],chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
+const FP={cabine:[2,2],escalier:[2,1],secours:[2,1],chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
   console:[3,1],labbench:[3,1],planter:[3,1],table:[3,2],rtable:[2,2],chair:[1,1],sofa:[3,1],armchair:[1,1],bed:[2,3],crate:[1,1],barrel:[1,1],plant:[1,1],mannequin:[1,1],spot:[1,1],ropes:[1,1],
   trunk:[2,1],lamp:[1,1],globe:[1,1],stool:[1,1],tank:[1,1],tub:[3,1],toilet:[1,1],shower:[2,1],desk:[3,1],pcdesk:[3,1],commode:[2,1],chevet:[1,1],lift:[2,1],medic:[1,1],washer:[1,1],copier:[1,1],roulette:[3,2],engine:[3,2],
   chairB:[1,1],chairL:[1,1],chairR:[1,1],armchairB:[1,1],armchairL:[1,1],armchairR:[1,1],sofaB:[3,1],basse:[3,1]};
 const DECO=[['chariot','valise'],['bascule','valise'],['banquette','valise'],['fontaine','fontaine'],['radio','skis'],['portant','portant'],['bouee','barre'],['perfusion','brancard'],['armure','armure'],['bandit','jetons','bandit']];
-const FLAVOR={chariot:['Des serviettes propres et de petits savons.'],valise:["Une étiquette à moitié arrachée. Elle est vide."],bascule:['Il se balance encore un peu.'],banquette:['Le velours est usé aux accoudoirs.'],fontaine:["Elle glougloute toute seule."],radio:['Rien que du grésillement.'],skis:['Les fartages sont encore frais.'],portant:['Des costumes de scène qui sentent la naphtaline.'],bouee:['Elle porte le nom du navire.'],barre:['Elle est bloquée depuis le départ.'],perfusion:["La poche est presque vide."],brancard:['Les draps sont propres.'],armure:["Il n'y a personne dedans. Enfin, j'espère."],bandit:['Trois citrons. Encore perdu.'],jetons:['Quelques jetons abandonnés en plein jeu.'],portemanteau:['Des manteaux encore humides de pluie.','Un chapeau, une écharpe, un vieux pardessus.'],parapluies:['Trois parapluies, encore mouillés.'],chaussures:["Des chaussures bien alignées. Personne n'est sorti ce soir."],videpoche:['Un vide-poches, quelques clés sans étiquette.','Une petite coupelle et le courrier du matin.'],banc:['Un banc pour se déchausser.'],shelf:['Des rangées de livres, rien de plus.','Les reliures sentent le vieux cuir.'],cabinet:['Des tiroirs bien rangés, sans surprise.'],crate:['Des clous et de la paille.'],trunk:['Des vêtements pliés et de vieux journaux.'],
+const FLAVOR={cabine:['La cuvette est propre. Le dérouleur est presque vide.',"Quelqu'un a griffonné un numéro sur la cloison, à moitié effacé."],chariot:['Des serviettes propres et de petits savons.'],valise:["Une étiquette à moitié arrachée. Elle est vide."],bascule:['Il se balance encore un peu.'],banquette:['Le velours est usé aux accoudoirs.'],fontaine:["Elle glougloute toute seule."],radio:['Rien que du grésillement.'],skis:['Les fartages sont encore frais.'],portant:['Des costumes de scène qui sentent la naphtaline.'],bouee:['Elle porte le nom du navire.'],barre:['Elle est bloquée depuis le départ.'],perfusion:["La poche est presque vide."],brancard:['Les draps sont propres.'],armure:["Il n'y a personne dedans. Enfin, j'espère."],bandit:['Trois citrons. Encore perdu.'],jetons:['Quelques jetons abandonnés en plein jeu.'],portemanteau:['Des manteaux encore humides de pluie.','Un chapeau, une écharpe, un vieux pardessus.'],parapluies:['Trois parapluies, encore mouillés.'],chaussures:["Des chaussures bien alignées. Personne n'est sorti ce soir."],videpoche:['Un vide-poches, quelques clés sans étiquette.','Une petite coupelle et le courrier du matin.'],banc:['Un banc pour se déchausser.'],shelf:['Des rangées de livres, rien de plus.','Les reliures sentent le vieux cuir.'],cabinet:['Des tiroirs bien rangés, sans surprise.'],crate:['Des clous et de la paille.'],trunk:['Des vêtements pliés et de vieux journaux.'],
  barrel:['Ça sonne plein.'],table:['Quelques papiers sans intérêt.','Des tasses encore tièdes.'],clock:['Elle tique trop fort pour être honnête.','Elle retarde de deux minutes.'],plant:['La terre est humide. Quelqu\'un en prend soin.'],
  locker:['Un casier vide, qui sent le renfermé.'],lamp:['L\'ampoule grésille.'],lift:['L\'ascenseur est à l\'arrêt, impossible de l\'appeler.','Le bouton ne répond plus. Rien à faire.'],tub:['La baignoire est sèche.'],toilet:['Rien ici. Heureusement.'],shower:['Le carrelage est encore humide.'],
  escalier:["L'escalier de service. Une corde rouge barre le passage : « Fermé pendant la tempête ».","Une fine couche de poussière couvre les marches : personne n'est monté ce soir."],
@@ -1422,7 +1423,7 @@ const avecAnnexes=(P,liste,types)=>{
   return{P:{r:P.r,l:P.l,c:c2},aj};
 };
 const avecEtage=(P,E)=>{const X=Math.max(...[...P.r,...P.c].map(q=>q[0]+q[2]))+5;return{r:P.r,l:P.l,c:[...P.c,[X,12,21,3,E.palier],[X,3,10,6,E.p[0][0]],[X+11,3,10,6,E.p[1][0]]]}};
-const SH_HAUT=['escalier','secours','shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
+const SH_HAUT=['cabine','escalier','secours','shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
 const DIFFW={facile:{lock:1,eni:2,pz:2,bonus:1},moyen:{lock:1,eni:3,pz:3,bonus:1},difficile:{lock:2,eni:4,pz:3,bonus:2},expert:{lock:2,eni:4,pz:3,bonus:2}};
 
 // Un agencement fait à l'éditeur remplace la carte générée ; s'il ne permet pas une partie complète, on garde la carte générée
@@ -1518,7 +1519,7 @@ function construireMonde(c,CU=null,decor=false){
   const libreLa=(x,y,fw,fh)=>{for(let a=0;a<fh;a++)for(let b=0;b<fw;b++){if(y+a<0||y+a>=MH||blk[y+a][x+b]||res[y+a][x+b])return false}return true};
   // Rangée contre le mur du haut : les meubles se touchent, seule une porte peut les séparer
   // du plus indispensable au moins indispensable : on ne sacrifie jamais le lit d'une chambre
-  const ESSENTIEL=['bed','toilet','sink','stove','fridge','sofa','tub','shower','bar','console','fireplace','vanity'];
+  const ESSENTIEL=['bed','toilet','cabine','sink','stove','fridge','sofa','tub','shower','bar','console','fireplace','vanity'];
   const rang=n=>{const i=ESSENTIEL.indexOf(n);return i<0?99:i};
   const poseRun=A=>{
     let list=(A.rec.run||[]).slice();if(A.flip)list.reverse();
@@ -2993,7 +2994,7 @@ function dessineScene(k,fond,Sc,tk){
 
 // ——— Le fond de chaque mini-jeu : l'intérieur du meuble qu'on vient d'ouvrir ———
 const FOND_MEUBLE={wardrobe:'armoire',locker:'casier',shelf:'etagere',commode:'facade',chevet:'facade',desk:'facade',pcdesk:'facade',cabinet:'facade',counter:'placard',bar:'placard',sink:'evier',washer:'tambour',fridge:'frigo',medic:'pharmacie',vanity:'pharmacie',fireplace:'foyer'};
-const FOND_DEFAUT={couches:'facade',coussins:'facade',horloge:'facade',pot:'facade',piano:'facade',livres:'etagere',cintres:'armoire',poussiere:'foyer',crochet:'facade',memo:'pharmacie',tatons:'placard'};
+const FOND_DEFAUT={moteur:'facade',couches:'facade',coussins:'facade',horloge:'facade',pot:'facade',piano:'facade',livres:'etagere',cintres:'armoire',poussiere:'foyer',crochet:'facade',memo:'pharmacie',tatons:'placard'};
 function fondMeuble(fam,s){
   const W0=SCENE_W,H0=SCENE_H,[k,g]=cv(W0,H0),c='#6d4628',ombre=(n,a)=>{for(let i=0;i<n;i++){const f=(a*(n-i)/n).toFixed(2);R(g,`rgba(6,4,10,${f})`,i,0,1,H0);R(g,`rgba(6,4,10,${f})`,W0-1-i,0,1,H0);R(g,`rgba(6,4,10,${f})`,0,i,W0,1)}};
   if(fam==='armoire'){
@@ -4302,6 +4303,130 @@ Object.assign(SPR,{
 });
 Object.assign(SH,{plant:34,lamp:40,escalier:46,secours:46});
 
+// Mobilier redessiné en détail : comptoir de cuisine, paillasse de laboratoire, moteur de navire,
+// et un prototype de cabine de toilettes. Même lumière que le reste : en haut à gauche.
+const disque=(g,cx,cy,r,col)=>{for(let j=-r;j<=r;j++){const w=Math.round(Math.sqrt(r*r-j*j));R(g,col,cx-w,cy+j,w*2+1,1)}};
+const cercle=(g,cx,cy,r,col)=>{for(let a=0;a<64;a++){const t=a/64*Math.PI*2;R(g,col,Math.round(cx+Math.cos(t)*r),Math.round(cy+Math.sin(t)*r),1,1)}};
+const vis=(g,x,y)=>{R(g,'#5a6068',x,y,2,2);R(g,'#c8d0d8',x,y,1,1)};
+const chromeV=(g,x,y,h)=>{R(g,'#8a939e',x,y,2,h);R(g,'#e8eef4',x,y,1,h-1)};
+const chromeH=(g,x,y,w)=>{R(g,'#8a939e',x,y,w,2);R(g,'#e8eef4',x,y,w-1,1)};
+// Plans de travail : stratifié, bois massif, marbre, granit
+const PLANS=['#d8d4c8','#b8875a','#e8e4dc','#55585e'];
+function planTravail(g,x,y,w,d,k,s){
+  const col=PLANS[k];
+  for(let j=0;j<d;j++)for(let i=0;i<w;i++){
+    let t=(noise(x+i,y+j,s)-.5)*.06;
+    if(k===1)t+=((x+i)%6===0?-.12:0)+(noise((x+i)>>1,(y+j)>>2,s+2)-.5)*.1;
+    if(k===2&&Math.abs(Math.sin((i+j*2.3+s)*.45))<.08)t-=.18;
+    if(k===3&&noise(x+i,y+j,s+5)>.86)t+=.32;
+    R(g,tone(col,t),x+i,y+j);
+  }
+  R(g,tone(col,.4),x,y+d-1,w,1);R(g,tone(col,-.3),x,y+d,w,1);
+}
+// Ce qu'on pose sur un comptoir
+function posesCuisine(g,x,y,v){
+  const k=v%6;
+  if(k===0){R(g,'#a87a48',x+2,y+3,14,6);R(g,'#c89a68',x+2,y+3,14,1);R(g,'#7a5030',x+2,y+8,14,1);ellipseP(g,x+8,y+4,4,2,'#d8a050');R(g,'#f0c880',x+6,y+3,3,1);R(g,'#c8ccd4',x+12,y+1,1,6);R(g,'#2a2a2a',x+12,y+6,1,2)}
+  if(k===1){R(g,'#6a4428',x+1,y-1,6,10);R(g,'#8a5a34',x+1,y-1,6,1);[1,3,5].forEach(i=>R(g,'#2a2a2a',x+1+i,y-3,1,3));R(g,'#c8c0b0',x+9,y+1,5,8);R(g,'#e0d8c8',x+9,y+1,5,1);R(g,'#8a6a40',x+10,y-3,1,4);R(g,'#c8ccd4',x+12,y-4,1,5)}
+  if(k===2){ellipseP(g,x+8,y+6,7,3,'#c8a060');ellipseP(g,x+8,y+5,6,2,'#a87a40');disque(g,x+5,y+3,2,'#d83a2a');disque(g,x+9,y+2,2,'#f0c020');disque(g,x+12,y+4,2,'#6ab040');R(g,'#ffffff',x+4,y+2,1,1)}
+  if(k===3){disque(g,x+5,y+4,4,'#c8ccd4');R(g,'#e8eef4',x+3,y+2,2,2);R(g,'#2a2a2a',x+4,y-1,3,1);R(g,'#8a939e',x+9,y+2,2,2);R(g,'#f4f0e8',x+12,y+3,4,5);R(g,'#c83a3a',x+12,y+5,4,1);R(g,'#f4f0e8',x+16,y+4,1,2)}
+  if(k===4){[[0,'#e8c070'],[5,'#5a3820'],[10,'#f4f0e8']].forEach(([d,c])=>{R(g,'#d8e8ec',x+1+d,y,4,9);R(g,c,x+1+d,y+3,4,6);R(g,'#ffffff',x+1+d,y+1,1,7);R(g,'#8a6a40',x+1+d,y-1,4,1);R(g,'#f4ecd8',x+1+d,y+5,4,2)})}
+  if(k===5){R(g,'#2a4a6a',x+2,y+2,12,7);R(g,'#f4ecd8',x+3,y+2,5,6);R(g,'#f4ecd8',x+8,y+2,5,6);R(g,'#8a8478',x+4,y+4,3,1);R(g,'#8a8478',x+9,y+4,3,1);R(g,'#8a8478',x+4,y+6,2,1);R(g,'#c83a3a',x+8,y+2,1,7)}
+}
+Object.assign(SPR,{
+  counter(g,v){
+    const c=BOIS_M[v%4],k=(v>>2)%4;
+    caisse(g,0,15,32,19,1,c,v);planTravail(g,0,8,32,7,k,v);
+    tiroirF(g,2,17,13,4,c);tiroirF(g,17,17,13,4,c);
+    panneau(g,2,22,13,9,c);panneau(g,17,22,13,9,c);chromeV(g,12,24,4);chromeV(g,19,24,4);
+    R(g,'#1a120c',1,32,30,2);
+    posesCuisine(g,v%2?2:14,1,v>>3);
+  },
+  labbench(g,v){
+    // étagère à réactifs contre le mur
+    chromeV(g,1,0,17);chromeV(g,45,0,17);R(g,'#d8ecf0',1,7,46,1);R(g,'#7a8a90',1,8,46,1);
+    const fl=['#7a3a14','#8ab8d8','#f4f0e8','#3a6a3a','#7a3a14','#c8c0e8','#f4f0e8','#7a3a14'];
+    for(let i=0;i<8;i++){const x=4+i*5,h=4+(noise(i,v,3)*3|0),c=fl[(i+v)%8];R(g,c,x,7-h,4,h);R(g,tone(c,.4),x,8-h,1,h-2);R(g,'#2a2a2a',x+1,6-h,2,1);if(c==='#f4f0e8'||i%3==0)R(g,'#e8d890',x,5-((h)>>1),4,2)}
+    // plan noir et ce qu'on y pose
+    caisse(g,0,22,48,20,1,'#d4dade',v);planTravail(g,0,15,48,7,3,v+1);
+    const liq=['#5dffa0','#ff8ac0','#6ad0ff','#ffd23f','#c08aff'];
+    // microscope
+    R(g,'#2a2e34',4,19,7,2);R(g,'#e8ecf0',6,11,2,8);R(g,'#2a2e34',5,9,4,3);R(g,'#c8ccd4',8,12,3,1);R(g,'#2a2e34',7,14,4,1);R(g,'#8a939e',5,10,1,1);
+    // erlenmeyer
+    const lq=liq[v%5];for(let j=0;j<7;j++){const w=1+(j>>1);R(g,'#d8ecf0',16-w,12+j,w*2+1,1);if(j>2)R(g,lq,17-w,12+j,w*2-1,1)}R(g,'#d8ecf0',15,10,3,2);R(g,'#ffffff',15,15,1,2);
+    // portoir à tubes
+    R(g,'#c8a468',22,16,12,2);R(g,'#8a6a40',22,18,12,2);for(let i=0;i<4;i++){R(g,'#e8f4f8',23+i*3,10,2,7);R(g,liq[(v+i+1)%5],23+i*3,13,2,4)}
+    // bec bunsen
+    R(g,'#5a6068',36,18,4,2);R(g,'#8a939e',37,13,2,5);R(g,'#4a8aff',37,10,2,3);R(g,'#c8e0ff',37,11,1,1);
+    // petit évier et col de cygne
+    R(g,'#8a939e',41,17,6,4);R(g,'#5a6068',42,18,4,2);R(g,'#c8d0d8',43,9,1,8);R(g,'#c8d0d8',43,9,3,1);R(g,'#c8d0d8',45,9,1,3);
+    // façade : tiroirs, portes, poignées chromées
+    for(let i=0;i<3;i++){const x=2+i*15;panneau(g,x,24,14,4,'#c8ced2');chromeH(g,x+5,25,4);panneau(g,x,29,14,10,'#c8ced2');chromeV(g,x+(i===1?2:11),31,5)}
+    R(g,'#ffd23f',19,31,4,4);R(g,'#2a2a2a',20,32,2,1);R(g,'#2a2a2a',21,33,1,1);
+    R(g,'#2a2e34',1,40,46,2);
+  },
+  engine(g,v){
+    const coque='#3e5a52',W0=48;
+    // socle : chant à rayures de danger et boulons
+    R(g,'#2a3036',0,51,W0,9);for(let x=0;x<W0;x+=6){R(g,'#e8c020',x,53,3,3);R(g,'#1a1a1a',x+3,53,3,3)}for(let x=2;x<W0;x+=8)vis(g,x,57);
+    R(g,'#4a5258',0,48,W0,3);R(g,'#6a747c',0,48,W0,1);
+    // bloc moteur : face avant, portes de carter boulonnées
+    for(let y=36;y<48;y++)for(let x=1;x<W0-1;x++)R(g,tone(coque,(x%4===0?-.08:0)+(noise(x,y,v)-.5)*.06-(y>45?.12:0)),x,y);
+    R(g,tone(coque,.25),1,36,W0-2,1);
+    for(let i=0;i<4;i++){const x=3+i*11;R(g,tone(coque,-.3),x,39,9,7);R(g,tone(coque,.12),x+1,40,7,5);vis(g,x+1,40);vis(g,x+6,40);vis(g,x+1,44);vis(g,x+6,44)}
+    // dessus : culasses, cache-culbuteurs rouges, tubulures
+    for(let y=8;y<36;y++)for(let x=1;x<W0-1;x++)R(g,tone(coque,.08+(noise(x>>1,y>>1,v+1)-.5)*.08),x,y);
+    for(let i=0;i<4;i++){const x=3+i*11;
+      R(g,'#2a3036',x,13,9,18);R(g,'#b83a2a',x+1,12,7,16);R(g,'#e85a3a',x+1,12,7,2);R(g,'#7a2418',x+1,27,7,1);
+      for(let j=0;j<3;j++)vis(g,x+3,15+j*4);
+      R(g,'#c8ccd4',x+4,29,1,6);R(g,'#e8eef4',x+4,29,1,1);
+    }
+    R(g,'#8a939e',1,32,W0-2,3);R(g,'#c8d0d8',1,32,W0-2,1);
+    // collecteur d'échappement brûlant, le long du fond
+    for(let x=1;x<W0-6;x++){const hot=noise(x>>2,1,v)>.5;R(g,hot?'#a8582a':'#7a4a2a',x,7,1,5);R(g,'#c8783a',x,7,1,1)}
+    // turbo en colimaçon et cheminée
+    disque(g,42,9,5,'#8a939e');disque(g,42,9,3,'#5a6068');R(g,'#c8d0d8',39,6,3,1);R(g,'#2a3036',43,0,4,6);R(g,'#4a5258',43,0,1,6);
+    // volant d'inertie à gauche
+    disque(g,4,30,6,'#2a3036');cercle(g,4,30,6,'#6a747c');R(g,'#8a939e',3,25,2,11);R(g,'#8a939e',-1,29,11,2);disque(g,4,30,1,'#c8d0d8');
+    // manomètres et vanne rouge en façade
+    disque(g,40,42,3,'#e8e4d8');cercle(g,40,42,3,'#2a2a2a');R(g,'#c83a2a',40,40,1,3);
+    disque(g,34,42,2,'#e8e4d8');cercle(g,34,42,2,'#2a2a2a');R(g,'#c83a2a',34,41,2,1);
+    cercle(g,45,30,3,'#d83a2a');R(g,'#d83a2a',43,30,5,1);R(g,'#d83a2a',45,28,1,5);
+    // conduite de carburant jaune
+    R(g,'#d8a020',W0-4,12,2,24);R(g,'#f0c840',W0-4,12,1,24);
+    // traces d'huile
+    if(v%3)R(g,'#1a1a14',10+(v%20),56,5,2);
+  },
+  // Prototype : une cabine de toilettes, porte fermée (libre ou occupée) ou entrouverte
+  cabine(g,v){
+    const lam=['#9fd0c4','#e8dcc0','#a8c4e0','#c89a6a'][(v>>2)%4],ouvert=v%3===0,libre=v%3===2;
+    // l'ombre du dedans de la cabine
+    g.fillStyle='rgba(20,16,30,.18)';g.fillRect(3,6,26,46);
+    // la cuvette et le réservoir, contre le mur du fond
+    R(g,'#d8d4cc',10,9,12,13);R(g,'#f4f0e8',10,9,12,2);R(g,'#c8c4bc',11,12,10,1);R(g,'#b8c4c8',15,10,3,1);
+    ellipseP(g,16,28,6,5,'#f4f0e8');ellipseP(g,16,28,4,3,'#a8c4cc');R(g,'#e0dcd4',12,32,8,4);R(g,'#ffffff',12,26,2,1);
+    // dérouleur de papier contre la cloison droite
+    R(g,'#8a939e',25,22,3,2);R(g,'#ffffff',25,24,3,3);
+    // cloisons : dessus (bande) puis chant avant
+    const cloison=x=>{for(let y=0;y<31;y++)R(g,tone(lam,.25),x,y,3,1);R(g,tone(lam,.5),x,0,3,1);for(let y=31;y<52;y++)R(g,tone(lam,y===31?.15:-.05),x,y,3,1);R(g,tone(lam,-.3),x+2,31,1,21);chromeV(g,x,52,3)};
+    cloison(0);cloison(29);
+    // barre de tête chromée qui relie les cloisons
+    R(g,'#5a6068',0,30,32,3);R(g,'#c8d0d8',0,30,32,1);R(g,'#8a939e',0,31,32,1);
+    if(ouvert){
+      // porte rabattue contre la cloison de gauche : on voit son chant
+      for(let y=4;y<34;y++)R(g,tone(lam,.1),3,y,2,1);for(let y=34;y<51;y++)R(g,tone(lam,-.12),3,y,2,1);R(g,'#c8ccd4',4,40,1,2);
+    }else{
+      // porte fermée : elle ne touche ni le sol ni le haut
+      for(let y=33;y<51;y++)for(let x=3;x<29;x++)R(g,tone(lam,(noise(x,y>>2,v)-.5)*.05+(x<5?.12:x>26?-.15:0)),x,y);
+      R(g,tone(lam,.35),3,33,26,1);R(g,tone(lam,-.35),3,50,26,1);
+      // pictogramme et verrou libre / occupé
+      R(g,'#f4f0e8',13,35,6,6);R(g,'#2a3a5a',15,36,2,2);R(g,'#2a3a5a',14,38,4,2);
+      disque(g,24,42,2,libre?'#4ac85a':'#d83a2a');R(g,'#ffffff',23,41,1,1);chromeH(g,22,45,4);
+    }
+  }
+});
+Object.assign(SH,{counter:34,labbench:42,engine:60,cabine:56});
+
 // Cinq mini-jeux de plus : défaire un lit, soulever des coussins, remettre une horloge à l'heure,
 // déplacer un pot sans le renverser, rejouer une mélodie au piano.
 function toile(shell,txt){
@@ -4434,6 +4559,122 @@ function indiceMini(type,o){
     const s=l[int(Math.random,l.length)],su=c.suspects[s],e=su.g==='f'?'e':'';
     note('trace',`Passage de ${su.prenom}`,`${type==='couches'?"Sous l'oreiller":'Entre les coussins'}, un objet à ${su.prenom} : ${su.g==='f'?'elle':'il'} est venu${e} ${c.set.rooms[o.room].d} ce soir.`,'p'+s);
   }
+}
+
+// Mini-jeux en haute définition : dessinés en vrai détail (dégradés, courbes, reflets) sur une toile quatre fois
+// plus fine. On garde les coordonnées 320 × 200 des anciens mini-jeux : seule la finesse du dessin change.
+const HD=4;
+function toileHD(shell,txt){
+  shell(txt,`<canvas id="mg-c" class="cendres hd" width="${320*HD}" height="${200*HD}" style="touch-action:none"></canvas>`);
+  const k=$('mg-c'),g=k.getContext('2d');g.setTransform(HD,0,0,HD,0,0);g.imageSmoothingEnabled=true;
+  const pos=e=>{const r=k.getBoundingClientRect();return[(e.clientX-r.left)/r.width*320,(e.clientY-r.top)/r.height*200]};
+  return{k,g,pos};
+}
+// Une image de fond calculée une seule fois, à pleine finesse
+function fondHD(dessin){const[k,g]=cv(320*HD,200*HD);g.setTransform(HD,0,0,HD,0,0);dessin(g);return k}
+const degrade=(g,x0,y0,x1,y1,stops)=>{const q=g.createLinearGradient(x0,y0,x1,y1);stops.forEach(([o,c])=>q.addColorStop(o,c));return q};
+const radial=(g,x,y,r0,r1,stops,fx=x,fy=y)=>{const q=g.createRadialGradient(fx,fy,r0,x,y,r1);stops.forEach(([o,c])=>q.addColorStop(o,c));return q};
+function rivet(g,x,y,r=1.6){g.fillStyle=radial(g,x,y,0,r,[[0,'#e8eef4'],[.5,'#8a939e'],[1,'#3a4048']],x-r*.4,y-r*.4);g.beginPath();g.arc(x,y,r,0,7);g.fill();g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.arc(x+.4,y+.5,r,0,7);g.globalCompositeOperation='destination-over';g.fill();g.globalCompositeOperation='source-over'}
+function plaque(g,x,y,w,h,txt,taille=6){
+  g.fillStyle=degrade(g,x,y,x,y+h,[[0,'#f0d080'],[.5,'#c8983a'],[1,'#8a6420']]);g.beginPath();g.roundRect(x,y,w,h,1.5);g.fill();
+  g.strokeStyle='rgba(60,40,10,.6)';g.lineWidth=.5;g.stroke();
+  g.font=`700 ${taille}px Georgia,serif`;g.textAlign='center';g.textBaseline='middle';g.fillStyle='rgba(255,240,200,.6)';g.fillText(txt,x+w/2+.3,y+h/2+.4);g.fillStyle='#3a2408';g.fillText(txt,x+w/2,y+h/2);
+  rivet(g,x+3,y+h/2,1);rivet(g,x+w-3,y+h/2,1);
+}
+
+function miniHD(type,shell,done,spr,o){
+  if(type!=='moteur')return false;
+  let fini=false;
+  const gagne=t=>{if(fini)return;fini=true;dire(t);son('bon');setTimeout(()=>{if(G.mini||G.pzT)done()},1100)};
+  const{k,g,pos}=toileHD(shell,"Le capot de visite reste verrouillé tant que la pression n'est pas stable. Ramène les trois aiguilles dans le vert : tourne une vanne par la gauche pour la fermer, par la droite pour l'ouvrir. Attention, chaque vanne pousse aussi la suivante.");
+  // ——— l'état : trois cylindres, trois vannes liées ———
+  const ZONE=[44,60],X=[62,160,258],cible=[52,52,52],v=cible.slice();
+  const coup=(i,d,val)=>{val[i]+=12*d;val[(i+1)%3]-=6*d};
+  // on mélange jusqu'à ce que la solution la plus courte demande au moins trois tours de vanne
+  const dans=t=>t.every(x=>x>=ZONE[0]&&x<=ZONE[1]),distance=s0=>{const cle=t=>t.join(),vu=new Set([cle(s0)]);let f=[s0];for(let n=0;n<9;n++){if(f.some(dans))return n;const g2=[];for(const t of f)for(let i=0;i<3;i++)for(const d of[-1,1]){const u=t.slice();coup(i,d,u);if(u.some(x=>x<0||x>100)||vu.has(cle(u)))continue;vu.add(cle(u));g2.push(u)}f=g2}return 99};
+  for(let essai=0;essai<60;essai++){
+    const t=cible.slice();for(let n=0;n<7;n++){const i=int(Math.random,3),d=Math.random()<.5?-1:1,u=t.slice();coup(i,d,u);if(u.every(x=>x>=6&&x<=94))coup(i,d,t)}
+    const dd=distance(t);if(dd>=3&&dd<=6){v.splice(0,3,...t);break}
+  }
+  G.mgEtat={v,coup,ZONE};
+  const aff=v.slice(),ang=[0,0,0],angC=[0,0,0],vapeur=[];let t0=0;
+  // ——— le décor fixe : tôle brossée, rivets, tuyaux, plaques ———
+  const fond=fondHD(h=>{
+    h.fillStyle=degrade(h,0,0,0,200,[[0,'#5a6670'],[1,'#2a3238']]);h.fillRect(0,0,320,200);
+    for(let y=0;y<200;y+=.5){h.fillStyle=`rgba(255,255,255,${(noise(y*2|0,3,7)*.05).toFixed(3)})`;h.fillRect(0,y,320,.25)}
+    h.strokeStyle='rgba(0,0,0,.45)';h.lineWidth=.8;[[4,4,312,192]].forEach(([x,y,w,hh])=>h.strokeRect(x,y,w,hh));
+    for(let x=10;x<320;x+=20){rivet(h,x,9);rivet(h,x,191)}for(let y=29;y<190;y+=20){rivet(h,9,y);rivet(h,311,y)}
+    // tuyaux de cuivre des manomètres aux vannes
+    X.forEach(x=>{h.lineCap='round';h.strokeStyle='#5a2e14';h.lineWidth=7;h.beginPath();h.moveTo(x,112);h.lineTo(x,150);h.stroke();
+      h.strokeStyle=degrade(h,x-3,0,x+3,0,[[0,'#7a3e1a'],[.4,'#e89a5a'],[1,'#8a4a22']]);h.lineWidth=5.5;h.stroke();
+      h.fillStyle='#8a939e';h.fillRect(x-5,126,10,4);h.fillStyle='#c8d0d8';h.fillRect(x-5,126,10,1)});
+    // conduite principale
+    h.strokeStyle='#3a1e0e';h.lineWidth=9;h.beginPath();h.moveTo(20,182);h.lineTo(300,182);h.stroke();
+    h.strokeStyle=degrade(h,0,177,0,187,[[0,'#7a3e1a'],[.35,'#e89a5a'],[1,'#6a3416']]);h.lineWidth=7;h.stroke();
+    plaque(h,104,14,112,13,'PRESSION DES CYLINDRES',6.2);
+    X.forEach((x,i)=>plaque(h,x-15,118,30,8,'CYL. '+(i+1),5));
+  });
+  // ——— un manomètre en laiton ———
+  const A0=Math.PI*.75,AS=Math.PI*1.5,angle=p=>A0+AS*p/100;
+  function manometre(x,y,val,i){
+    const R=34;
+    g.fillStyle='rgba(0,0,0,.4)';g.beginPath();g.arc(x+1.5,y+2.5,R+5,0,7);g.fill();
+    g.fillStyle=radial(g,x,y,R,R+5,[[0,'#7a5418'],[.5,'#f8d878'],[1,'#8a6020']],x-6,y-8);g.beginPath();g.arc(x,y,R+5,0,7);g.fill();
+    g.fillStyle=radial(g,x,y,2,R,[[0,'#fffaf0'],[1,'#e8dcc0']],x-8,y-10);g.beginPath();g.arc(x,y,R,0,7);g.fill();
+    const arc=(a,b,c)=>{g.strokeStyle=c;g.lineWidth=4.5;g.beginPath();g.arc(x,y,R-6,angle(a),angle(b));g.stroke()};
+    arc(0,ZONE[0],'rgba(120,140,160,.35)');arc(ZONE[0],ZONE[1],'#3aa84a');arc(ZONE[1],80,'#e8b020');arc(80,100,'#d8382a');
+    for(let p=0;p<=100;p+=2){const a=angle(p),m=p%10===0,r0=R-(m?10:7);g.strokeStyle='#2a2418';g.lineWidth=m?.9:.4;g.beginPath();g.moveTo(x+Math.cos(a)*r0,y+Math.sin(a)*r0);g.lineTo(x+Math.cos(a)*(R-3),y+Math.sin(a)*(R-3));g.stroke()}
+    g.font='600 5.2px Georgia,serif';g.fillStyle='#2a2418';g.textAlign='center';g.textBaseline='middle';
+    for(let p=0;p<=100;p+=20){const a=angle(p);g.fillText(p,x+Math.cos(a)*(R-15),y+Math.sin(a)*(R-15))}
+    g.font='italic 4px Georgia,serif';g.fillText('bar ×10',x,y+25);
+    // aiguille
+    const a=angle(val);
+    g.save();g.translate(x+.8,y+1.2);g.rotate(a);g.fillStyle='rgba(40,30,10,.16)';g.beginPath();g.moveTo(-7,-1.4);g.lineTo(R-5,0);g.lineTo(-7,1.4);g.closePath();g.fill();g.restore();
+    g.save();g.translate(x,y);g.rotate(a);
+    g.fillStyle='#b8201a';g.beginPath();g.moveTo(-7,-1.4);g.lineTo(R-5,0);g.lineTo(-7,1.4);g.closePath();g.fill();g.restore();
+    g.fillStyle=radial(g,x,y,0,4,[[0,'#8a939e'],[1,'#1a1a1a']],x-1,y-1);g.beginPath();g.arc(x,y,3.6,0,7);g.fill();
+    // verre : reflet
+    g.fillStyle='rgba(255,255,255,.22)';g.beginPath();g.ellipse(x-10,y-14,15,8,-.6,0,7);g.fill();
+    // voyant
+    const ok=val>=ZONE[0]&&val<=ZONE[1];g.fillStyle=radial(g,x+26,y-30,0,4,ok?[[0,'#d8ffd8'],[.5,'#4ad85a'],[1,'#1a5a22']]:[[0,'#ffd8c8'],[.5,'#d8382a'],[1,'#5a1a10']]);g.beginPath();g.arc(x+26,y-30,3.5,0,7);g.fill();
+  }
+  // ——— une vanne à volant rouge ———
+  function vanne(x,y,a){
+    g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.arc(x+2,y+3,22,0,7);g.fill();
+    g.save();g.translate(x,y);g.rotate(a);
+    g.strokeStyle='#5a1008';g.lineWidth=7;g.beginPath();g.arc(0,0,18,0,7);g.stroke();
+    g.strokeStyle=degrade(g,-18,-18,18,18,[[0,'#ff7a5a'],[.5,'#c8281a'],[1,'#7a140c']]);g.lineWidth=5;g.stroke();
+    for(let s=0;s<5;s++){g.rotate(Math.PI*2/5);g.fillStyle='#8a1a10';g.fillRect(-1.6,2,3.2,15);g.fillStyle='#e84a32';g.fillRect(-1.6,2,1.2,15)}
+    g.restore();
+    g.fillStyle=radial(g,x,y,0,6,[[0,'#e8eef4'],[.6,'#8a939e'],[1,'#3a4048']],x-2,y-2);g.beginPath();g.arc(x,y,5.5,0,7);g.fill();
+    g.fillStyle='rgba(255,255,255,.75)';g.font='700 9px system-ui';g.textAlign='center';g.textBaseline='middle';
+    g.fillText('−',x-31,y);g.fillText('+',x+31,y);
+    g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=.8;g.beginPath();g.arc(x,y,26,Math.PI*.8,Math.PI*1.2);g.stroke();g.beginPath();g.arc(x,y,26,-Math.PI*.2,Math.PI*.2);g.stroke();
+  }
+  const paint=()=>{
+    if(!$('mg-c'))return;t0++;
+    const fort=aff.some(p=>p>80)&&!fini,tremble=fort?Math.sin(t0*1.7)*.6:0;
+    for(let i=0;i<3;i++){aff[i]+=(v[i]-aff[i])*.12;ang[i]+=(angC[i]-ang[i])*.18}
+    g.setTransform(HD,0,0,HD,0,0);g.drawImage(fond,0,0,320,200);g.save();g.translate(tremble,0);
+    X.forEach((x,i)=>manometre(x,70,Math.max(0,Math.min(100,aff[i]+(fini?0:Math.sin(t0*.3+i*2)*.5))),i));
+    X.forEach((x,i)=>vanne(x,154,ang[i]));
+    // vapeur qui fuit quand ça monte trop
+    if(fort&&t0%3===0){const i=aff.findIndex(p=>p>80);vapeur.push({x:X[i]+6,y:120,vx:.4+Math.random()*.5,vy:-.6-Math.random()*.4,r:2,a:.5})}
+    vapeur.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=.18;p.a*=.96;g.fillStyle=`rgba(235,240,245,${p.a.toFixed(3)})`;g.beginPath();g.arc(p.x,p.y,p.r,0,7);g.fill()});
+    for(let i=vapeur.length-1;i>=0;i--)if(vapeur[i].a<.03)vapeur.splice(i,1);
+    if(fini){g.fillStyle='rgba(30,120,50,.82)';g.beginPath();g.roundRect(110,184,100,12,3);g.fill();g.fillStyle='#e8ffe8';g.font='700 7px system-ui';g.textAlign='center';g.fillText('PRESSION STABLE',160,190.5)}
+    g.restore();
+  };
+  paint();G.pzT=paint;
+  k.addEventListener('pointerdown',e=>{
+    if(fini)return;const[x,y]=pos(e);const i=X.findIndex(cx=>Math.hypot(x-cx,y-154)<34);if(i<0)return;
+    const d=x<X[i]?-1:1,t=v.slice();coup(i,d,t);
+    if(t.some(p=>p<0||p>100)){dire("La vanne est en butée : essaie l'autre sens, ou une autre vanne.");return}
+    coup(i,d,v);angC[i]+=d*Math.PI*2/5;son('clic');
+    if(v.every(p=>p>=ZONE[0]&&p<=ZONE[1]))gagne('Les trois aiguilles se calent dans le vert. Le moteur ralentit et le capot de visite se déverrouille.');
+    else dire(v.map((p,j)=>p>80?`Le cylindre ${j+1} siffle, la pression est trop haute.`:'').find(Boolean)||'La pression bouge… continue.');
+  });
+  return true;
 }
 
 // Chaque lieu a son étage, son ambiance et sa petite musique. Et on peut partager son résultat.
@@ -5720,7 +5961,7 @@ function onMapHover(e){
   G.hover=objAt(p.x,p.y);
   $('jeu').style.cursor=G.hover?G.curH:G.curN;
 }
-const NOM_F={portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur",bed:'le lit',sofa:'le canapé',sofaB:'le canapé',armchair:'le fauteuil',armchairL:'le fauteuil',armchairR:'le fauteuil',armchairB:'le fauteuil',clock:"l'horloge",plant:'le pot de fleurs',piano:'le piano',escalier:"l'escalier de service",secours:'la sortie de secours'};
+const NOM_F={cabine:'la cabine',portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur",bed:'le lit',sofa:'le canapé',sofaB:'le canapé',armchair:'le fauteuil',armchairL:'le fauteuil',armchairR:'le fauteuil',armchairB:'le fauteuil',clock:"l'horloge",plant:'le pot de fleurs',piano:'le piano',escalier:"l'escalier de service",secours:'la sortie de secours'};
 function promptOf(o){
   if(o.kind==='suspect')return`Parler à ${c.suspects[o.s].prenom}`;
   if(o.kind==='vitrine')return`Examiner : ${c.set.rooms[o.room].o}`;
@@ -6139,7 +6380,7 @@ function openCaisse(o){
 }
 
 // ——— Mini-jeux de fouille : courts, adaptés au meuble, sans échec définitif ———
-const MINIS={ecriture:'Comparer les écritures',empreinte:'Relever une empreinte',dechiree:'Recoller une lettre',livres:'Ranger les livres',cintres:'Fouiller les poches',poussiere:'Dégager les cendres',crochet:'Crocheter le tiroir',memo:'Paires de flacons',tatons:'Chercher à tâtons',couches:'Défaire le lit',coussins:'Soulever les coussins',horloge:"Remettre l'horloge à l'heure",pot:'Déplacer le pot',piano:'Jouer la mélodie'};
+const MINIS={moteur:'Stabiliser le moteur',ecriture:'Comparer les écritures',empreinte:'Relever une empreinte',dechiree:'Recoller une lettre',livres:'Ranger les livres',cintres:'Fouiller les poches',poussiere:'Dégager les cendres',crochet:'Crocheter le tiroir',memo:'Paires de flacons',tatons:'Chercher à tâtons',couches:'Défaire le lit',coussins:'Soulever les coussins',horloge:"Remettre l'horloge à l'heure",pot:'Déplacer le pot',piano:'Jouer la mélodie'};
 function livreImg(b){
   const[k,g]=cv(16,64),h=b.h;
   box(g,1,64-h,14,h,b.col);R(g,tone(b.col,.3),3,64-h+2,1,h-4);R(g,'#e0c060',2,64-h+6,12,1);R(g,'#e0c060',2,64-h+8,12,1);R(g,'#e0c060',2,62,12,1);
@@ -6159,7 +6400,7 @@ function openMini(type,win,free,o){
   const nom=o&&NOM_F[o.name]?cap(NOM_F[o.name]):MINIS[type],q0=o&&o.loot,spr=icone(q0?(q0.t==='obj'?q0.id:q0.t==='cle'?'cle':'lettre'):'lettre');
   const done=()=>{G.pzT=null;G.mini=null;if(free){closeAll();toast('Bien joué',true);return}win()};
   const shell=(txt,inner)=>{$('pz').innerHTML=`<div class="fiche-pz"><h3>${esc(nom)}</h3><p id="mg-t">${esc(txt)}</p><div class="meuble" style="background-image:url(${fond})">${inner}</div><div class="ligne"><button class="etiq alt" data-x="ferme">Refermer</button></div></div>`};
-  if(miniPlus(type,shell,done)||miniNeuf(type,shell,done,spr,o))return;
+  if(miniHD(type,shell,done,spr,o)||miniPlus(type,shell,done)||miniNeuf(type,shell,done,spr,o))return;
   if(type==='livres'){
     const cols=['#a33a3a','#d8703a','#d8b83a','#3d7a4c','#2e6a8c','#6b3d78'],nb=6;
     const regles=[['Du plus petit au plus grand.',b=>b.h],["Dans l'ordre des numéros au dos.",b=>b.n],["Dans l'ordre des couleurs : rouge, orange, jaune, vert, bleu, violet.",b=>cols.indexOf(b.col)]];

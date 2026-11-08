@@ -622,7 +622,7 @@ function onMapHover(e){
   G.hover=objAt(p.x,p.y);
   $('jeu').style.cursor=G.hover?G.curH:G.curN;
 }
-const NOM_F={portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur",bed:'le lit',sofa:'le canapé',sofaB:'le canapé',armchair:'le fauteuil',armchairL:'le fauteuil',armchairR:'le fauteuil',armchairB:'le fauteuil',clock:"l'horloge",plant:'le pot de fleurs',piano:'le piano',escalier:"l'escalier de service",secours:'la sortie de secours'};
+const NOM_F={cabine:'la cabine',portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur",bed:'le lit',sofa:'le canapé',sofaB:'le canapé',armchair:'le fauteuil',armchairL:'le fauteuil',armchairR:'le fauteuil',armchairB:'le fauteuil',clock:"l'horloge",plant:'le pot de fleurs',piano:'le piano',escalier:"l'escalier de service",secours:'la sortie de secours'};
 function promptOf(o){
   if(o.kind==='suspect')return`Parler à ${c.suspects[o.s].prenom}`;
   if(o.kind==='vitrine')return`Examiner : ${c.set.rooms[o.room].o}`;
@@ -1041,7 +1041,7 @@ function openCaisse(o){
 }
 
 // ——— Mini-jeux de fouille : courts, adaptés au meuble, sans échec définitif ———
-const MINIS={ecriture:'Comparer les écritures',empreinte:'Relever une empreinte',dechiree:'Recoller une lettre',livres:'Ranger les livres',cintres:'Fouiller les poches',poussiere:'Dégager les cendres',crochet:'Crocheter le tiroir',memo:'Paires de flacons',tatons:'Chercher à tâtons',couches:'Défaire le lit',coussins:'Soulever les coussins',horloge:"Remettre l'horloge à l'heure",pot:'Déplacer le pot',piano:'Jouer la mélodie'};
+const MINIS={moteur:'Stabiliser le moteur',ecriture:'Comparer les écritures',empreinte:'Relever une empreinte',dechiree:'Recoller une lettre',livres:'Ranger les livres',cintres:'Fouiller les poches',poussiere:'Dégager les cendres',crochet:'Crocheter le tiroir',memo:'Paires de flacons',tatons:'Chercher à tâtons',couches:'Défaire le lit',coussins:'Soulever les coussins',horloge:"Remettre l'horloge à l'heure",pot:'Déplacer le pot',piano:'Jouer la mélodie'};
 function livreImg(b){
   const[k,g]=cv(16,64),h=b.h;
   box(g,1,64-h,14,h,b.col);R(g,tone(b.col,.3),3,64-h+2,1,h-4);R(g,'#e0c060',2,64-h+6,12,1);R(g,'#e0c060',2,64-h+8,12,1);R(g,'#e0c060',2,62,12,1);
@@ -1061,7 +1061,7 @@ function openMini(type,win,free,o){
   const nom=o&&NOM_F[o.name]?cap(NOM_F[o.name]):MINIS[type],q0=o&&o.loot,spr=icone(q0?(q0.t==='obj'?q0.id:q0.t==='cle'?'cle':'lettre'):'lettre');
   const done=()=>{G.pzT=null;G.mini=null;if(free){closeAll();toast('Bien joué',true);return}win()};
   const shell=(txt,inner)=>{$('pz').innerHTML=`<div class="fiche-pz"><h3>${esc(nom)}</h3><p id="mg-t">${esc(txt)}</p><div class="meuble" style="background-image:url(${fond})">${inner}</div><div class="ligne"><button class="etiq alt" data-x="ferme">Refermer</button></div></div>`};
-  if(miniPlus(type,shell,done)||miniNeuf(type,shell,done,spr,o))return;
+  if(miniHD(type,shell,done,spr,o)||miniPlus(type,shell,done)||miniNeuf(type,shell,done,spr,o))return;
   if(type==='livres'){
     const cols=['#a33a3a','#d8703a','#d8b83a','#3d7a4c','#2e6a8c','#6b3d78'],nb=6;
     const regles=[['Du plus petit au plus grand.',b=>b.h],["Dans l'ordre des numéros au dos.",b=>b.n],["Dans l'ordre des couleurs : rouge, orange, jaune, vert, bleu, violet.",b=>cols.indexOf(b.col)]];

@@ -23,7 +23,7 @@ const RECIPES={
   s_grand:{f:'marbre',rug:'#8d6a23',centre:true,run:['shelf','fireplace','cabinet','clock'],g:[sous('fireplace',FOYER,{dy:1,rug:true}),coin('BG',[['piano',0,0],['stool',1,2]]),coin('BD',[['lamp',1,0],['globe',0,0]])]},
   b_marbre:{f:'marbre',run:['tub','sink','medic','toilet'],g:[coin('BG',[['stool',0,0]]),coin('BD',[['plant',0,0]])]},
   b_simple:{f:'lino',run:['shower','sink','medic','toilet','cabinet'],g:[coin('BG',[['stool',0,0]])]},
-  b_collectif:{f:'lino',run:['sink','sink','medic','toilet','toilet','shower','locker'],g:[coin('B',[['stool',0,0],['stool',2,0]]),coin('BD',[['crate',0,0]])]},
+  b_collectif:{f:'lino',run:['sink','sink','medic','cabine','cabine','shower','locker'],g:[coin('B',[['stool',0,0],['stool',2,0]]),coin('BD',[['crate',0,0]])]},
   ch_hotel:{f:'tapis',centre:true,run:['wardrobe','chevet','bed','chevet','commode','vanity'],g:[sous('bed',[['trunk',0,0]]),sous('vanity',[['stool',0,0]]),coin('BD',LECTURE)]},
   ch_luxe:{f:'parquet',rug:'#3f2a5c',centre:true,run:['wardrobe','chevet','bed','chevet','fireplace','commode','vanity'],g:[sous('bed',[['trunk',0,0]],{rug:true}),sous('vanity',[['stool',0,0]]),coin('BG',LECTURE)]},
   ch_dortoir:{f:'metal',run:['bed','chevet','bed','chevet','bed','locker','locker','commode','wardrobe'],g:[sous('bed',[['trunk',0,0]],{tous:true})]},
@@ -170,7 +170,7 @@ const ETAGES={
 
 // ——— Petites pièces sans enquête : elles rendent les lieux plus vrais ———
 Object.assign(RECIPES,{
-  a_wc:{f:'damier',run:['toilet','sink'],g:[coin('BD',[['plant',0,0]])],porte:'bain'},
+  a_wc:{f:'damier',run:['cabine','sink'],g:[coin('BD',[['plant',0,0]])],porte:'bain'},
   a_service:{f:'lino',run:['shelf','locker'],g:[coin('BG',[['crate',0,0],['barrel',1,0]]),coin('BD',[['crate',0,0]])]},
   a_cellier:{f:'planche',run:['shelf','shelf'],g:[coin('BG',[['barrel',0,0],['crate',1,0]]),coin('BD',[['crate',0,0]])]},
   a_vestiaire:{f:'parquet',run:['portant','wardrobe'],g:[coin('C',[['banc',0,0]])]},
