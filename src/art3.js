@@ -54,6 +54,13 @@ function doorArt(style,open,col,num){
 function porteDessus(v,style,open,col){
   const L=32,E=16,[k,g]=v?cv(E,L):cv(L,E),[cad0,bat]=STYLE_PORTE[style]||STYLE_PORTE.bois,cad=tone(cad0,.16);
   const P=(c,a,b,l=1,e=1)=>v?R(g,c,b,a,e,l):R(g,c,a,b,l,e);
+  if(v&&open){
+    [0,L-4].forEach(a=>{P(cad,a,0,4,E);P(tone(cad,.34),a,0,4,1);P(tone(cad,.18),a,0,1,E);P(tone(cad,-.36),a+3,0,1,E);P(tone(cad,-.46),a,E-1,4,1)});
+    P('rgba(14,10,24,.32)',4,0,L-8,2);P('rgba(14,10,24,.32)',4,E-2,L-8,2);
+    P(tone('#c8a060',.05),4,7,L-8,1);P(tone('#8a6a3a',-.15),4,8,L-8,1);
+    [3,L-5].forEach(a=>P('#e0c060',a,E>>1,2,1));
+    return k;
+  }
   // Seuil en planches, visible quand la porte est ouverte
   for(let a=0;a<L;a++)for(let b=0;b<E;b++)P(tone('#5e4630',(noise(a>>1,b>>2,3)-.5)*.18+(b%5===0?-.2:0)),a,b);
   P(tone('#c8a060',-.1),4,1,L-8,1);P(tone('#c8a060',-.3),4,E-2,L-8,1);

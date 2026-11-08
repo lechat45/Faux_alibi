@@ -95,17 +95,17 @@ function evenements(){
 function lancerEvent(k){
   const f=k==='courant'?null:factoire();
   if(k!=='courant'&&!f)return lancerEvent('courant');
-  if(k==='courant'){G.noir=840;son('marteau');return say('Basile',"Le courant vient de sauter ! Ça devrait revenir très vite. En attendant, vous ne voyez que ce qui est tout près de vous.",null,G.porBa)}
+  if(k==='courant'){G.noir=1680;son('marteau');return say('Basile',"Le courant vient de sauter ! Ça devrait revenir très vite. En attendant, vous ne voyez que ce qui est tout près de vous.",null,G.porBa)}
   const su=c.suspects[f[0]],st=c.stmts[f[0]][f[1]],lieu=c.set.rooms[st.room].d,h=HOURS[f[1]];
   if(k==='temoin'){apprendre(f[0],f[1]);return say('Basile',`Un livreur vient de se présenter. Il a vu ${su.prenom} ${lieu} à ${h}. Je l'ai noté dans votre calepin.`,null,G.porBa)}
   const d={k:'carte',t:'Lettre anonyme',fact:{s:f[0],h:f[1]},p:{v:'Inspecteur',lieu:c.set.nom,txt:`${su.prenom} était ${lieu} à ${h}. Je l'ai vu${su.g==='f'?'e':''} de mes yeux.`}};
   W.docs.push(d);S.evDocs=S.evDocs||[];S.evDocs.push(d);const i=W.docs.length-1;
   modal='dlg';bulle({at:at0(),nom:'Basile',txt:"Quelqu'un vient de glisser une lettre sous la porte. Personne n'a rien vu.",por:G.porBa,btn:[{t:'Lire la lettre',f:()=>{closeAll();ouvrirDoc(i)}}]});
 }
-function noirDessine(px,py){
+function noirDessine(px,py,k=1){
   if(!G.torche){const[k,g]=cv(180,180),q=g.createRadialGradient(90,90,16,90,90,88);q.addColorStop(0,'rgba(3,3,10,0)');q.addColorStop(1,'rgba(3,3,10,.97)');g.fillStyle=q;g.fillRect(0,0,180,180);G.torche=k}
-  const x=Math.round(px-90),y=Math.round(py-90);ctx.fillStyle='rgba(3,3,10,.97)';
-  ctx.fillRect(0,0,VW,Math.max(0,y));ctx.fillRect(0,y+180,VW,VH);ctx.fillRect(0,y,Math.max(0,x),180);ctx.fillRect(x+180,y,VW,180);ctx.drawImage(G.torche,x,y);
+  ctx.save();ctx.globalAlpha=k;const x=Math.round(px-90),y=Math.round(py-90);ctx.fillStyle='rgba(3,3,10,.97)';
+  ctx.fillRect(0,0,VW,Math.max(0,y));ctx.fillRect(0,y+180,VW,VH);ctx.fillRect(0,y,Math.max(0,x),180);ctx.fillRect(x+180,y,VW,180);ctx.drawImage(G.torche,x,y);ctx.restore();
 }
 // ——— Orage derrière les fenêtres ———
 function eclair(){G.eclair=16;if(typeof tonnerre==='function')setTimeout(tonnerre,400+Math.random()*1400)}

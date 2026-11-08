@@ -21,12 +21,12 @@ function docFond(k){
   if(['testament','contrat','renvoi','autopsie','brevet'].includes(k))[h/3|0,h*2/3|0].forEach(y=>pli(g,w,y,col));
   if(k==='testament'){[3,6].forEach(m=>cadre(g,w,h,m,'#8a6a2a'));[[10,10],[w-16,10],[10,h-16],[w-16,h-16]].forEach(([x,y])=>{R(g,'#8a6a2a',x,y,6,1);R(g,'#8a6a2a',x,y,1,6);R(g,'#8a6a2a',x+5,y,1,6);R(g,'#8a6a2a',x,y+5,6,1);R(g,'#8a6a2a',x+2,y+2,2,2)});cireR(g,w-32,h-40);tacheCafe(g,34,h-46,12)}
   if(k==='dette'){box(g,w-34,8,24,30,'#d84a6a');R(g,'#ffffff',w-30,12,16,22);R(g,'#d84a6a',w-27,16,10,3);R(g,'#d84a6a',w-25,22,6,6);for(let i=0;i<12;i++){R(g,col,w-35+i*2,7,1,1);R(g,col,w-35+i*2,38,1,1)}tampon(g,w-30,30,12,'#3a4a8a');pli(g,w,h>>1,col)}
-  if(k==='renvoi'){R(g,'#2a3a6a',0,0,w,26);R(g,'#c8a040',0,26,w,2);ellipseP(g,18,13,8,8,'#c8a040');ellipseP(g,18,13,6,6,'#2a3a6a');R(g,'#c8a040',17,9,2,8);R(g,'#c8a040',14,12,8,2);R(g,'#2a3a6a',0,h-14,w,1);R(g,'#c8a040',0,h-12,w,1);agrafe(g,8,34)}
+  if(k==='renvoi'){R(g,'#2a3a6a',0,0,w,3);R(g,'#c8a040',0,3,w,1);R(g,'#2a3a6a',0,h-4,w,1);agrafe(g,12,7);tampon(g,w-44,h-58,15,'#3a4a8a');tampon(g,w-44,h-58,10,'#3a4a8a')}
   if(k==='chantage'){[[8,6],[w-38,8],[10,h-16],[w-36,h-14]].forEach(([x,y])=>{R(g,'rgba(240,232,180,.55)',x,y,28,9);R(g,'rgba(255,255,255,.3)',x,y,28,1)});R(g,'#ece4d0',12,h-58,w-24,36);R(g,'#c8c0a8',12,h-22,w-24,1);R(g,'rgba(240,232,180,.6)',w/2-12,h-62,24,8)}
   if(k==='brevet'){R(g,'#2e4a78',0,0,w,6);R(g,'#2e4a78',0,h-6,w,6);cadre(g,w,h,9,'#2e4a78');for(let i=12;i<w-12;i+=4){R(g,'#7a94b8',i,11,2,1);R(g,'#7a94b8',i,h-12,2,1)}
    ellipseP(g,w-36,h-52,14,14,'#c8a040');ellipseP(g,w-36,h-52,11,11,'#e8c860');tampon(g,w-36,h-52,7,'#8a6a2a');R(g,'#2e4a78',w-44,h-41,5,16);R(g,'#2e4a78',w-32,h-41,5,16);
    const x=18,y=h-82;cadre(g,w,h,0,col);for(let j=0;j<62;j+=6)R(g,'#c8d4e0',x,y+j,104,1);for(let i=0;i<106;i+=6)R(g,'#c8d4e0',x+i,y,1,61);const ro=(a,b,r)=>{for(let t=0;t<6.28;t+=.03)R(g,'#2e4a78',a+Math.cos(t)*r|0,b+Math.sin(t)*r|0);for(let t=0;t<6.28;t+=.52){R(g,'#2e4a78',a+Math.cos(t)*(r+2)|0,b+Math.sin(t)*(r+2)|0,2,2)}R(g,'#2e4a78',a,b,2,2)};ro(x+34,y+30,17);ro(x+70,y+22,10);traitP(g,'#2e4a78',x+34,y+30,x+92,y+52);R(g,'#2e4a78',x+92,y+46,8,10)}
-  if(k==='article'){[w*.68|0].forEach(x=>R(g,'#8a8478',x,70,1,h-82));for(let j=0;j<44;j++)for(let i=0;i<60;i++)if(bay(i,j)<.24+i/130+(j>30?.2:0))R(g,'#2a2a3a',(w*.68+7+i)|0,74+j);tacheCafe(g,w-30,h-30,14)}
+  if(k==='article'){pli(g,w,h/2|0,col);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const d=Math.min(x,y,w-1-x,h-1-y);if(d<10&&noise(x,y,8)>d/10)R(g,'rgba(150,120,60,.12)',x,y)}}
   if(k==='contrat'){trombone(g,14,0);tampon(g,w-34,h-62,14,'#3a4a8a');tampon(g,w-34,h-62,9,'#3a4a8a');for(let x=0;x<w;x++){const d=((Math.sin(x*.4)+Math.sin(x*.13+2))*3+6)|0;g.clearRect(x,h-d,1,d)}}
   if(k==='agenda'){R(g,'#a33a3a',0,0,w,22);R(g,'#7a2228',0,22,w,2);for(let y=34;y<h-6;y+=15)R(g,'#a8b4c8',14,y,w-20,1);R(g,'#d8a0a0',46,24,1,h-30);for(let y=14;y<h;y+=30)ellipseP(g,7,y,2,2,'#2a2a3a');tacheCafe(g,w-30,h-28,10)}
   if(k==='recu'){for(let x=0;x<w;x++){const d=x%6<3?x%6:6-x%6;g.clearRect(x,0,1,d);g.clearRect(x,h-d,1,d)}for(let j=0;j<16;j++)for(let i=0;i<w-30;i++)if((i*7>>2)%3)R(g,'#2a2a3a',15+i,h-34+j);pli(g,w,h*.6|0,col)}
@@ -72,22 +72,35 @@ const DOC_HTML={
   <p>Intérêt convenu : ${t} % l'an. Remboursement en une seule fois, ${m_('avant la fin du mois')}. Passé ce délai, le prêteur pourra exiger la vente des biens de l'emprunteur.</p>
   <table class="reg"><tr><th>Échéance</th><th>Versé</th><th>Reste dû</th></tr><tr><td>${a.c(JOURS2)}</td><td>0 F</td><td>${s} F</td></tr><tr><td>${a.c(JOURS2)}</td><td>0 F</td><td>${s} F</td></tr></table>
   <p>Fait en deux exemplaires, le ${p.date}. Bon pour ${s} francs.</p><p class="signe">${esch(p.n)}</p><p class="marge">Toujours rien reçu. Dernier rappel !</p></div>`},
- renvoi:p=>{const a=alea(p);return`<div class="d" data-k="renvoi"><p class="ent cl">${esch(p.lieu)}</p><p class="ent cl2">Direction · Service du personnel</p>
-  <div class="ligne2 hautr"><p>Réf. : DP/${a.n(100,999)}/${a.c(['AL','RH','MD'])}<br>Lettre recommandée</p><p>Le ${p.date}<br>À l'attention de ${m_(p.n)}</p></div>
-  <h4>Objet : fin de service</h4><p>Suite à notre entretien, j'ai le regret de vous faire savoir que ${m_('vos services ne sont plus requis')}.</p>
-  <p>Les faits constatés le ${a.c(JOURS2)}, déjà signalés dans deux avertissements, ne me laissent pas d'autre choix.</p>
-  <p>Vous quitterez les lieux ${m_('sous huit jours, sans indemnité')}, après avoir rendu vos clés et votre carte de service.</p>
-  <table class="reg"><tr><td>Solde de tout compte</td><td>0 F</td></tr><tr><td>Congés restants</td><td>${a.n(2,9)} jours, perdus</td></tr></table>
-  <p>Veuillez agréer mes salutations.</p><p class="signe">${esch(p.v)}</p><p class="pied">Copie au dossier du personnel. Toute réclamation par écrit à la direction.</p></div>`},
+renvoi:p=>{const a=alea(p),ini=String(p.lieu||'').split(/[\s'-]+/).filter(w=>/^[A-ZÉÈÀ]/.test(w)).map(w=>w[0]).join('').slice(0,2)||'D';return`<div class="d" data-k="renvoi">
+  <div class="lt-tete"><span class="lt-logo">${esch(ini)}</span><div><p class="lt-nom">${esch(p.lieu)}</p><p class="lt-svc">Direction · Service du personnel</p></div></div>
+  <div class="lt-meta"><p>Réf. : DP/${a.n(100,999)}/${a.c(['AL','RH','MD'])}<br><span class="lt-reco">Recommandée avec accusé de réception</span></p><p class="lt-dest">Le ${p.date}<br><br>À l'attention de<br>${m_(p.n)}</p></div>
+  <p class="lt-objet"><b>Objet :</b> notification de licenciement</p>
+  <p>Madame, Monsieur,</p>
+  <p>À la suite de notre entretien du ${a.c(JOURS2)}, je vous informe que ${m_('vos services ne sont plus requis')} au sein de notre maison.</p>
+  <p>Les manquements constatés, qui vous ont déjà valu deux avertissements écrits, ne me laissent pas d'autre choix. Cette décision prend effet ${m_('sous huit jours, sans indemnité')}.</p>
+  <p>Vous voudrez bien restituer d'ici là vos clés, votre carte de service et le matériel qui vous a été confié.</p>
+  <table class="reg lt-tab"><tr><td>Solde de tout compte</td><td>0 F</td></tr><tr><td>Congés restants</td><td>${a.n(2,9)} jours, non payés</td></tr><tr><td>Préavis</td><td>8 jours</td></tr></table>
+  <p>Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.</p>
+  <div class="lt-sign"><p class="petit">La Direction</p><p class="signe">${esch(p.v)}</p></div>
+  <p class="pied">Copie au dossier du personnel. Toute contestation doit être adressée par écrit à la direction.</p></div>`},
  chantage:p=>{const a=alea(p),s=p.m.toLocaleString('fr-FR');return`<div class="d" data-k="chantage"><p class="colle">${`JE SAIS CE QUE VOUS AVEZ FAIT À LYON. ${s} FRANCS AVANT DIMANCHE. SINON TOUT LE MONDE SAURA. VOUS PAIEREZ, ${p.n.toUpperCase()}.`.split(' ').map((w,i)=>`<span class="m${i%4}">${esch(w)}</span>`).join(' ')}</p>
   <div class="fiche-c"><b>Note de Basile</b><p>Lettres découpées dans un journal. Glissé sous une porte, sans enveloppe ni timbre. Destinataire : ${m_(p.n)}. Au dos, ${m_(`l'écriture de ${p.v}`)}.</p></div></div>`},
  brevet:p=>{const a=alea(p),t=a.c(INVENTIONS);return`<div class="d" data-k="brevet"><p class="ent">Office des inventions de ${a.c(VILLES)}</p><h4>Brevet d'invention</h4><p class="petit c">N° ${p.m} · Délivré le ${p.date} · Durée : 15 ans</p>
   <p><i>Titre :</i> <b>${t}</b></p><p><i>Titulaire :</i> ${m_(p.v)}</p><p><i>Demande déposée le :</i> ${a.c(JOURS2)}, sous le n° ${a.n(10000,99999)}</p>
   <ol><li>Dispositif caractérisé par un assemblage nouveau de ses organes.</li><li>Dispositif selon 1, d'un rendement supérieur à tout procédé connu.</li></ol><p class="petit">Planche 1 : coupe de l'appareil, échelle 1/4.</p>
   <p class="marge haute">C'était MON idée !<br>${m_(p.n)}</p></div>`},
- article:p=>{const a=alea(p);return`<div class="d" data-k="article"><p class="titre-j">L'Écho du soir</p><p class="sous-j"><span>N° ${a.n(1200,9800)}</span><span>${p.date}</span><span>20 centimes</span></p>
-  <h4>Une affaire qui fait du bruit</h4><div class="cols"><div><p>Selon nos informations, ${m_(p.v)} serait au cœur des malheurs de ${m_(p.n)}, qui ne s'en est jamais remis.</p><p>Plusieurs proches évoquent des promesses non tenues et une ruine annoncée. « Il a tout perdu, et il le sait très bien », confie un témoin qui tient à rester anonyme.</p><p>Interrogée le ${p.date}, aucune des deux parties n'a souhaité s'exprimer. La justice n'a pas été saisie à ce jour.</p><p class="t2">Le pont de ${a.c(VILLES)} emporté par les eaux</p><p>Les pluies de la semaine ont eu raison du vieil ouvrage. La route restera coupée plusieurs jours, a fait savoir la mairie, et les livraisons sont détournées par la vallée.</p><p class="t2">Conseil municipal</p><p>Les élus ont voté hier soir la réfection du marché couvert. Les travaux débuteront au printemps si le budget est tenu, ce dont l'opposition doute ouvertement.</p></div>
-  <div class="cote"><div class="ph"></div><p class="petit">Les lieux, le mois dernier.</p><b>Météo</b><p class="petit">Orages en soirée, ${a.n(8,24)} degrés.</p><b>En bref</b><p class="petit">La foire de ${a.c(VILLES)} est reportée à la semaine prochaine.</p><b>Annonce</b><p class="petit">Vends piano droit, bon état. S'adresser au journal.</p></div></div></div>`},
+article:p=>{const a=alea(p),acc=/accident/.test(p.mob||''),nom=esch(p.n),vic=`<span class="entoure">${esch(p.v)}</span>`,fam=esch(String(p.n).split(' ').slice(-1)[0]);
+  const titre=acc?`Drame sur la route de ${a.c(VILLES)} : une famille brisée`:`« Sans le moindre talent » : la critique qui fait tomber ${nom}`;
+  const chapo=acc?`Une voiture a quitté la route dans le virage du Calvaire. Les proches de ${nom} ne s'en remettront pas.`:`Notre chroniqueur n'a pas eu de mots assez durs. Dès le lendemain, les portes se fermaient une à une.`;
+  const corps=acc?[`<span class="lettrine">L</span>e drame s'est joué peu avant minuit, sous une pluie battante. Selon les premiers témoins, un second véhicule roulait à vive allure.`,`Son conducteur, ${vic}, ne s'est présenté à la gendarmerie que le lendemain matin. Aucune poursuite n'a été engagée.`,`« Personne ne paiera jamais », souffle un voisin de la famille ${fam}.`]
+   :[`<span class="lettrine">I</span>l faut savoir dire les choses : le travail de ${nom} ne vaut pas le papier sur lequel on l'imprime.`,`Lent, prétentieux, sans une once d'idée neuve. Nous conseillons au public de passer son chemin.`,`Gageons que cette carrière, si l'on peut l'appeler ainsi, s'arrêtera là.`];
+  return`<div class="d" data-k="article"><div class="j-tete"><p class="j-titre">L'Écho du soir</p><p class="j-sous"><span>Quotidien régional</span><span>N° ${a.n(1200,9800)} · ${p.date}</span><span>20 centimes</span></p></div>
+  <p class="j-rub">${acc?'Faits divers':'Arts et spectacles'}</p><h4 class="j-une">${titre}</h4><p class="j-chapo">${chapo}</p>
+  <div class="j-cols"><div class="j-art">${corps.map(t=>`<p>${t}</p>`).join('')}<p class="j-sign">${acc?'De notre correspondant':'par '+vic}</p></div>
+  <div class="j-cote"><img class="j-photo" alt="" src="${photoJ(acc,a.n(1,999))}"><p class="j-leg">${acc?'Le virage du Calvaire, au lendemain du drame.':'Le soir de la première, salle comble.'}</p>
+  <p class="j-bref"><b>Météo</b> Averses en soirée, ${a.n(8,24)} degrés.</p><p class="j-bref"><b>En bref</b> La foire de ${a.c(VILLES)} est reportée à la semaine prochaine.</p><div class="j-annonce">Vends piano droit, bon état. S'adresser au journal.</div></div></div>
+  ${acc?'':'<i class="lacere" aria-hidden="true"></i>'}</div>`},
  contrat:p=>{const a=alea(p),vil=a.c(VILLES);return`<div class="d" data-k="contrat"><h4>Contrat d'association</h4><p class="petit c">Passé devant ${a.c(NOTAIRES)}, notaire à ${vil}</p><p>Entre <s>${esch(p.n)}</s> et <b>${esch(p.v)}</b>, il a été convenu ce qui suit :</p>
   <ol class="art"><li><b>Objet.</b> Les soussignés exploitent en commun une affaire de négoce.</li><li><b>Parts.</b> ${a.n(40,60)} parts pour l'un, le reste pour l'autre.</li><li><b>Gérance.</b> ${m_(`${p.v}, seul gérant de l'affaire`)}, à compter du ${p.date}.</li><li><b>Bénéfices.</b> Partagés chaque année au prorata des parts.</li><li><b>Sortie.</b> Un associé rayé perd tout droit sur les bénéfices à venir.</li></ol>
   <p>Fait à ${vil} en deux originaux.</p><p class="marge">Le nom de ${m_(p.n)} a été rayé à la main.</p><p class="signe g">${esch(p.v)}</p></div>`},
@@ -109,3 +122,29 @@ const DOC_HTML={
   <p class="signe">${a.med}</p><div class="tampon-p"><b>POLICE<br>JUDICIAIRE</b><small>Reçu et enregistré</small><small>Brigade criminelle</small></div></div>`},
  carte:p=>{const a=alea(p);return`<div class="d" data-k="carte"><p class="main dem">${esch(p.txt)}<br><br>${a.c(['À bientôt.','Tu sais qui je suis.','Bien à toi.'])}</p><p class="dest">${esch(p.v)}<br>${esch(p.lieu)}<br>${a.c(VILLES)}</p><p class="obl">${a.c(VILLES)} · ${a.n(6,22)} h · ${a.c(JOURS2)}</p></div>`}
 };
+
+// Photo de journal : une scène en gris, tramée comme à l'impression
+function photoJ(acc,s){
+  if(typeof document==='undefined')return'';
+  const[k,g]=cv(96,64),gris=['#2a2620','#5a554a','#8a8474','#bab4a0','#e8e2d0'];
+  const lum=(x,y)=>{
+    if(acc){
+      let l=.12+y/64*.18;
+      if(y>30-Math.sin(x*.07)*4-(x>60?6:0))l=.1;
+      const rx=48+Math.sin(y*.06)*18-(64-y)*.3,lw=6+y*.32;if(y>30&&Math.abs(x-rx)<lw)l=.5+(Math.abs(x-rx)<1&&y%6<3?.4:0);
+      for(let t=0;t<5;t++){const px=70+t*5,py=36+t*4;if(x===px&&y>=py-5&&y<=py)l=t===2?.15:.8}
+      if(Math.abs(x-30)+Math.abs(y-50)*1.8<12&&y>44)l=.04;
+      if((x-21)*(x-21)+(y-49)*(y-49)<5)l=1;if(x<21&&x>4&&Math.abs(y-49)<(21-x)*.3)l=Math.max(l,.72);
+      [[10,22],[18,26],[86,24]].forEach(([a,b])=>{if(y>b-10&&y<b+6&&Math.abs(x-a)<(y-b+10)*.35)l=.06});
+      return l;
+    }
+    let l=.1;if(y>44)l=.35;
+    if(x<20||x>76)l=.24+((x%6)<2?.1:0);
+    const sp=Math.abs(x-48)<(y-4)*.28&&y<46;if(sp)l=.62+(46-y)/46*.25;
+    if(Math.abs(x-48)<4&&y>28&&y<46||(x-48)*(x-48)+(y-25)*(y-25)<10)l=.05;
+    if(y>52&&((x%9)-4)*((x%9)-4)+(y-56)*(y-56)*.7<14)l=.04;
+    return l;
+  };
+  for(let y=0;y<64;y++)for(let x=0;x<96;x++){const q=Math.max(0,Math.min(.999,lum(x,y)))*4,b=Math.floor(q);R(g,gris[Math.min(4,b+(q-b>bay(x,y)?1:0))],x,y)}
+  return k.toDataURL();
+}

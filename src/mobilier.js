@@ -148,15 +148,33 @@ Object.assign(SPR,{
   bed(g,v){LITS[lieuDe(v)](g,v)},
   plant(g,v){g.save();g.translate(0,0);PLANTES[v%10](g,v);g.restore()},
   lamp(g,v){LAMPES[v%10](g,v)},
-  // Bout de couloir : l'escalier de service, fermé par une corde rouge
-  escalier(g,v){const P=PX(g),bo='#5b3820',ouvert=v>=1e7,desc=v>=2e7;
-    P(tone(bo,-.2),0,0,32,46);P('#0e0c16',2,2,28,42);
-    for(let k=0;k<8;k++){const y=desc?6+k*5:41-k*5,t=-.06-k*.1;P(tone('#8a6a4a',t),2+k,y-1,28-k*2,2);P(tone('#5a3a24',t),2+k,y+1,28-k*2,3)}
-    if(desc){traitP(g,'#c8a040',28,6,21,41);for(let k=0;k<7;k++)P(tone(bo,-.05),28-k,6+k*5,1,4)}else{traitP(g,'#c8a040',28,40,21,5);traitP(g,tone('#c8a040',-.3),28,41,21,6);for(let k=0;k<7;k++)P(tone(bo,-.05),28-k,40-k*5,1,4)}
-    if(!ouvert){P('#c8a040',3,30,2,14);P('#c8a040',27,30,2,14);P('#fff0a0',3,30,1,1);P('#fff0a0',27,30,1,1);
-    for(let x=5;x<27;x++)P('#a3262a',x,32+Math.round(Math.sin((x-5)/22*Math.PI)*3),1,2);
-    P('#f4ecd8',12,37,8,5);P('#a3262a',13,39,6,1)}
-    else{P('#c8a040',11,3,10,7);P('#2a2018',12,4,8,5);(desc?[[15,4,2,2],[14,6,4,1],[15,7,2,1]]:[[15,4,2,1],[14,5,4,1],[15,6,2,2]]).forEach(([x,y,w,h])=>P('#ffe08a',x,y,w,h))}P(tone(bo,.25),0,0,32,1);P(tone(bo,-.4),0,45,32,1)},
+  // Escalier de service : une cage d'escalier ouverte dans le mur, aux couleurs de la pièce et des portes du lieu
+  escalier(g,v){
+    const P=PX(g),f=G.fctx,A=f&&W&&W.areas?W.areas[f.room]:null,L0=typeof c!=='undefined'&&c&&c.set?c.set:{},tint=A?A.tint:'#4a5a6a';
+    const st=STYLE_PORTE[L0.porte]||STYLE_PORTE.bois,cad=tone(st[0],.16),tapis=L0.runner||'#7a2f35',ouvert=v>=1e7,desc=v>=2e7;
+    // le fond de la cage : le papier peint du lieu, de plus en plus sombre vers où l'escalier s'enfonce
+    for(let y=3;y<45;y++)for(let x=3;x<29;x++){const p=desc?(y-3)/42:(45-y)/42;P(tone(tint,-.28-p*.42+(noise(x>>1,y>>1,7)-.5)*.04),x,y)}
+    // les marches, avec le tapis du lieu tenu par des tringles en laiton
+    for(let k=0;k<8;k++){
+      const y=desc?6+k*5:39-k*5,m=Math.round(k*1.1),x0=4+m,x1=28-m,o=-k*.1,tw=Math.max(4,Math.round((x1-x0)*.44)),tx=16-(tw>>1);
+      P(tone('#7a5a3c',o-.2),x0,y+2,x1-x0,3);P(tone('#a8845a',o),x0,y,x1-x0,2);P(tone('#d8b888',o),x0,y,x1-x0,1);
+      P(tone(tapis,o-.2),tx,y+2,tw,3);P(tone(tapis,o+.05),tx,y,tw,2);P(tone('#c8a040',o),tx,y+2,tw,1);
+    }
+    for(let y=0;y<12;y++)for(let x=3;x<29;x++)if(bay(x,y)<(12-y)/12*.9)P('#0e0c16',x,desc?44-y:3+y);
+    if(desc){traitP(g,'#c8a040',27,8,22,40);P('#8a6a2a',26,8,2,3)}else{traitP(g,'#c8a040',27,40,22,8);traitP(g,tone('#c8a040',-.3),27,41,22,9);P('#8a6a2a',26,38,2,4)}
+    // chambranle taillé comme celui des portes du lieu
+    P(cad,0,0,32,3);P(tone(cad,.3),0,0,32,1);P(tone(cad,-.35),3,3,26,1);
+    [0,29].forEach(x=>{P(cad,x,0,3,46);P(tone(cad,.28),x,0,1,46);P(tone(cad,-.4),x+2,3,1,43)});
+    P(tone(cad,-.5),0,45,32,1);
+    if(!ouvert){
+      [5,25].forEach(x=>{P('#a8842c',x,30,2,15);P('#fff0a0',x,30,1,1);ellipseP(g,x+1,44,2,1,'#8a6a2a')});
+      for(let x=7;x<25;x++)P('#a3262a',x,33+Math.round(Math.sin((x-7)/18*Math.PI)*3),1,2);
+      P('#f4ecd8',12,38,8,5);P('#a3262a',13,40,6,1);P('#5a4a3a',15,37,2,1);
+    }else{
+      P('#a8842c',11,5,10,7);P('#2a2018',12,6,8,5);
+      (desc?[[15,6,2,2],[13,8,6,1],[14,9,4,1],[15,10,2,1]]:[[15,6,2,1],[14,7,4,1],[13,8,6,1],[15,9,2,2]]).forEach(([x,y,w,h])=>P('#ffe08a',x,y,w,h));
+    }
+  },
   // Bout de couloir : la sortie de secours, enchaînée pendant la tempête
   secours(g,v){const P=PX(g),cad='#6a7078',po='#4a6a5a';
     P('#0e3a1e',8,0,16,6);P('#2ad86a',9,1,14,4);P('#e8fff0',12,1,1,1);P('#e8fff0',11,2,3,1);P('#e8fff0',10,3,1,1);P('#e8fff0',13,3,1,1);P('#e8fff0',16,2,5,1);P('#e8fff0',19,1,1,3);

@@ -189,7 +189,7 @@ function furnitureSprite(f){
   const[k,g]=cv(f.w*TS+2,f.h*TS+36);
   g.translate(1+(f.dx||0),1);
   const H=SH[f.name]||24;
-  SPR[f.name](g,f.v);
+  G.fctx=f;SPR[f.name](g,f.v);G.fctx=null;
   return outlineSprite(k);
 }
 // Hauteur totale (pixels) de chaque dessin, pour l'ancrer sur sa case

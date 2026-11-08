@@ -50,7 +50,7 @@ const MG_BY={shelf:'livres',wardrobe:'cintres',locker:'cintres',cabinet:'ecritur
 const JOURS=['12 mars','3 avril','19 mai','7 juin','24 juillet','2 septembre','15 octobre','28 novembre'];
 function makeDocs(c,r){
   const V=c.vName,set=c.set,date=()=>pick(r,JOURS),nomOf=i=>c.suspects[i].nom,out=[];
-  c.suspects.forEach((su,i)=>out.push({k:su.dk,t:DOC_TITRES[su.dk],s:i,p:{v:V,n:su.nom,date:date(),m:(12+int(r,60))*1000,lieu:set.nom}}));
+  c.suspects.forEach((su,i)=>out.push({k:su.dk,t:DOC_TITRES[su.dk],s:i,p:{v:V,n:su.nom,date:date(),m:(12+int(r,60))*1000,lieu:set.nom,mob:su.mobile||''}}));
   // Faits vrais : uniquement des déclarations de personnes qui disent la vérité
   const menteurs=c.tueurs;
   const sures=c.needed.filter(i=>i.t==='s'&&!menteurs.includes(i.s));
