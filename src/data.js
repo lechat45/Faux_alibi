@@ -1,6 +1,7 @@
 // 50 objets, 10 familles d'énigmes d'objets et 15 modèles de documents réutilisables.
 // Un objet porte des propriétés (tags) : le même objet sert donc à plusieurs énigmes.
 const OBJETS=[
+ ['torche','Lampe tempête',[],"Une lampe à pétrole, mèche neuve. Si le courant saute, elle éclairera autour de vous."],
  ['pied','Pied-de-biche',['levier'],'Lourd et froid. De quoi ouvrir ce qui résiste.'],['tournevis','Tournevis',['levier'],'Sa pointe plate se glisse partout.'],
  ['cuillere','Grande cuillère',['levier'],'Solide, et son manche fait un bon levier.'],['spatule','Spatule en acier',['levier','coupe'],'Fine et rigide, tachée de peinture.'],
  ['epingle','Épingle à cheveux',['fil'],'Parfaite pour une petite serrure.'],['trombone','Trombone',['fil'],'Déplié, il crochète bien des choses.'],

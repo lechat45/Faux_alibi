@@ -384,7 +384,7 @@ function buildWorld(c){
   }
   // Énigmes d'objets : l'outil est dans une cachette ouverte, le document dans le meuble bloqué
   w.docs=makeDocs(c,r);
-  const reste=shuffle(r,OBJETS.map(o=>o[0])),prendre=id=>{reste.splice(reste.indexOf(id),1);return id};
+  const reste=shuffle(r,OBJETS.map(o=>o[0]).filter(id=>id!=='torche')),prendre=id=>{reste.splice(reste.indexOf(id),1);return id};
   const tags=shuffle(r,Object.keys(ENIGMES)),blocs=[];
   for(let i=0;i<D.eni;i++){
     const tag=tags[i%tags.length],E=ENIGMES[tag];
@@ -411,6 +411,8 @@ function buildWorld(c){
   blocs.forEach(b=>{if(!b.loot)b.loot={t:'obj',id:prendre(pick(r,reste))}});
   pz.forEach(b=>{if(!b.loot)b.loot={t:'obj',id:prendre(pick(r,reste))}});
   for(let i=0;i<D.bonus;i++){const b=libre();if(b)b.loot={t:'obj',id:prendre(pick(r,reste))}}
+  // Une lampe tempête rangée quelque part, accessible sans clé, pour les coupures de courant
+  if(!c.test){const b=libreDans(zone(new Set()))||libre();if(b)b.loot={t:'obj',id:'torche'}}
   boxes.forEach(o=>{if(!o.lock&&!o.ptype)o.mg=MG_BY[o.name]});
   w.obj.push(...fou);
   w.entrees.forEach(q=>w.obj.push({id:nid(),kind:'entree',x:q.x,y:q.y,w:2,h:2}));

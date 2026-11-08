@@ -11,6 +11,7 @@ const AVIS=[t=>`${t} ? On se connaît depuis longtemps. Je lui fais confiance.`,
 const tendu=(s,n)=>{S.stress=S.stress||{};S.stress[s]=Math.min(100,(S.stress[s]||0)+n)};
 const stressDe=s=>(S.stress&&S.stress[s])||0;
 function salut(s){
+  if(G.noir>0&&peureux(s))return["Vous m'avez fait peur ! On n'y voit rien…",'Restez près de moi, je vous en prie.','(Chuchote.) Parlez moins fort…'][(tick>>6)%3];
   const v=(S.vues&&S.vues[s])||0,st=stressDe(s),h=VOIX(s).hi;
   if(st>=70)return['Encore vous ? Je vous ai tout dit !','Laissez-moi respirer, je vous en prie.'][v%2];
   if(v>=3)return['Vous revoilà, inspecteur.','Vous ne me lâchez pas, vous.','Toujours là ?'][v%3];

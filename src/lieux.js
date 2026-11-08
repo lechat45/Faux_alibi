@@ -100,3 +100,7 @@ function installer(){
   if(invite){const e=invite;invite=null;e.prompt();(e.userChoice||Promise.resolve()).finally(()=>accueil());return}
   const a=$('aide-inst');if(a)a.hidden=!a.hidden;
 }
+
+// ——— Peur du noir : la plupart des suspects ———
+const peureux=s=>noise(s+3,7,((c&&c.seed)||1)&255)<.72;
+const PEUR=['Qui est là ?',"J'ai horreur du noir…","Ne partez pas, s'il vous plaît.",'Vous avez entendu ?',"Quelqu'un a une bougie ?"];

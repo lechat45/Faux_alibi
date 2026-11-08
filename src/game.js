@@ -300,7 +300,7 @@ function draw(){
   const pxx=P.x-cx,pyy=P.y-cy-8,rad=70,q=ctx.createRadialGradient(pxx,pyy,2,pxx,pyy,rad);q.addColorStop(0,'rgba(95,88,70,.45)');q.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=q;ctx.fillRect(pxx-rad,pyy-rad,rad*2,rad*2);
   ctx.globalCompositeOperation='source-over';
   if(G.eclair>10){ctx.fillStyle='rgba(200,210,255,.09)';ctx.fillRect(0,0,VW,VH)}
-  if(G.noir>0)noirDessine(pxx,pyy,1);else if(G.retour>0)noirDessine(pxx,pyy,Math.pow(G.retour/240,1.4)*(G.retour>200&&(G.retour>>2)%4===0?.55:1));
+  if(G.noir>0)noirDessine(pxx,pyy,1,cx,cy);else if(G.retour>0)noirDessine(pxx,pyy,Math.pow(G.retour/240,1.4)*(G.retour>200&&(G.retour>>2)%4===0?.55:1),cx,cy);
   if(G.fl>0){ctx.fillStyle=`rgba(255,240,230,${G.fl/20})`;ctx.fillRect(0,0,VW,VH)}
   if(G.fade>0){ctx.fillStyle=`rgba(4,3,10,${G.fade})`;ctx.fillRect(0,0,VW,VH)}
   posBulles();
@@ -360,6 +360,7 @@ function talk(o,msg,refus,e){
   o.mv=false;modal='dlg';
   if(msg===undefined){S.vues=S.vues||{};S.vues[s]=(S.vues[s]||0)+1}
   const btn=HOURS.map((h,i)=>({t:(S.asked[s+'-'+i]?'✓ ':'Et à ')+h+(S.asked[s+'-'+i]?'':' ?'),f:()=>{
+    if(!S.asked[s+'-'+i]&&G.noir>0&&peureux(s)&&!aTorche())return talk(o,"(Tremble.) Pas dans le noir… Revenez avec de la lumière.",false,'inquiet');
     if(!S.asked[s+'-'+i]&&!pret())return talk(o,V.non,true);
     apprendre(s,i);const f=regardFuyant(s,i);talk(o,(f?'(Évite votre regard.) ':'')+parole(s,i),false,f?'inquiet':undefined);
   }}));
@@ -636,7 +637,9 @@ function npcLife(){
   W.obj.forEach(o=>{
     if(o.kind!=='suspect')return;
     if(o.em>0)o.em--;
+    const peur=G.noir>0&&peureux(o.s);if(peur&&(tick+o.s*53)%420===0){o.em=50;o.emc='!'}
     gesteMaj(o);if(o.assis||o.pilote)return;
+    if(peur){o.mv=false;return}
     const R=reglage(),near=Math.hypot(P.x-o.fx,P.y-o.fy)<R.vue*.7&&visible(ar,o.fx>>4,(o.fy-3)>>4);
     if(o.hold>0)o.hold--;
     if(!near&&!(o.hold>0)&&trajet(o,R))return;
@@ -656,7 +659,8 @@ function npcLife(){
       else{o.fx+=dx/d*.45*R.npc;o.fy+=dy/d*.45*R.npc;o.mv=true;o.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?0:2);o.x=o.fx>>4;o.y=(o.fy-3)>>4}
     }
   });
-  if(O.bavard&&!c.test&&tick%520===260&&!G.ambO){
+  if(G.noir>0){if(O.bavard&&!c.test&&tick%900===450&&!G.ambO){const ici=W.obj.filter(o=>o.kind==='suspect'&&peureux(o.s)&&visible(ar,o.fx>>4,(o.fy-3)>>4));if(ici.length)dit(ici[tick%ici.length],PEUR[(tick>>9)%PEUR.length],150)}}
+  else if(O.bavard&&!c.test&&tick%520===260&&!G.ambO){
     const ici=W.obj.filter(o=>o.kind==='suspect'&&visible(ar,o.fx>>4,(o.fy-3)>>4));
     if(ici.length){const o=ici[tick%ici.length],a=$('amb'),l=VOIX(o.s).amb;a.textContent=l[(tick>>9)%l.length];a.hidden=false;G.ambO=o;G.ambT=170}
   }

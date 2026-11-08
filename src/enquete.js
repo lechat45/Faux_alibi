@@ -95,17 +95,41 @@ function evenements(){
 function lancerEvent(k){
   const f=k==='courant'?null:factoire();
   if(k!=='courant'&&!f)return lancerEvent('courant');
-  if(k==='courant'){G.noir=1680;son('marteau');return say('Basile',"Le courant vient de sauter ! Ça devrait revenir très vite. En attendant, vous ne voyez que ce qui est tout près de vous.",null,G.porBa)}
+  if(k==='courant'){G.noir=1680;son('marteau');return say('Basile',aTorche()?"Le courant vient de sauter ! Heureusement, vous avez la lampe tempête. Les autres, eux, n'y voient plus rien.":"Le courant vient de sauter ! On n'y voit plus rien. Il y avait une lampe tempête quelque part pour les urgences… Sans elle, fiez-vous aux feux et aux bougies.",null,G.porBa)}
   const su=c.suspects[f[0]],st=c.stmts[f[0]][f[1]],lieu=c.set.rooms[st.room].d,h=HOURS[f[1]];
   if(k==='temoin'){apprendre(f[0],f[1]);return say('Basile',`Un livreur vient de se présenter. Il a vu ${su.prenom} ${lieu} à ${h}. Je l'ai noté dans votre calepin.`,null,G.porBa)}
   const d={k:'carte',t:'Lettre anonyme',fact:{s:f[0],h:f[1]},p:{v:'Inspecteur',lieu:c.set.nom,txt:`${su.prenom} était ${lieu} à ${h}. Je l'ai vu${su.g==='f'?'e':''} de mes yeux.`}};
   W.docs.push(d);S.evDocs=S.evDocs||[];S.evDocs.push(d);const i=W.docs.length-1;
   modal='dlg';bulle({at:at0(),nom:'Basile',txt:"Quelqu'un vient de glisser une lettre sous la porte. Personne n'a rien vu.",por:G.porBa,btn:[{t:'Lire la lettre',f:()=>{closeAll();ouvrirDoc(i)}}]});
 }
-function noirDessine(px,py,k=1){
-  if(!G.torche){const[k,g]=cv(180,180),q=g.createRadialGradient(90,90,16,90,90,88);q.addColorStop(0,'rgba(3,3,10,0)');q.addColorStop(1,'rgba(3,3,10,.97)');g.fillStyle=q;g.fillRect(0,0,180,180);G.torche=k}
-  ctx.save();ctx.globalAlpha=k;const x=Math.round(px-90),y=Math.round(py-90);ctx.fillStyle='rgba(3,3,10,.97)';
-  ctx.fillRect(0,0,VW,Math.max(0,y));ctx.fillRect(0,y+180,VW,VH);ctx.fillRect(0,y,Math.max(0,x),180);ctx.fillRect(x+180,y,VW,180);ctx.drawImage(G.torche,x,y);ctx.restore();
+// Ce qui éclaire encore sans électricité : feux de cheminée, chandeliers, lanternes à pétrole,
+// le panneau de la sortie de secours sur sa batterie, et un peu de lune derrière les fenêtres
+function flammes(){
+  if(G.flammesW===W)return G.flammes;
+  const l=[];
+  W.furn.forEach(f=>{const x=(f.x+f.w/2)*TS,b=(f.y+f.h)*TS;
+    if(f.name==='fireplace')l.push({x,y:b-14,r:80,c:'255,140,50',f:1});
+    else if(f.name==='lamp'&&[6,8].includes(f.v%10))l.push({x,y:b-30,r:48,c:'255,190,90',f:1});
+    else if(f.name==='secours')l.push({x,y:b-40,r:30,c:'60,255,120'})});
+  W.windows.forEach(w=>l.push({x:(w.x+1)*TS,y:(w.y+2.4)*TS,r:30,c:'120,150,255',lune:1}));
+  G.flammesW=W;return G.flammes=l;
+}
+const aTorche=()=>!!(S&&S.inv&&S.inv.includes('torche'));
+function noirDessine(px,py,k=1,cx=0,cy=0){
+  if(!G.noirK||G.noirK.width!==VW||G.noirK.height!==VH){const[a]=cv(VW,VH);G.noirK=a}
+  const ar=G.area!=null?G.area:c.rc,g=G.noirK.getContext('2d'),L=flammes().filter(q=>!W.areas[ar]||visible(ar,q.x>>4,(q.y+(q.lune?16:8))>>4)),vac=i=>.9+.1*noise(tick>>2,i,9),dehors=(x,y,r)=>x<-r||y<-r||x>VW+r||y>VH+r;
+  const trou=(x,y,r,a)=>{if(dehors(x,y,r))return;const q=g.createRadialGradient(x,y,r*.15,x,y,r);q.addColorStop(0,`rgba(0,0,0,${a})`);q.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=q;g.fillRect(x-r,y-r,r*2,r*2)};
+  g.globalCompositeOperation='source-over';g.clearRect(0,0,VW,VH);g.fillStyle='rgba(3,3,10,.985)';g.fillRect(0,0,VW,VH);
+  g.globalCompositeOperation='destination-out';
+  L.forEach((s,i)=>trou(s.x-cx,s.y-cy,s.r*(s.f?vac(i):1),s.lune?.5:1));
+  // sans la lampe tempête, on ne voit presque rien autour de soi
+  trou(px,py,aTorche()?80:22,aTorche()?1:.9);
+  g.globalCompositeOperation='source-over';
+  ctx.save();ctx.globalAlpha=k;ctx.drawImage(G.noirK,0,0);
+  ctx.globalCompositeOperation='lighter';
+  L.forEach((s,i)=>{if(s.lune)return;const x=s.x-cx,y=s.y-cy,r=s.r*.8;if(dehors(x,y,r))return;const q=ctx.createRadialGradient(x,y,2,x,y,r);q.addColorStop(0,`rgba(${s.c},${(.22*(s.f?vac(i):1)).toFixed(3)})`);q.addColorStop(1,`rgba(${s.c},0)`);ctx.fillStyle=q;ctx.fillRect(x-r,y-r,r*2,r*2)});
+  if(aTorche()){const q=ctx.createRadialGradient(px,py,2,px,py,64);q.addColorStop(0,'rgba(255,190,100,.16)');q.addColorStop(1,'rgba(255,190,100,0)');ctx.fillStyle=q;ctx.fillRect(px-64,py-64,128,128)}
+  ctx.restore();
 }
 // ——— Orage derrière les fenêtres ———
 function eclair(){G.eclair=16;if(typeof tonnerre==='function')setTimeout(tonnerre,400+Math.random()*1400)}
