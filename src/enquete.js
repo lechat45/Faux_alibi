@@ -134,7 +134,7 @@ function noirDessine(px,py,k=1,cx=0,cy=0){
 // ——— Orage derrière les fenêtres ———
 function eclair(){G.eclair=16;if(typeof tonnerre==='function')setTimeout(tonnerre,400+Math.random()*1400)}
 function fenetresVivantes(){
-  ambianceFenetres();
+  ambianceFenetres();poussiereLune();
   const neige=c.lv===0||c.lv===4;
   if(O.pluie){ctx.fillStyle=neige?'rgba(240,244,255,.8)':'rgba(170,190,235,.55)';W.windows.forEach((w,i)=>{for(let k=0;k<6;k++){const x=w.x*TS+4+((k*9+i*5+(neige?tick>>4:0))%24),y=w.y*TS+6+(((k*5+(tick>>(neige?3:0)))%14));ctx.fillRect(x,y,1,neige?1:2)}})}
   if(G.eclair>0&&!neige){ctx.fillStyle=`rgba(232,238,255,${G.eclair%5<3?.75:.25})`;W.windows.forEach(w=>ctx.fillRect(w.x*TS+(c.lv===6?9:3),w.y*TS+(c.lv===6?7:5),c.lv===6?14:26,c.lv===6?14:16))}

@@ -1,0 +1,70 @@
+// Effets de rendu : ombres douces, reflets sur les sols cirés, rayons de lune, halos des lampes, vignettage.
+// Tout se coupe avec l'option « Effets de lumière : simples ».
+const REFLET={marbre:.24,parquet:.14,damier:.16,scene:.16,lino:.09,metal:.11};
+
+// Reflets et ombres douces : cuits une fois dans la carte du sol
+function effetsSol(g){
+  W.furn.forEach(f=>{
+    const A=W.areas[f.room],spr=G.furn[f.id],base=(f.y+f.h)*TS,H=SH[f.name]||24;
+    if(!A||!spr)return;
+    const a=REFLET[A.rec&&A.rec.f];
+    if(a&&!/^(lift|escalier|secours|rug)$/.test(f.name)){
+      const hr=Math.min(18,H),[rk,rg]=cv(spr.width,hr);
+      rg.save();rg.translate(0,hr);rg.scale(1,-1);rg.drawImage(spr,0,H+1-hr,spr.width,hr,0,0,spr.width,hr);rg.restore();
+      rg.globalCompositeOperation='destination-in';const q=rg.createLinearGradient(0,0,0,hr);q.addColorStop(0,`rgba(0,0,0,${a})`);q.addColorStop(1,'rgba(0,0,0,0)');rg.fillStyle=q;rg.fillRect(0,0,spr.width,hr);
+      g.save();g.beginPath();A.rects.forEach(r=>g.rect(r.x0*TS,(r.y0)*TS,(r.x1-r.x0+1)*TS,(r.y1-r.y0+1)*TS));
+      if(A.tapis){const t=A.tapis;g.rect(t.x*TS,t.y*TS,(t.x1-t.x+1)*TS,(t.y1-t.y+1)*TS)}
+      g.clip('evenodd');g.drawImage(rk,f.x*TS-1,base);g.restore();
+    }
+    // ombre portée douce, en ellipse, au pied du meuble
+    const cx=(f.x+f.w/2)*TS,rx=f.w*TS*.62+2,q=g.createRadialGradient(0,0,1,0,0,rx);
+    q.addColorStop(0,'rgba(10,8,28,.42)');q.addColorStop(1,'rgba(10,8,28,0)');
+    g.save();g.translate(cx,base-1);g.scale(1,5/rx);g.fillStyle=q;g.fillRect(-rx,-rx,rx*2,rx*2);g.restore();
+  });
+}
+// Occlusion : le sol s'assombrit doucement au pied des murs et au bord du vide
+function effetsBords(g){
+  const t=W.t,deg=(x0,y0,x1,y1,a)=>{const q=g.createLinearGradient(x0,y0,x1,y1);q.addColorStop(0,`rgba(8,6,22,${a})`);q.addColorStop(1,'rgba(8,6,22,0)');return q};
+  for(let y=1;y<MH-1;y++)for(let x=1;x<MW-1;x++){
+    if(t[y][x]!==1||W.gate[y][x])continue;const X=x*TS,Y=y*TS;
+    if(t[y-1][x]===2){g.fillStyle=deg(0,Y,0,Y+8,.38);g.fillRect(X,Y,TS,8)}
+    if(t[y][x-1]===0){g.fillStyle=deg(X,0,X+5,0,.3);g.fillRect(X,Y,5,TS)}
+    if(t[y][x+1]===0){g.fillStyle=deg(X+TS,0,X+TS-5,0,.3);g.fillRect(X+TS-5,Y,5,TS)}
+    if(t[y+1][x]===0){g.fillStyle=deg(0,Y+TS,0,Y+TS-5,.26);g.fillRect(X,Y+TS-5,TS,5)}
+  }
+}
+// La lune entre par les fenêtres et dessine un rai de lumière sur le sol
+function rayonsLune(g){
+  W.windows.forEach(w=>{
+    const a=areaIdx(w.x,w.y+2),A=W.areas[a];if(!A)return;
+    const y0=(w.y+2)*8,y1=(w.y+6.5)*8,x0=(w.x+.15)*8,x1=(w.x+1.85)*8,d=-16;
+    g.save();g.beginPath();A.rects.forEach(r=>g.rect(r.x0*8,r.y0*8,(r.x1-r.x0+1)*8,(r.y1-r.y0+1)*8));g.clip();
+    const q=g.createLinearGradient(0,y0,0,y1);q.addColorStop(0,'rgba(90,110,190,.62)');q.addColorStop(1,'rgba(90,110,190,0)');
+    g.fillStyle=q;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y0);g.lineTo(x1+d,y1);g.lineTo(x0+d,y1);g.closePath();g.fill();g.restore();
+  });
+}
+// De la poussière qui danse dans le rai de lune
+function poussiereLune(){
+  if(!O.effets||!O.parts||G.noir>0||document.body.classList.contains('calme'))return;
+  const ar=G.area!=null?G.area:c.rc;ctx.fillStyle='rgba(205,215,255,.55)';
+  W.windows.forEach((w,i)=>{
+    const x=(w.x+1)*TS,y=(w.y+2)*TS;if(Math.abs(x-S.p.x)>220||Math.abs(y-S.p.y)>170||!visible(ar,w.x,w.y+2))return;
+    for(let k=0;k<6;k++){const p=((tick*.004+k*.17+i*.31)%1),fx=.15+((k*37+i*11)%17)/17*1.7;ctx.fillRect(Math.round((w.x+fx)*TS-p*32+Math.sin(tick*.02+k)*2),Math.round(y+p*72),1,1)}
+  });
+}
+// Halo autour de l'abat-jour des lampes de la pièce
+function halosLampes(cx,cy){
+  if(!O.effets||G.noir>0)return;
+  const ar=G.area!=null?G.area:c.rc;
+  W.furn.forEach(f=>{
+    if(f.name!=='lamp'||!visible(ar,f.x,f.y))return;
+    const x=(f.x+.5)*TS-cx,y=(f.y+1)*TS-32-cy,r=18;if(x<-r||y<-r||x>VW+r||y>VH+r)return;
+    const q=ctx.createRadialGradient(x,y,1,x,y,r);q.addColorStop(0,'rgba(255,214,150,.3)');q.addColorStop(1,'rgba(255,214,150,0)');ctx.fillStyle=q;ctx.fillRect(x-r,y-r,r*2,r*2);
+  });
+}
+// Les bords de l'écran s'assombrissent un peu : le regard va au centre
+function vignette(){
+  if(!O.effets)return;
+  if(!G.vign||G.vign.width!==VW||G.vign.height!==VH){const[k,g]=cv(VW,VH),r=Math.hypot(VW,VH)/2,q=g.createRadialGradient(VW/2,VH/2,r*.45,VW/2,VH/2,r);q.addColorStop(0,'rgba(4,3,14,0)');q.addColorStop(1,'rgba(4,3,14,.42)');g.fillStyle=q;g.fillRect(0,0,VW,VH);G.vign=k}
+  ctx.drawImage(G.vign,0,0);
+}

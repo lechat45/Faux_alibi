@@ -8,7 +8,7 @@ const R_=(g,c,x,y)=>R(g,c,x,y);
 const NIVEAUX=['Bavard','Méfiant','Fermé'];
 let c,S,W,G={},stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0,exp:{}};
 // Réglages du joueur, tous réellement appliqués
-let O={texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,diff:'auto',sons:1,musique:1,vol:50,lum:50,txt:100};
+let O={effets:1,texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,diff:'auto',sons:1,musique:1,vol:50,lum:50,txt:100};
 let AC=null;
 function son(t){
   if(!O.sons||!O.vol)return;
@@ -127,7 +127,7 @@ function art(){
   G.vit={};['lourd','lame','lien','poison'].forEach(k=>G.vit[k]=vitrineSprite(k,true));G.vit.vide=vitrineSprite('',false);
   G.portes={};
   G.ic={};G.url={};
-  G.map=buildMap();G.light=buildLight();G.masks={};
+  G.map=buildMap();G.light=buildLight();G.masks={};G.effetsFaits=O.effets;
   $('calepin').style.backgroundImage=`url(${calepinSprite().toDataURL()})`;
   $('jeu').style.cursor=G.curN;
 }
@@ -163,7 +163,7 @@ function buildMap(){
       R_(g,e<2?'#d8b35c':e<4?tone(cc,-.3):e===6?'#d8b35c':m===6?tone(cc,.32):m<2?'#d8b35c':tone(cc,(noise(i,j,4)-.5)*.1),x+i,y+j);
     }
   });
-  g.fillStyle='rgba(12,10,32,.32)';W.furn.forEach(f=>g.fillRect(f.x*TS,(f.y+f.h)*TS-1,f.w*TS,3));
+  if(O.effets)effetsSol(g);else{g.fillStyle='rgba(12,10,32,.32)';W.furn.forEach(f=>g.fillRect(f.x*TS,(f.y+f.h)*TS-1,f.w*TS,3))}
   // Tapis de couloir : un seul tapis qui suit les coudes, bordé d'or tout autour
   if(L.runner)W.areas.filter(A=>!A.room&&!A.annexe&&!(A.etage&&!A.palier)).forEach(A=>{
     const bandes=[];
@@ -190,6 +190,7 @@ function buildMap(){
   W.entrees.forEach(e=>{g.drawImage(doorArt('entree',false,null,null),0,0,32,29,e.x*TS,e.y*TS+3,32,29);paillasson(g,e.x*TS,(e.y+2)*TS+1,32,14)});
   W.windows.forEach((w,i)=>fenetre(g,w.x*TS,w.y*TS,c.lv,i+c.seed%7));
   W.tableaux.forEach((w,i)=>tableau(g,w.x*TS+1,w.y*TS+1,w.n,c.seed+i));
+  if(O.effets)effetsBords(g);
   return k;
 }
 function buildLight(){
@@ -199,6 +200,7 @@ function buildLight(){
   const pool=(x,y,r,col)=>{const q=g.createRadialGradient(x,y,1,x,y,r);q.addColorStop(0,col);q.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=q;g.fillRect(x-r,y-r,r*2,r*2)};
   W.lamps.forEach(l=>pool(l.x*8,l.y*8,l.warm?50:30,l.warm?'rgba(150,110,60,.9)':'rgba(70,130,130,.8)'));
   W.windows.forEach(w=>pool((w.x+1)*8,(w.y+2.5)*8,26,'rgba(70,90,150,.6)'));
+  if(O.effets)rayonsLune(g);
   return k;
 }
 // Zones visibles : une pièce à la fois, les murs cachent tout le reste.
@@ -297,8 +299,8 @@ function draw(){
   ctx.globalCompositeOperation='multiply';ctx.imageSmoothingEnabled=true;
   ctx.drawImage(G.light,cx/2+roulis(),cy/2,VW/2,VH/2,0,0,VW,VH);ctx.imageSmoothingEnabled=false;ambianceLumiere();
   ctx.globalCompositeOperation='lighter';
-  const pxx=P.x-cx,pyy=P.y-cy-8,rad=70,q=ctx.createRadialGradient(pxx,pyy,2,pxx,pyy,rad);q.addColorStop(0,'rgba(95,88,70,.45)');q.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=q;ctx.fillRect(pxx-rad,pyy-rad,rad*2,rad*2);
-  ctx.globalCompositeOperation='source-over';
+  const pxx=P.x-cx,pyy=P.y-cy-8,rad=70,q=ctx.createRadialGradient(pxx,pyy,2,pxx,pyy,rad);q.addColorStop(0,'rgba(95,88,70,.45)');q.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=q;ctx.fillRect(pxx-rad,pyy-rad,rad*2,rad*2);halosLampes(cx,cy);
+  ctx.globalCompositeOperation='source-over';vignette();
   if(G.eclair>10){ctx.fillStyle='rgba(200,210,255,.09)';ctx.fillRect(0,0,VW,VH)}
   if(G.noir>0)noirDessine(pxx,pyy,1,cx,cy);else if(G.retour>0)noirDessine(pxx,pyy,Math.pow(G.retour/240,1.4)*(G.retour>200&&(G.retour>>2)%4===0?.55:1),cx,cy);
   if(G.fl>0){ctx.fillStyle=`rgba(255,240,230,${G.fl/20})`;ctx.fillRect(0,0,VW,VH)}
@@ -913,14 +915,15 @@ const OPTS=[
   ['pluie',"Pluie sur l'accueil",[[1,'Oui'],[0,'Non']]],
   ['calme','Animations réduites',[[0,'Non'],[1,'Oui']]],
   ['sons','Sons',[[1,'Oui'],[0,'Non']]],
-  ['musique','Musique',[[1,'Oui'],[0,'Non']]]
+  ['musique','Musique',[[1,'Oui'],[0,'Non']]],
+  ['effets','Effets de lumière',[[1,'Riches'],[0,'Simples']]]
 ];
 const CURSEURS=[['vol','Volume',0,100],['lum','Lumière des pièces',0,100],['txt','Taille du texte',90,130]];
 function appliqueOpts(){
   document.documentElement.style.setProperty('--txt',O.txt/100);
   document.body.classList.toggle('calme',!!O.calme);
   fit();
-  if(enJeu&&W){G.light=buildLight()}
+  if(enJeu&&W){if(G.effetsFaits!==O.effets){G.effetsFaits=O.effets;G.map=buildMap()}G.light=buildLight()}
   if(!O.labels)$('prompt').hidden=true;
 }
 function ouvrirOptions(){

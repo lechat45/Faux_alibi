@@ -3487,7 +3487,7 @@ function noirDessine(px,py,k=1,cx=0,cy=0){
 // ——— Orage derrière les fenêtres ———
 function eclair(){G.eclair=16;if(typeof tonnerre==='function')setTimeout(tonnerre,400+Math.random()*1400)}
 function fenetresVivantes(){
-  ambianceFenetres();
+  ambianceFenetres();poussiereLune();
   const neige=c.lv===0||c.lv===4;
   if(O.pluie){ctx.fillStyle=neige?'rgba(240,244,255,.8)':'rgba(170,190,235,.55)';W.windows.forEach((w,i)=>{for(let k=0;k<6;k++){const x=w.x*TS+4+((k*9+i*5+(neige?tick>>4:0))%24),y=w.y*TS+6+(((k*5+(tick>>(neige?3:0)))%14));ctx.fillRect(x,y,1,neige?1:2)}})}
   if(G.eclair>0&&!neige){ctx.fillStyle=`rgba(232,238,255,${G.eclair%5<3?.75:.25})`;W.windows.forEach(w=>ctx.fillRect(w.x*TS+(c.lv===6?9:3),w.y*TS+(c.lv===6?7:5),c.lv===6?14:26,c.lv===6?14:16))}
@@ -4423,6 +4423,77 @@ function installer(){
 const peureux=s=>noise(s+3,7,((c&&c.seed)||1)&255)<.72;
 const PEUR=['Qui est là ?',"J'ai horreur du noir…","Ne partez pas, s'il vous plaît.",'Vous avez entendu ?',"Quelqu'un a une bougie ?"];
 
+// Effets de rendu : ombres douces, reflets sur les sols cirés, rayons de lune, halos des lampes, vignettage.
+// Tout se coupe avec l'option « Effets de lumière : simples ».
+const REFLET={marbre:.24,parquet:.14,damier:.16,scene:.16,lino:.09,metal:.11};
+
+// Reflets et ombres douces : cuits une fois dans la carte du sol
+function effetsSol(g){
+  W.furn.forEach(f=>{
+    const A=W.areas[f.room],spr=G.furn[f.id],base=(f.y+f.h)*TS,H=SH[f.name]||24;
+    if(!A||!spr)return;
+    const a=REFLET[A.rec&&A.rec.f];
+    if(a&&!/^(lift|escalier|secours|rug)$/.test(f.name)){
+      const hr=Math.min(18,H),[rk,rg]=cv(spr.width,hr);
+      rg.save();rg.translate(0,hr);rg.scale(1,-1);rg.drawImage(spr,0,H+1-hr,spr.width,hr,0,0,spr.width,hr);rg.restore();
+      rg.globalCompositeOperation='destination-in';const q=rg.createLinearGradient(0,0,0,hr);q.addColorStop(0,`rgba(0,0,0,${a})`);q.addColorStop(1,'rgba(0,0,0,0)');rg.fillStyle=q;rg.fillRect(0,0,spr.width,hr);
+      g.save();g.beginPath();A.rects.forEach(r=>g.rect(r.x0*TS,(r.y0)*TS,(r.x1-r.x0+1)*TS,(r.y1-r.y0+1)*TS));
+      if(A.tapis){const t=A.tapis;g.rect(t.x*TS,t.y*TS,(t.x1-t.x+1)*TS,(t.y1-t.y+1)*TS)}
+      g.clip('evenodd');g.drawImage(rk,f.x*TS-1,base);g.restore();
+    }
+    // ombre portée douce, en ellipse, au pied du meuble
+    const cx=(f.x+f.w/2)*TS,rx=f.w*TS*.62+2,q=g.createRadialGradient(0,0,1,0,0,rx);
+    q.addColorStop(0,'rgba(10,8,28,.42)');q.addColorStop(1,'rgba(10,8,28,0)');
+    g.save();g.translate(cx,base-1);g.scale(1,5/rx);g.fillStyle=q;g.fillRect(-rx,-rx,rx*2,rx*2);g.restore();
+  });
+}
+// Occlusion : le sol s'assombrit doucement au pied des murs et au bord du vide
+function effetsBords(g){
+  const t=W.t,deg=(x0,y0,x1,y1,a)=>{const q=g.createLinearGradient(x0,y0,x1,y1);q.addColorStop(0,`rgba(8,6,22,${a})`);q.addColorStop(1,'rgba(8,6,22,0)');return q};
+  for(let y=1;y<MH-1;y++)for(let x=1;x<MW-1;x++){
+    if(t[y][x]!==1||W.gate[y][x])continue;const X=x*TS,Y=y*TS;
+    if(t[y-1][x]===2){g.fillStyle=deg(0,Y,0,Y+8,.38);g.fillRect(X,Y,TS,8)}
+    if(t[y][x-1]===0){g.fillStyle=deg(X,0,X+5,0,.3);g.fillRect(X,Y,5,TS)}
+    if(t[y][x+1]===0){g.fillStyle=deg(X+TS,0,X+TS-5,0,.3);g.fillRect(X+TS-5,Y,5,TS)}
+    if(t[y+1][x]===0){g.fillStyle=deg(0,Y+TS,0,Y+TS-5,.26);g.fillRect(X,Y+TS-5,TS,5)}
+  }
+}
+// La lune entre par les fenêtres et dessine un rai de lumière sur le sol
+function rayonsLune(g){
+  W.windows.forEach(w=>{
+    const a=areaIdx(w.x,w.y+2),A=W.areas[a];if(!A)return;
+    const y0=(w.y+2)*8,y1=(w.y+6.5)*8,x0=(w.x+.15)*8,x1=(w.x+1.85)*8,d=-16;
+    g.save();g.beginPath();A.rects.forEach(r=>g.rect(r.x0*8,r.y0*8,(r.x1-r.x0+1)*8,(r.y1-r.y0+1)*8));g.clip();
+    const q=g.createLinearGradient(0,y0,0,y1);q.addColorStop(0,'rgba(90,110,190,.62)');q.addColorStop(1,'rgba(90,110,190,0)');
+    g.fillStyle=q;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y0);g.lineTo(x1+d,y1);g.lineTo(x0+d,y1);g.closePath();g.fill();g.restore();
+  });
+}
+// De la poussière qui danse dans le rai de lune
+function poussiereLune(){
+  if(!O.effets||!O.parts||G.noir>0||document.body.classList.contains('calme'))return;
+  const ar=G.area!=null?G.area:c.rc;ctx.fillStyle='rgba(205,215,255,.55)';
+  W.windows.forEach((w,i)=>{
+    const x=(w.x+1)*TS,y=(w.y+2)*TS;if(Math.abs(x-S.p.x)>220||Math.abs(y-S.p.y)>170||!visible(ar,w.x,w.y+2))return;
+    for(let k=0;k<6;k++){const p=((tick*.004+k*.17+i*.31)%1),fx=.15+((k*37+i*11)%17)/17*1.7;ctx.fillRect(Math.round((w.x+fx)*TS-p*32+Math.sin(tick*.02+k)*2),Math.round(y+p*72),1,1)}
+  });
+}
+// Halo autour de l'abat-jour des lampes de la pièce
+function halosLampes(cx,cy){
+  if(!O.effets||G.noir>0)return;
+  const ar=G.area!=null?G.area:c.rc;
+  W.furn.forEach(f=>{
+    if(f.name!=='lamp'||!visible(ar,f.x,f.y))return;
+    const x=(f.x+.5)*TS-cx,y=(f.y+1)*TS-32-cy,r=18;if(x<-r||y<-r||x>VW+r||y>VH+r)return;
+    const q=ctx.createRadialGradient(x,y,1,x,y,r);q.addColorStop(0,'rgba(255,214,150,.3)');q.addColorStop(1,'rgba(255,214,150,0)');ctx.fillStyle=q;ctx.fillRect(x-r,y-r,r*2,r*2);
+  });
+}
+// Les bords de l'écran s'assombrissent un peu : le regard va au centre
+function vignette(){
+  if(!O.effets)return;
+  if(!G.vign||G.vign.width!==VW||G.vign.height!==VH){const[k,g]=cv(VW,VH),r=Math.hypot(VW,VH)/2,q=g.createRadialGradient(VW/2,VH/2,r*.45,VW/2,VH/2,r);q.addColorStop(0,'rgba(4,3,14,0)');q.addColorStop(1,'rgba(4,3,14,.42)');g.fillStyle=q;g.fillRect(0,0,VW,VH);G.vign=k}
+  ctx.drawImage(G.vign,0,0);
+}
+
 // Faux Alibi : accueil, boucle de jeu, rendu, scènes, calepin, documents, mini-jeux.
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
@@ -4433,7 +4504,7 @@ const R_=(g,c,x,y)=>R(g,c,x,y);
 const NIVEAUX=['Bavard','Méfiant','Fermé'];
 let c,S,W,G={},stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0,exp:{}};
 // Réglages du joueur, tous réellement appliqués
-let O={texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,diff:'auto',sons:1,musique:1,vol:50,lum:50,txt:100};
+let O={effets:1,texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,diff:'auto',sons:1,musique:1,vol:50,lum:50,txt:100};
 let AC=null;
 function son(t){
   if(!O.sons||!O.vol)return;
@@ -4552,7 +4623,7 @@ function art(){
   G.vit={};['lourd','lame','lien','poison'].forEach(k=>G.vit[k]=vitrineSprite(k,true));G.vit.vide=vitrineSprite('',false);
   G.portes={};
   G.ic={};G.url={};
-  G.map=buildMap();G.light=buildLight();G.masks={};
+  G.map=buildMap();G.light=buildLight();G.masks={};G.effetsFaits=O.effets;
   $('calepin').style.backgroundImage=`url(${calepinSprite().toDataURL()})`;
   $('jeu').style.cursor=G.curN;
 }
@@ -4588,7 +4659,7 @@ function buildMap(){
       R_(g,e<2?'#d8b35c':e<4?tone(cc,-.3):e===6?'#d8b35c':m===6?tone(cc,.32):m<2?'#d8b35c':tone(cc,(noise(i,j,4)-.5)*.1),x+i,y+j);
     }
   });
-  g.fillStyle='rgba(12,10,32,.32)';W.furn.forEach(f=>g.fillRect(f.x*TS,(f.y+f.h)*TS-1,f.w*TS,3));
+  if(O.effets)effetsSol(g);else{g.fillStyle='rgba(12,10,32,.32)';W.furn.forEach(f=>g.fillRect(f.x*TS,(f.y+f.h)*TS-1,f.w*TS,3))}
   // Tapis de couloir : un seul tapis qui suit les coudes, bordé d'or tout autour
   if(L.runner)W.areas.filter(A=>!A.room&&!A.annexe&&!(A.etage&&!A.palier)).forEach(A=>{
     const bandes=[];
@@ -4615,6 +4686,7 @@ function buildMap(){
   W.entrees.forEach(e=>{g.drawImage(doorArt('entree',false,null,null),0,0,32,29,e.x*TS,e.y*TS+3,32,29);paillasson(g,e.x*TS,(e.y+2)*TS+1,32,14)});
   W.windows.forEach((w,i)=>fenetre(g,w.x*TS,w.y*TS,c.lv,i+c.seed%7));
   W.tableaux.forEach((w,i)=>tableau(g,w.x*TS+1,w.y*TS+1,w.n,c.seed+i));
+  if(O.effets)effetsBords(g);
   return k;
 }
 function buildLight(){
@@ -4624,6 +4696,7 @@ function buildLight(){
   const pool=(x,y,r,col)=>{const q=g.createRadialGradient(x,y,1,x,y,r);q.addColorStop(0,col);q.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=q;g.fillRect(x-r,y-r,r*2,r*2)};
   W.lamps.forEach(l=>pool(l.x*8,l.y*8,l.warm?50:30,l.warm?'rgba(150,110,60,.9)':'rgba(70,130,130,.8)'));
   W.windows.forEach(w=>pool((w.x+1)*8,(w.y+2.5)*8,26,'rgba(70,90,150,.6)'));
+  if(O.effets)rayonsLune(g);
   return k;
 }
 // Zones visibles : une pièce à la fois, les murs cachent tout le reste.
@@ -4722,8 +4795,8 @@ function draw(){
   ctx.globalCompositeOperation='multiply';ctx.imageSmoothingEnabled=true;
   ctx.drawImage(G.light,cx/2+roulis(),cy/2,VW/2,VH/2,0,0,VW,VH);ctx.imageSmoothingEnabled=false;ambianceLumiere();
   ctx.globalCompositeOperation='lighter';
-  const pxx=P.x-cx,pyy=P.y-cy-8,rad=70,q=ctx.createRadialGradient(pxx,pyy,2,pxx,pyy,rad);q.addColorStop(0,'rgba(95,88,70,.45)');q.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=q;ctx.fillRect(pxx-rad,pyy-rad,rad*2,rad*2);
-  ctx.globalCompositeOperation='source-over';
+  const pxx=P.x-cx,pyy=P.y-cy-8,rad=70,q=ctx.createRadialGradient(pxx,pyy,2,pxx,pyy,rad);q.addColorStop(0,'rgba(95,88,70,.45)');q.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=q;ctx.fillRect(pxx-rad,pyy-rad,rad*2,rad*2);halosLampes(cx,cy);
+  ctx.globalCompositeOperation='source-over';vignette();
   if(G.eclair>10){ctx.fillStyle='rgba(200,210,255,.09)';ctx.fillRect(0,0,VW,VH)}
   if(G.noir>0)noirDessine(pxx,pyy,1,cx,cy);else if(G.retour>0)noirDessine(pxx,pyy,Math.pow(G.retour/240,1.4)*(G.retour>200&&(G.retour>>2)%4===0?.55:1),cx,cy);
   if(G.fl>0){ctx.fillStyle=`rgba(255,240,230,${G.fl/20})`;ctx.fillRect(0,0,VW,VH)}
@@ -5338,14 +5411,15 @@ const OPTS=[
   ['pluie',"Pluie sur l'accueil",[[1,'Oui'],[0,'Non']]],
   ['calme','Animations réduites',[[0,'Non'],[1,'Oui']]],
   ['sons','Sons',[[1,'Oui'],[0,'Non']]],
-  ['musique','Musique',[[1,'Oui'],[0,'Non']]]
+  ['musique','Musique',[[1,'Oui'],[0,'Non']]],
+  ['effets','Effets de lumière',[[1,'Riches'],[0,'Simples']]]
 ];
 const CURSEURS=[['vol','Volume',0,100],['lum','Lumière des pièces',0,100],['txt','Taille du texte',90,130]];
 function appliqueOpts(){
   document.documentElement.style.setProperty('--txt',O.txt/100);
   document.body.classList.toggle('calme',!!O.calme);
   fit();
-  if(enJeu&&W){G.light=buildLight()}
+  if(enJeu&&W){if(G.effetsFaits!==O.effets){G.effetsFaits=O.effets;G.map=buildMap()}G.light=buildLight()}
   if(!O.labels)$('prompt').hidden=true;
 }
 function ouvrirOptions(){
