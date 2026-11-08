@@ -4497,6 +4497,54 @@ function vignette(){
   ctx.drawImage(G.vign,0,0);
 }
 
+// ——— Les murs tout autour : on voit le dessus des murs de côté et de devant, comme une maquette vue d'en haut ———
+const EP_MUR=7;
+const cleRendu=()=>O.effets+'/'+O.murs;
+function mursTour(g){
+  const t=W.t,dedans=(x,y)=>y>=0&&y<MH&&x>=0&&x<MW&&t[y][x]!==0;
+  // la pièce à qui appartient une case de sol ou de mur
+  const aire=(x,y)=>{
+    if(t[y][x]===2){for(let k=1;k<4&&y+k<MH;k++)if(t[y+k][x]===1)return aire(x,y+k);return -1}
+    const i=areaIdx(x,y);if(i>=0)return i;
+    const d=W.gate[y][x]&&W.doors[W.gate[y][x]];return d?(d.v?d.a:(y===d.y?d.haut:d.bas)):-1;
+  };
+  const PW=MW*TS,PH=MH*TS,own=new Int16Array(PW*PH);
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    if(t[y][x]!==0)continue;
+    const L=dedans(x-1,y),Rr=dedans(x+1,y),U=dedans(x,y-1),D=dedans(x,y+1);
+    const HG=!L&&!U&&dedans(x-1,y-1),HD=!Rr&&!U&&dedans(x+1,y-1),BG=!L&&!D&&dedans(x-1,y+1),BD=!Rr&&!D&&dedans(x+1,y+1);
+    if(!(L||Rr||U||D||HG||HD||BG||BD))continue;
+    const eh=L&&Rr?8:EP_MUR,ev=U&&D?8:EP_MUR,E=EP_MUR;
+    const wG=autre=>Rr?16-eh:autre?8:E,wD=autre=>L?16-eh:autre?8:E,hH=autre=>D?16-ev:autre?8:E,hB=autre=>U?16-ev:autre?8:E;
+    const aL=L?aire(x-1,y):0,aR=Rr?aire(x+1,y):0,aU=U?aire(x,y-1):0,aD=D?aire(x,y+1):0;
+    const aHG=HG?aire(x-1,y-1):0,aHD=HD?aire(x+1,y-1):0,aBG=BG?aire(x-1,y+1):0,aBD=BD?aire(x+1,y+1):0;
+    for(let b=0;b<16;b++)for(let a=0;a<16;a++){
+      let o=null;
+      if(U&&b<ev)o=aU;else if(D&&b>=16-ev)o=aD;else if(L&&a<eh)o=aL;else if(Rr&&a>=16-eh)o=aR;
+      else if(HG&&a<wG(HD)&&b<hH(BG))o=aHG;else if(HD&&a>=16-wD(HG)&&b<hH(BD))o=aHD;else if(BG&&a<wG(BD)&&b>=16-hB(HG))o=aBG;else if(BD&&a>=16-wD(BG)&&b>=16-hB(HD))o=aBD;
+      if(o!==null)own[(y*TS+b)*PW+x*TS+a]=o+2; // 1 = pièce inconnue, 0 = rien
+    }
+  }
+  const cache={},teinte=(o,k)=>{const q=o+'/'+k;if(cache[q])return cache[q];const A=W.areas[o-2],ti=hx(A?A.tint:c.set.tint),pierre=[176,168,184],base=toHex(ti.map((v,i)=>v*.5+pierre[i]*.5));return cache[q]=hx(tone(base,k))},NOIR=hx('#0b0a14');
+  const[kk,gg]=cv(PW,PH),img=gg.createImageData(PW,PH),px=img.data;
+  const vide=(X,Y)=>X>=0&&Y>=0&&X<PW&&Y<PH&&t[Y>>4][X>>4]===0&&!own[Y*PW+X];
+  const sol=(X,Y)=>X>=0&&Y>=0&&X<PW&&Y<PH&&t[Y>>4][X>>4]!==0;
+  for(let Y=0;Y<PH;Y++)for(let X=0;X<PW;X++){
+    const o=own[Y*PW+X];if(!o)continue;
+    let col;
+    if(vide(X-1,Y)||vide(X+1,Y)||vide(X,Y-1)||vide(X,Y+1))col=NOIR;
+    else if(sol(X-1,Y)||sol(X+1,Y)||sol(X,Y-1)||sol(X,Y+1))col=teinte(o,-.58);
+    else{
+      const n=[own[Y*PW+X-1],own[Y*PW+X+1],own[(Y-1)*PW+X],own[(Y+1)*PW+X]];
+      if(n.some(v=>v&&v!==o))col=teinte(o,-.48);
+      else if(vide(X-2,Y)||vide(X,Y-2))col=teinte(o,.1);
+      else col=teinte(o,(((X>>1)*7+(Y>>1)*13)%5===0)?-.2:-.12);
+    }
+    const p=(Y*PW+X)*4;px[p]=col[0];px[p+1]=col[1];px[p+2]=col[2];px[p+3]=255;
+  }
+  gg.putImageData(img,0,0);g.drawImage(kk,0,0);
+}
+
 // Faux Alibi : accueil, boucle de jeu, rendu, scènes, calepin, documents, mini-jeux.
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
@@ -4507,7 +4555,7 @@ const R_=(g,c,x,y)=>R(g,c,x,y);
 const NIVEAUX=['Bavard','Méfiant','Fermé'];
 let c,S,W,G={},stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0,exp:{}};
 // Réglages du joueur, tous réellement appliqués
-let O={effets:1,texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,diff:'auto',sons:1,musique:1,vol:50,lum:50,txt:100};
+let O={effets:1,murs:1,texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,diff:'auto',sons:1,musique:1,vol:50,lum:50,txt:100};
 let AC=null;
 function son(t){
   if(!O.sons||!O.vol)return;
@@ -4630,7 +4678,7 @@ function art(){
   G.vit={};['lourd','lame','lien','poison'].forEach(k=>G.vit[k]=vitrineSprite(k,true));G.vit.vide=vitrineSprite('',false);
   G.portes={};
   G.ic={};G.url={};
-  G.map=buildMap();G.light=buildLight();G.masks={};G.effetsFaits=O.effets;
+  G.map=buildMap();G.light=buildLight();G.masks={};G.effetsFaits=cleRendu();
   $('calepin').style.backgroundImage=`url(${calepinSprite().toDataURL()})`;
   $('jeu').style.cursor=G.curN;
 }
@@ -4693,6 +4741,7 @@ function buildMap(){
   W.entrees.forEach(e=>{g.drawImage(doorArt('entree',false,null,null),0,0,32,29,e.x*TS,e.y*TS+3,32,29);paillasson(g,e.x*TS,(e.y+2)*TS+1,32,14)});
   W.windows.forEach((w,i)=>fenetre(g,w.x*TS,w.y*TS,c.lv,i+c.seed%7));
   W.tableaux.forEach((w,i)=>tableau(g,w.x*TS+1,w.y*TS+1,w.n,c.seed+i));
+  if(O.murs)mursTour(g);
   if(O.effets)effetsBords(g);
   return k;
 }
@@ -4710,7 +4759,7 @@ function buildLight(){
 function maskOf(a){
   if(G.masks[a])return G.masks[a];
   const[k,g]=cv(MW*TS,MH*TS);R(g,'#04030a',0,0,MW*TS,MH*TS);
-  String(a).split('|').forEach(i=>W.areas[+i].view.forEach(([x0,y0,x1,y1])=>g.clearRect(x0*TS,y0*TS,(x1-x0+1)*TS,(y1-y0+1)*TS)));
+  const haut=O.murs?EP_MUR:0;String(a).split('|').forEach(i=>W.areas[+i].view.forEach(([x0,y0,x1,y1])=>g.clearRect(x0*TS,y0*TS-haut,(x1-x0+1)*TS,(y1-y0+1)*TS+haut)));
   return G.masks[a]=k;
 }
 const visible=(a,cx,cy)=>W.areas[a].view.some(([x0,y0,x1,y1])=>cx>=x0&&cx<=x1&&cy>=y0&&cy<=y1);
@@ -5420,14 +5469,15 @@ const OPTS=[
   ['calme','Animations réduites',[[0,'Non'],[1,'Oui']]],
   ['sons','Sons',[[1,'Oui'],[0,'Non']]],
   ['musique','Musique',[[1,'Oui'],[0,'Non']]],
-  ['effets','Effets de lumière',[[1,'Riches'],[0,'Simples']]]
+  ['effets','Effets de lumière',[[1,'Riches'],[0,'Simples']]],
+  ['murs','Murs des pièces',[[1,'Tout autour'],[0,'Au fond seulement']]]
 ];
 const CURSEURS=[['vol','Volume',0,100],['lum','Lumière des pièces',0,100],['txt','Taille du texte',90,130]];
 function appliqueOpts(){
   document.documentElement.style.setProperty('--txt',O.txt/100);
   document.body.classList.toggle('calme',!!O.calme);
   fit();
-  if(enJeu&&W){if(G.effetsFaits!==O.effets){G.effetsFaits=O.effets;G.map=buildMap()}G.light=buildLight()}
+  if(enJeu&&W){if(G.effetsFaits!==cleRendu()){G.effetsFaits=cleRendu();G.map=buildMap();G.masks={}}G.light=buildLight()}
   if(!O.labels)$('prompt').hidden=true;
 }
 function ouvrirOptions(){

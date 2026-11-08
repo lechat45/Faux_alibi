@@ -68,3 +68,51 @@ function vignette(){
   if(!G.vign||G.vign.width!==VW||G.vign.height!==VH){const[k,g]=cv(VW,VH),r=Math.hypot(VW,VH)/2,q=g.createRadialGradient(VW/2,VH/2,r*.45,VW/2,VH/2,r);q.addColorStop(0,'rgba(4,3,14,0)');q.addColorStop(1,'rgba(4,3,14,.42)');g.fillStyle=q;g.fillRect(0,0,VW,VH);G.vign=k}
   ctx.drawImage(G.vign,0,0);
 }
+
+// ——— Les murs tout autour : on voit le dessus des murs de côté et de devant, comme une maquette vue d'en haut ———
+const EP_MUR=7;
+const cleRendu=()=>O.effets+'/'+O.murs;
+function mursTour(g){
+  const t=W.t,dedans=(x,y)=>y>=0&&y<MH&&x>=0&&x<MW&&t[y][x]!==0;
+  // la pièce à qui appartient une case de sol ou de mur
+  const aire=(x,y)=>{
+    if(t[y][x]===2){for(let k=1;k<4&&y+k<MH;k++)if(t[y+k][x]===1)return aire(x,y+k);return -1}
+    const i=areaIdx(x,y);if(i>=0)return i;
+    const d=W.gate[y][x]&&W.doors[W.gate[y][x]];return d?(d.v?d.a:(y===d.y?d.haut:d.bas)):-1;
+  };
+  const PW=MW*TS,PH=MH*TS,own=new Int16Array(PW*PH);
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    if(t[y][x]!==0)continue;
+    const L=dedans(x-1,y),Rr=dedans(x+1,y),U=dedans(x,y-1),D=dedans(x,y+1);
+    const HG=!L&&!U&&dedans(x-1,y-1),HD=!Rr&&!U&&dedans(x+1,y-1),BG=!L&&!D&&dedans(x-1,y+1),BD=!Rr&&!D&&dedans(x+1,y+1);
+    if(!(L||Rr||U||D||HG||HD||BG||BD))continue;
+    const eh=L&&Rr?8:EP_MUR,ev=U&&D?8:EP_MUR,E=EP_MUR;
+    const wG=autre=>Rr?16-eh:autre?8:E,wD=autre=>L?16-eh:autre?8:E,hH=autre=>D?16-ev:autre?8:E,hB=autre=>U?16-ev:autre?8:E;
+    const aL=L?aire(x-1,y):0,aR=Rr?aire(x+1,y):0,aU=U?aire(x,y-1):0,aD=D?aire(x,y+1):0;
+    const aHG=HG?aire(x-1,y-1):0,aHD=HD?aire(x+1,y-1):0,aBG=BG?aire(x-1,y+1):0,aBD=BD?aire(x+1,y+1):0;
+    for(let b=0;b<16;b++)for(let a=0;a<16;a++){
+      let o=null;
+      if(U&&b<ev)o=aU;else if(D&&b>=16-ev)o=aD;else if(L&&a<eh)o=aL;else if(Rr&&a>=16-eh)o=aR;
+      else if(HG&&a<wG(HD)&&b<hH(BG))o=aHG;else if(HD&&a>=16-wD(HG)&&b<hH(BD))o=aHD;else if(BG&&a<wG(BD)&&b>=16-hB(HG))o=aBG;else if(BD&&a>=16-wD(BG)&&b>=16-hB(HD))o=aBD;
+      if(o!==null)own[(y*TS+b)*PW+x*TS+a]=o+2; // 1 = pièce inconnue, 0 = rien
+    }
+  }
+  const cache={},teinte=(o,k)=>{const q=o+'/'+k;if(cache[q])return cache[q];const A=W.areas[o-2],ti=hx(A?A.tint:c.set.tint),pierre=[176,168,184],base=toHex(ti.map((v,i)=>v*.5+pierre[i]*.5));return cache[q]=hx(tone(base,k))},NOIR=hx('#0b0a14');
+  const[kk,gg]=cv(PW,PH),img=gg.createImageData(PW,PH),px=img.data;
+  const vide=(X,Y)=>X>=0&&Y>=0&&X<PW&&Y<PH&&t[Y>>4][X>>4]===0&&!own[Y*PW+X];
+  const sol=(X,Y)=>X>=0&&Y>=0&&X<PW&&Y<PH&&t[Y>>4][X>>4]!==0;
+  for(let Y=0;Y<PH;Y++)for(let X=0;X<PW;X++){
+    const o=own[Y*PW+X];if(!o)continue;
+    let col;
+    if(vide(X-1,Y)||vide(X+1,Y)||vide(X,Y-1)||vide(X,Y+1))col=NOIR;
+    else if(sol(X-1,Y)||sol(X+1,Y)||sol(X,Y-1)||sol(X,Y+1))col=teinte(o,-.58);
+    else{
+      const n=[own[Y*PW+X-1],own[Y*PW+X+1],own[(Y-1)*PW+X],own[(Y+1)*PW+X]];
+      if(n.some(v=>v&&v!==o))col=teinte(o,-.48);
+      else if(vide(X-2,Y)||vide(X,Y-2))col=teinte(o,.1);
+      else col=teinte(o,(((X>>1)*7+(Y>>1)*13)%5===0)?-.2:-.12);
+    }
+    const p=(Y*PW+X)*4;px[p]=col[0];px[p+1]=col[1];px[p+2]=col[2];px[p+3]=255;
+  }
+  gg.putImageData(img,0,0);g.drawImage(kk,0,0);
+}

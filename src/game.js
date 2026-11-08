@@ -8,7 +8,7 @@ const R_=(g,c,x,y)=>R(g,c,x,y);
 const NIVEAUX=['Bavard','Méfiant','Fermé'];
 let c,S,W,G={},stats={gagnees:0,serie:0,enigmes:0,res:{},notes:{},sys:{},fins:{},jours:{},serieJ:0,exp:{}};
 // Réglages du joueur, tous réellement appliqués
-let O={effets:1,texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,diff:'auto',sons:1,musique:1,vol:50,lum:50,txt:100};
+let O={effets:1,murs:1,texte:'normal',zoom:'auto',perso:'normal',scenario:1,bavard:1,labels:1,parts:1,pluie:1,calme:0,diff:'auto',sons:1,musique:1,vol:50,lum:50,txt:100};
 let AC=null;
 function son(t){
   if(!O.sons||!O.vol)return;
@@ -131,7 +131,7 @@ function art(){
   G.vit={};['lourd','lame','lien','poison'].forEach(k=>G.vit[k]=vitrineSprite(k,true));G.vit.vide=vitrineSprite('',false);
   G.portes={};
   G.ic={};G.url={};
-  G.map=buildMap();G.light=buildLight();G.masks={};G.effetsFaits=O.effets;
+  G.map=buildMap();G.light=buildLight();G.masks={};G.effetsFaits=cleRendu();
   $('calepin').style.backgroundImage=`url(${calepinSprite().toDataURL()})`;
   $('jeu').style.cursor=G.curN;
 }
@@ -194,6 +194,7 @@ function buildMap(){
   W.entrees.forEach(e=>{g.drawImage(doorArt('entree',false,null,null),0,0,32,29,e.x*TS,e.y*TS+3,32,29);paillasson(g,e.x*TS,(e.y+2)*TS+1,32,14)});
   W.windows.forEach((w,i)=>fenetre(g,w.x*TS,w.y*TS,c.lv,i+c.seed%7));
   W.tableaux.forEach((w,i)=>tableau(g,w.x*TS+1,w.y*TS+1,w.n,c.seed+i));
+  if(O.murs)mursTour(g);
   if(O.effets)effetsBords(g);
   return k;
 }
@@ -211,7 +212,7 @@ function buildLight(){
 function maskOf(a){
   if(G.masks[a])return G.masks[a];
   const[k,g]=cv(MW*TS,MH*TS);R(g,'#04030a',0,0,MW*TS,MH*TS);
-  String(a).split('|').forEach(i=>W.areas[+i].view.forEach(([x0,y0,x1,y1])=>g.clearRect(x0*TS,y0*TS,(x1-x0+1)*TS,(y1-y0+1)*TS)));
+  const haut=O.murs?EP_MUR:0;String(a).split('|').forEach(i=>W.areas[+i].view.forEach(([x0,y0,x1,y1])=>g.clearRect(x0*TS,y0*TS-haut,(x1-x0+1)*TS,(y1-y0+1)*TS+haut)));
   return G.masks[a]=k;
 }
 const visible=(a,cx,cy)=>W.areas[a].view.some(([x0,y0,x1,y1])=>cx>=x0&&cx<=x1&&cy>=y0&&cy<=y1);
@@ -921,14 +922,15 @@ const OPTS=[
   ['calme','Animations réduites',[[0,'Non'],[1,'Oui']]],
   ['sons','Sons',[[1,'Oui'],[0,'Non']]],
   ['musique','Musique',[[1,'Oui'],[0,'Non']]],
-  ['effets','Effets de lumière',[[1,'Riches'],[0,'Simples']]]
+  ['effets','Effets de lumière',[[1,'Riches'],[0,'Simples']]],
+  ['murs','Murs des pièces',[[1,'Tout autour'],[0,'Au fond seulement']]]
 ];
 const CURSEURS=[['vol','Volume',0,100],['lum','Lumière des pièces',0,100],['txt','Taille du texte',90,130]];
 function appliqueOpts(){
   document.documentElement.style.setProperty('--txt',O.txt/100);
   document.body.classList.toggle('calme',!!O.calme);
   fit();
-  if(enJeu&&W){if(G.effetsFaits!==O.effets){G.effetsFaits=O.effets;G.map=buildMap()}G.light=buildLight()}
+  if(enJeu&&W){if(G.effetsFaits!==cleRendu()){G.effetsFaits=cleRendu();G.map=buildMap();G.masks={}}G.light=buildLight()}
   if(!O.labels)$('prompt').hidden=true;
 }
 function ouvrirOptions(){
