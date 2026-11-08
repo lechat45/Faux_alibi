@@ -2,7 +2,7 @@
 // relus à chaque requête. Seuls ces fichiers-là sont servis.
 const http=require('http'),fs=require('fs'),path=require('path'),root=path.join(__dirname,'..'),port=+process.env.PORT||4173;
 const TYPES={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png'};
-const PERMIS=/^\/(index\.html|sw\.js|manifest\.webmanifest|icons\/[a-z0-9-]+\.png)$/;
+const PERMIS=/^\/(index\.html|labo\.html|sw\.js|manifest\.webmanifest|icons\/[a-z0-9-]+\.png)$/;
 // Captures d'écran de dev : la page envoie l'image d'un canvas, elle est rangée dans le dossier temporaire
 const CAPT=path.join(require('os').tmpdir(),'fa-captures');
 http.createServer((q,s)=>{

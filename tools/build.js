@@ -50,6 +50,9 @@ ${js}
 if(/gsk_[A-Za-z0-9]/.test(out))throw new Error('Une clé est présente dans la page : publication interdite.');
 // La version privée (claude.ai) ne peut pas s'installer : elle ne reçoit pas les balises d'application
 fs.writeFileSync(path.join(d,'faux-alibi.html'),out.replace('<!--APP-->\n',''));
+// Labo des personnages (labo.html) : une page à part, pour essayer la nouvelle IA. Le jeu n'en charge rien.
+{const ia=fs.readFileSync(path.join(d,'labo','ia.js'),'utf8').replace(/^if\(typeof module.*$/m,''),lb=fs.readFileSync(path.join(d,'labo','labo.js'),'utf8'),k=out.lastIndexOf('\n</script>');
+ fs.writeFileSync(path.join(d,'labo.html'),(out.slice(0,k)+'\n'+ia+'\n'+lb+out.slice(k)).replace('<!--APP-->\n','').replace('<title>Faux Alibi</title>','<title>Labo des personnages</title>'))}
 // Application installable (Chrome sur Android, Safari et Chrome sur iPhone) : manifeste, icônes, service worker
 const desc="Jeu d'enquête en pixel art : interroge les suspects, fouille les lieux et démasque le menteur.";
 const APP=`<meta name="description" content="${desc}">
