@@ -9,7 +9,7 @@ const ED_SOLS=[['parquet','Parquet'],['planche','Planches'],['scene','Scène'],[
 const ED_OUTILS=[['meubles','Meubles','Clique un meuble pour le choisir, glisse-le pour le déplacer.'],['ajout','Ajouter','Choisis un meuble dans la liste, puis clique sur la carte pour le poser.'],
   ['pieces','Pièces','Glisse le milieu d\'une pièce pour la déplacer avec tout ce qu\'elle contient, ses bords pour l\'agrandir.'],['portes','Portes','Glisse une porte le long de son mur.'],
   ['sol','Sols et murs','Clique une pièce pour changer son sol, la couleur de ses murs et son tapis.'],['tapis','Tapis','Trace un rectangle dans une pièce pour y poser un tapis.'],
-  ['fenetres','Fenêtres','Clique sur un mur du fond pour poser ou enlever une fenêtre.'],['tableaux','Tableaux','Choisis un tableau, puis clique sur un mur du fond.']];
+  ['fenetres','Fenêtres','Choisis une sorte de fenêtre, puis clique sur un mur du fond. Clique une fenêtre posée pour la changer ou la retirer.'],['tableaux','Tableaux','Choisis un tableau, puis clique sur un mur du fond.']];
 const ED_NOMS={chariot:'chariot',valise:'valise',bascule:'balance',banquette:'banquette',fontaine:'fontaine',radio:'radio',skis:'skis',portant:'portant',bouee:'bouée',barre:'barre de danse',
   perfusion:'perfusion',brancard:'brancard',armure:'armure',bandit:'bandit manchot',jetons:'jetons',stove:'cuisinière',rack:'baie de serveurs',console:'console',labbench:'paillasse de labo',
   planter:'jardinière',table:'table',rtable:'table ronde',chair:'chaise',mannequin:'mannequin',spot:'projecteur',ropes:'cordages',lamp:'lampe',globe:'globe',stool:'tabouret',tank:'cuve',
@@ -47,7 +47,7 @@ function edCharge(lv,centre){
 function edConstruit(){
   const CU=edCarte();c=edEnquete(4242+ED.lv);
   try{W=construireMonde(c,CU,true);ED.err=null}catch(x){ED.err=x.message;W=construireMonde(c,null,true)}
-  G.furn={};W.furn.forEach(f=>{const A=W.areas[f.room],k=[f.name,f.v,f.room,A&&A.tint,c.lv].join('|');let s=ED.sprites.get(k);if(!s){s=furnitureSprite(f);ED.sprites.set(k,s)}G.furn[f.id]=s});
+  G.furn={};W.furn.forEach(f=>{const A=W.areas[f.room],k=[f.name,f.v,f.room,A&&A.tint,c.lv,f.miroir?1:0,f.mod??''].join('|');let s=ED.sprites.get(k);if(!s){s=furnitureSprite(f);ED.sprites.set(k,s)}G.furn[f.id]=s});
   G.portes={};G.map=buildMap();
   ED.hors=CU.furn.map((q,i)=>i).filter(i=>!W.furn.some(f=>f.ci===i));
   edVerifie();edDessine();
@@ -137,6 +137,8 @@ function edPeint(){
   }
   if(O_==='portes')Object.values(W.doors).forEach(d=>{const p=D&&D.porte===d.id?D.pos:[d.x,d.y];g.strokeStyle=sel&&sel.porte===d.id?'#ffd23f':'rgba(140,220,255,.8)';g.strokeRect(p[0]*TS,p[1]*TS,d.w*TS,d.h*TS)});
   if(O_==='tapis'||O_==='sol')W.areas.forEach(A=>{if(!A.tapis)return;const t=A.tapis;g.strokeStyle='rgba(255,210,63,.7)';g.setLineDash([3/ED.z,3/ED.z]);g.strokeRect(t.x*TS,t.y*TS,(t.x1-t.x+1)*TS,(t.y1-t.y+1)*TS);g.setLineDash([])});
+  if(D&&D.nouvelle){const[x0,y0,x1,y1]=D.nouvelle;g.fillStyle='rgba(255,210,63,.25)';g.fillRect(Math.min(x0,x1)*TS,Math.min(y0,y1)*TS,(Math.abs(x1-x0)+1)*TS,(Math.abs(y1-y0)+1)*TS);g.strokeStyle='#ffd23f';g.setLineDash([4/ED.z,3/ED.z]);g.strokeRect(Math.min(x0,x1)*TS,Math.min(y0,y1)*TS,(Math.abs(x1-x0)+1)*TS,(Math.abs(y1-y0)+1)*TS);g.setLineDash([])}
+  if(sel&&sel.fen!=null&&CU.fen[sel.fen]){const[fx,fy]=CU.fen[sel.fen];g.strokeStyle='#ffd23f';g.lineWidth=2/ED.z;g.strokeRect(fx*TS,fy*TS,2*TS,2*TS)}
   if(D&&D.tapis){const[x0,y0,x1,y1]=D.tapis;g.fillStyle=ED.tapisC+'99';g.fillRect(Math.min(x0,x1)*TS,Math.min(y0,y1)*TS,(Math.abs(x1-x0)+1)*TS,(Math.abs(y1-y0)+1)*TS)}
   if(sel&&sel.aire!=null&&O_==='sol')W.areas[sel.aire].rects.forEach(q=>{g.strokeStyle='#ffd23f';g.strokeRect(q.x0*TS,q.y0*TS,(q.x1-q.x0+1)*TS,(q.y1-q.y0+1)*TS)});
   // meuble choisi
@@ -186,6 +188,7 @@ function edPointe(e){
     if(!edLibre(n,x,y,-1)){ED.msg='Pas de place ici pour ce meuble (mur, autre meuble, ou juste devant une porte).';edEtat();return}
     edModifie(C=>{C.furn.push([n,x,y,(Math.random()*1e6)|0])});ED.sel={meuble:edCarte().furn.length-1};return;
   }
+  if(O_==='pieces'&&ED.creer){ED.drag={nouvelle:[cx,cy,cx,cy]};edDessine();return}
   if(O_==='pieces'){
     const R=CU.plan.r.concat(CU.plan.c),bord=6/ED.z/TS;
     let i=-1,cote=null;
@@ -203,7 +206,7 @@ function edPointe(e){
   if(O_==='fenetres'||O_==='tableaux'){
     const y=edHautMur(cx,cy);if(y==null)return pan();
     if(O_==='fenetres'){const i=CU.fen.findIndex(([x,yy])=>yy===y&&cx>=x&&cx<=x+1);
-      if(i>=0)edModifie(C=>C.fen.splice(i,1));else if(W.t[y][cx+1]===2)edModifie(C=>C.fen.push([cx,y]));else{ED.msg='Une fenêtre fait deux cases de large.';edEtat()}}
+      if(i>=0){ED.sel={fen:i};edPanneau();edDessine()}else if(W.t[y][cx+1]===2){edModifie(C=>C.fen.push([cx,y,ED.fenT]));ED.sel={fen:edCarte().fen.length-1};edPanneau()}else{ED.msg='Une fenêtre fait deux cases de large.';edEtat()}}
     else{const i=CU.tab.findIndex(([x,yy,n])=>yy===y&&cx>=x&&cx<x+(TAB_ETROITS.includes(n)?2:4));
       if(i>=0)edModifie(C=>C.tab.splice(i,1));else{const l=TAB_ETROITS.includes(ED.tabN)?2:4;let ok=true;for(let j=0;j<l;j++)if(!W.t[y]||W.t[y][cx+j]!==2)ok=false;if(ok)edModifie(C=>C.tab.push([cx,y,ED.tabN]));else{ED.msg='Pas assez de mur pour ce tableau.';edEtat()}}}
     return;
@@ -221,6 +224,7 @@ function edBouge(e){
     D.q=q;edDessine();return}
   if(D.porte!=null){const d=D.d;D.pos=d.v?[d.x,cy]:[cx,d.y];edDessine();return}
   if(D.tapis){D.tapis[2]=cx;D.tapis[3]=cy;edDessine()}
+  if(D.nouvelle){D.nouvelle[2]=cx;D.nouvelle[3]=cy;edDessine()}
 }
 function edLache(e){
   const D=ED.drag;ED.drag=null;if(!D)return;
@@ -245,6 +249,7 @@ function edLache(e){
   }
   if(D.porte!=null){const d=D.d;if(D.pos[0]===d.x&&D.pos[1]===d.y){edDessine();return}edModifie(C=>{C.portes[d.a+'-'+d.b]=D.pos.slice()});
     const n=W.doors[D.porte];if(n&&(n.x!==D.pos[0]||n.y!==D.pos[1])){ED.msg='La porte reste là où le mur commun le permet.';edEtat()}return}
+  if(D.nouvelle){const[a0,b0,a1,b1]=D.nouvelle;edCreePiece(Math.min(a0,a1),Math.min(b0,b1),Math.abs(a1-a0)+1,Math.abs(b1-b0)+1);return}
   if(D.tapis){const A=W.areas[D.aire],[a,b,c2,d]=D.tapis,x0=Math.max(A.x0,Math.min(a,c2)),x1=Math.min(A.x1,Math.max(a,c2)),y0=Math.max(A.y0,Math.min(b,d)),y1=Math.min(A.y1,Math.max(b,d));
     if(x1-x0<1||y1-y0<1){ED.msg='Un tapis fait au moins deux cases sur deux.';edEtat();edDessine();return}
     edModifie(C=>{C.aires[D.aire]=C.aires[D.aire]||{};C.aires[D.aire].tapis=[x0,y0,x1,y1,ED.tapisC]})}
@@ -255,10 +260,16 @@ function edPanneau(){
   const e=$('ed-panneau');if(!e||!W)return;const CU=edCarte(),s=ED.sel,O_=ED.outil,aide=ED_OUTILS.find(o=>o[0]===O_)[2];
   let h=`<p class="ed-aide">${aide}</p>`;
   if(O_==='meubles'&&s&&s.meuble!=null&&CU.furn[s.meuble]){const[n,x,y]=CU.furn[s.meuble],va=edVariantes(n);
+    const op=CU.furn[s.meuble][4]||{},nm=ED_MODELES[n];
     h+=`<h3>${esc(edNom(n))}</h3><p class="petit">Case ${x}, ${y}${ED.hors.includes(s.meuble)?' · <b class="rouge">ignoré</b>':''}</p><div class="ed-boutons">
-    ${va.length>1?'<button data-ed="tourne">Tourner <kbd>R</kbd></button>':''}<button data-ed="aspect">Autre aspect <kbd>V</kbd></button><button data-ed="double">Dupliquer <kbd>D</kbd></button><button data-ed="suppr" class="danger">Supprimer <kbd>Suppr</kbd></button></div>
+    ${va.length>1?'<button data-ed="tourne">Tourner <kbd>R</kbd></button>':''}<button data-ed="miroir" class="${op.m?'pris':''}">Miroir <kbd>M</kbd></button><button data-ed="double">Dupliquer <kbd>D</kbd></button><button data-ed="suppr" class="danger">Supprimer <kbd>Suppr</kbd></button></div>
+    ${va.length>1?`<p class="petit">Orientation</p><div class="ed-modeles">${va.map(m=>`<button data-ed="oriente" data-v="${m}" class="${m===n?'pris':''}" title="${esc(edNom(m))}"><img alt="" src="${edVignette(m,CU.furn[s.meuble][3],op)}"></button>`).join('')}</div>`:''}
+    ${nm?`<p class="petit">Modèle</p><div class="ed-modeles">${range(nm).map(k=>`<button data-ed="modele" data-v="${k}" class="${(op.mod??(n==='bed'?-1:CU.furn[s.meuble][3]%10))===k?'pris':''}"><img alt="" src="${edVignette(n,CU.furn[s.meuble][3],{...op,mod:k})}"></button>`).join('')}</div>`
+      :/^(lift|escalier|secours)$/.test(n)?'':`<p class="petit">Aspect</p><div class="ed-modeles">${edAspects(CU.furn[s.meuble][3]).map(v=>`<button data-ed="aspectv" data-v="${v}" class="${v===CU.furn[s.meuble][3]?'pris':''}"><img alt="" src="${edVignette(n,v,op)}"></button>`).join('')}</div>`}
     <p class="petit">Flèches du clavier : déplacer d'une case.</p>`}
   if(O_==='ajout'){h+=`<input id="ed-cherche" class="ed-cherche" placeholder="Chercher un meuble…" value="${esc(ED.cherche||'')}"><div class="ed-palette">${Object.keys(FP).filter(n=>SPR[n]&&(!ED.cherche||edNom(n).toLowerCase().includes(ED.cherche.toLowerCase())||n.includes(ED.cherche))).sort((a,b)=>edNom(a).localeCompare(edNom(b))).map(n=>`<button data-ed="prends" data-v="${n}" class="${ED.ajout===n?'pris':''}" title="${esc(edNom(n))}"><img alt="" src="${edIcone(n).toDataURL()}"><span>${esc(edNom(n))}</span></button>`).join('')}</div>`}
+  if(O_==='pieces'&&!(s&&s.rect!=null))h+=`<h3>Créer une pièce</h3><label class="ed-champ">Nom <input id="ed-nompiece" class="ed-cherche" maxlength="28" value="${esc(ED.nomPiece||'Nouvelle pièce')}"></label><button data-ed="creer" class="${ED.creer?'pris':''}">${ED.creer?'Trace-la sur la carte…':'Tracer la nouvelle pièce'}</button><p class="petit">Place-la contre une autre pièce : une case de mur sur le côté, ou trois rangées en haut et en bas. Une porte se pose toute seule.</p>`;
+  if(O_==='pieces'&&s&&s.rect!=null){const R0=CU.plan.r.concat(CU.plan.c),q0=R0[s.rect];if(q0&&q0[4]&&(CU.crees||[]).includes(q0[4]))h+=`<button data-ed="supprpiece" class="danger">Supprimer « ${esc(q0[4])} »</button>`}
   if(O_==='pieces'&&s&&s.rect!=null){const R=CU.plan.r.concat(CU.plan.c),q=R[s.rect],A=W.areas.find(A=>A.rects.some(r=>r.x0===q[0]&&r.y0===q[1]));
     h+=`<h3>${esc(A?A.name:'Pièce')}</h3><div class="ed-champs">${['x','y','largeur','hauteur'].map((l,i)=>`<label>${l}<input type="number" data-ed-rect="${i}" value="${q[i]}"></label>`).join('')}</div><p class="petit">Les meubles qui dépassent d'une pièce rétrécie passent en rouge.</p>`}
   if((O_==='sol'||O_==='tapis')&&s&&s.aire!=null){const A=W.areas[s.aire],z=CU.aires[s.aire]||{};
@@ -269,7 +280,8 @@ function edPanneau(){
   }
   if(O_==='tapis'&&!(s&&s.aire!=null))h+=`<label class="ed-couleur">Couleur du prochain tapis <input type="color" data-ed-coul="tapis" value="${ED.tapisC}"></label>`;
   if(O_==='tableaux')h+=`<div class="ed-tableaux">${range(10).map(n=>`<button data-ed="tableau" data-v="${n}" class="${ED.tabN===n?'pris':''}"><img alt="" src="${edTableau(n)}"></button>`).join('')}</div><p class="petit">Clique un tableau déjà posé pour l'enlever.</p>`;
-  if(O_==='fenetres')h+=`<p class="petit">Clique une fenêtre déjà posée pour l'enlever.</p>`;
+  if(O_==='fenetres'){const fs0=s&&s.fen!=null&&CU.fen[s.fen],tc=fs0?(fs0[2]??-1):ED.fenT;
+    h+=`${fs0?'<h3>Fenêtre choisie</h3>':'<p class="petit">Sorte de la prochaine fenêtre</p>'}<div class="ed-modeles larges">${FENETRES.map((nom,t)=>`<button data-ed="fentype" data-v="${t}" class="${tc===t?'pris':''}" title="${nom}"><img alt="" src="${edFenetre(t)}"><span>${nom}</span></button>`).join('')}</div>${fs0?'<button data-ed="fenretire" class="danger">Retirer cette fenêtre</button>':''}`}
   e.innerHTML=h;
 }
 function edSol(k,tint){const[q,g]=cv(32,32);for(let y=0;y<2;y++)for(let x=0;x<2;x++)floorTile(g,k,x,y,x*16,y*16,tint);return q.toDataURL()}
@@ -329,6 +341,14 @@ function edClic(x){
     b.classList.remove('sur');b.textContent='Carte générée';const avant=JSON.stringify(CU);ED.hist.push(avant);ED.base=(ED.base||0)+1;ED.cartes[ED.lv]=edBase(1000+ED.lv*7+ED.base*101);ED.msg='Nouvelle carte générée (Annuler pour revenir).';edSauve();edConstruit();edPanneau();edBarre()}
   if(a==='prends'){ED.ajout=ED.ajout===v?null:v;edPanneau()}
   if(a==='tableau'){ED.tabN=+v;edPanneau()}
+  if(a==='miroir'&&s&&s.meuble!=null)edMiroir();
+  if(a==='oriente'&&s&&s.meuble!=null){const q=CU.furn[s.meuble];if(edLibre(v,q[1],q[2],s.meuble))edModifie(C=>{C.furn[s.meuble][0]=v});else{ED.msg='Pas la place de le tourner ici.';edEtat()}}
+  if(a==='modele'&&s&&s.meuble!=null)edModifie(C=>{const q=C.furn[s.meuble];q[4]={...(q[4]||{}),mod:+v}});
+  if(a==='aspectv'&&s&&s.meuble!=null)edModifie(C=>{C.furn[s.meuble][3]=+v});
+  if(a==='fentype'){if(s&&s.fen!=null&&CU.fen[s.fen])edModifie(C=>{C.fen[s.fen][2]=+v});else{ED.fenT=+v;edPanneau()}}
+  if(a==='fenretire'&&s&&s.fen!=null){edModifie(C=>C.fen.splice(s.fen,1));ED.sel=null;edPanneau()}
+  if(a==='creer'){ED.creer=!ED.creer;const ch=$('ed-nompiece');if(ch)ED.nomPiece=ch.value.trim()||'Nouvelle pièce';edPanneau()}
+  if(a==='supprpiece'&&s&&s.rect!=null){if(!b.classList.contains('sur')){b.classList.add('sur');b.textContent='Sûr ? Re-clique';return}edSupprimePiece(s.rect)}
   if(a==='sol'&&s&&s.aire!=null)edModifie(C=>{C.aires[s.aire]=C.aires[s.aire]||{};C.aires[s.aire].f=v});
   if(a==='sanstapis'&&s&&s.aire!=null)edModifie(C=>{C.aires[s.aire].tapis=null});
   if(s&&s.meuble!=null&&CU.furn[s.meuble]){
@@ -352,6 +372,7 @@ function edTouche(e){
   if(k==='Escape'){ED.sel=null;ED.ajout=null;edPanneau();edDessine();return}
   if(s&&s.meuble!=null&&CU.furn[s.meuble]){
     if(k==='Delete'||k==='Backspace'){e.preventDefault();edModifie(C=>C.furn.splice(s.meuble,1));ED.sel=null;edPanneau();edBarre();return}
+    if(k==='m'||k==='M'){edMiroir();return}
     if(k==='r'||k==='R'){edTourne();return}if(k==='v'||k==='V'){edModifie(C=>{C.furn[s.meuble][3]=(Math.random()*1e6)|0});return}if(k==='d'||k==='D'){edDouble();return}
     const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[k];
     if(dir){e.preventDefault();const[n,x,y]=CU.furn[s.meuble];if(edLibre(n,x+dir[0],y+dir[1],s.meuble))edModifie(C=>{C.furn[s.meuble][1]+=dir[0];C.furn[s.meuble][2]+=dir[1]});else{ED.msg='Bloqué de ce côté.';edEtat()}return}
@@ -382,4 +403,52 @@ function edMontre(t){$('ed-panneau').innerHTML=`<p class="ed-aide">Sélectionne 
 function edImporte(t){
   try{const o=JSON.parse(t);if(o.format!=='faux-alibi-cartes'||!o.cartes)throw 0;let n=0;Object.entries(o.cartes).forEach(([k,v])=>{if(v&&v.plan&&v.furn){ED.cartes[k]=v;v.modif=true;n++}});
     ED.msg=`${n} carte${n>1?'s':''} importée${n>1?'s':''}.`;edSauve();edCharge(ED.lv,false)}catch(x){ED.msg='Ce fichier n\'est pas un export de l\'éditeur.';edEtat()}
+}
+
+// ——— Modèles, aspects, miroir ———
+const ED_MODELES={lamp:10,plant:10,bed:10};
+const ED_VIGN=new Map();
+function edVignette(n,v,op={}){const k=[n,v,op.m?1:0,op.mod??''].join('|');if(!ED_VIGN.has(k)){const[fw,fh]=FP[n];ED_VIGN.set(k,furnitureSprite({name:n,x:0,y:0,w:fw,h:fh,v,room:0,miroir:!!op.m,mod:op.mod}).toDataURL())}return ED_VIGN.get(k)}
+const edAspects=v=>{const b=v-(v%8);return range(8).map(k=>b+k)};
+function edMiroir(){const s=ED.sel;if(!s||s.meuble==null)return;edModifie(C=>{const q=C.furn[s.meuble],o={...(q[4]||{})};if(o.m)delete o.m;else o.m=1;if(Object.keys(o).length)q[4]=o;else q.length=4})}
+function edFenetre(t){const k='f'+t+'|'+c.lv;if(!ED_VIGN.has(k)){const[q,g]=cv(40,28);R(g,c.set.tint||'#6a5a44',0,0,40,28);fenetreType(g,4,0,c.lv,3,t);ED_VIGN.set(k,q.toDataURL())}return ED_VIGN.get(k)}
+// ——— Créer une pièce : elle se colle à ses voisines par une porte ———
+function edNomsAires(C){const nr=C.plan.r.length,noms=W.areas.slice(0,nr).map(A=>A.name);C.plan.c.forEach(q=>{if(!noms.includes(q[4]))noms.push(q[4])});return noms}
+function edRenumerote(C,avant,apres){
+  const defaut={f:'parquet',t:c.set.tint||'#6a5a44',tapis:null};
+  C.aires=apres.map(n=>{const i=avant.indexOf(n);return i>=0&&C.aires[i]?C.aires[i]:{...defaut}});
+  const P={};Object.entries(C.portes||{}).forEach(([k,p])=>{const[a,b]=k.split('-').map(Number),ia=apres.indexOf(avant[a]),ib=apres.indexOf(avant[b]);if(ia>=0&&ib>=0)P[ia+'-'+ib]=p});C.portes=P;
+}
+function edVoisines(q,C,nom){
+  const R=[...C.plan.r.map((r,i)=>[...r,W.areas[i].name]),...C.plan.c].filter(r=>r[4]!==nom),out=new Set();
+  const[x0,y0]=q,x1=q[0]+q[2]-1,y1=q[1]+q[3]-1;
+  R.forEach(r=>{const rx1=r[0]+r[2]-1,ry1=r[1]+r[3]-1;
+    if((rx1+2===x0||x1+2===r[0])&&Math.min(y1,ry1)-Math.max(y0,r[1])>=2)out.add(r[4]);
+    if((ry1+4===y0||y1+4===r[1])&&Math.min(x1,rx1)-Math.max(x0,r[0])>=3)out.add(r[4])});
+  return[...out];
+}
+function edCreePiece(x,y,w,h){
+  const ch=$('ed-nompiece');let nom=(ch&&ch.value.trim())||ED.nomPiece||'Nouvelle pièce';ED.creer=false;
+  if(w<3||h<3){ED.msg='Une pièce fait au moins trois cases sur trois.';edEtat();edPanneau();edDessine();return}
+  const CU=edCarte(),pris=new Set(W.areas.map(A=>A.name));let k=2,base=nom;while(pris.has(nom))nom=base+' '+(k++);
+  const etage=CU.etage?[...new Set(CU.plan.c.map(r=>r[4]))].slice(-3):[],q=[x,y,w,h,nom],tout=edVoisines(q,CU,nom),vois=tout.filter(n=>!etage.includes(n));
+  if(!vois.length&&tout.length){ED.msg="Les nouvelles pièces se collent au rez-de-chaussée, pas à l'étage.";edEtat();edPanneau();edDessine();return}
+  if(!vois.length){ED.msg='La nouvelle pièce doit toucher une autre pièce : une case de mur sur le côté, ou trois rangées en haut ou en bas.';edEtat();edPanneau();edDessine();return}
+  const ok=edModifie(C=>{
+    const avant=edNomsAires(C),pos=C.etage?C.plan.c.length-3:C.plan.c.length;
+    C.plan.c.splice(pos,0,q);C.liens=[...(C.liens||[]),...vois.slice(0,2).map(v=>[nom,v])];C.crees=[...(C.crees||[]),nom];
+    edRenumerote(C,avant,edNomsAires(C));
+  },true);
+  if(ok){ED.msg='« '+nom+' » créée, reliée à '+vois.slice(0,2).join(' et ')+'.';edEtat()}
+  edPanneau();
+}
+function edSupprimePiece(i){
+  const CU=edCarte(),nr=CU.plan.r.length,q=(CU.plan.r.concat(CU.plan.c))[i];if(!q||!q[4]||!(CU.crees||[]).includes(q[4]))return;const nom=q[4];
+  edModifie(C=>{
+    const avant=edNomsAires(C),rs=C.plan.c.filter(r=>r[4]===nom),dans=(x,y)=>rs.some(r=>x>=r[0]&&x<r[0]+r[2]&&y>=r[1]&&y<r[1]+r[3]);
+    C.furn=C.furn.filter(f=>!dans(f[1],f[2]));C.fen=C.fen.filter(f=>!dans(f[0],f[1]+2));C.tab=C.tab.filter(f=>!dans(f[0],f[1]+2));
+    C.plan.c=C.plan.c.filter(r=>r[4]!==nom);C.liens=(C.liens||[]).filter(l=>!l.includes(nom));C.crees=C.crees.filter(n=>n!==nom);
+    edRenumerote(C,avant,edNomsAires(C));
+  },true);
+  ED.sel=null;edPanneau();
 }

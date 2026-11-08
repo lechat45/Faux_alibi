@@ -1,11 +1,11 @@
 // Génération de la carte : architecture, mobilier, portes, cachettes, énigmes d'objets et audit.
 let MW=62,MH=33;
-const FP={cabine:[2,2],escalier:[2,1],secours:[2,1],chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
+const FP={sofaL:[1,3],sofaR:[1,3],bedL:[3,2],bedR:[3,2],tableL:[2,3],aquarium:[2,1],coffrefort:[1,1],billard:[3,2],paravent:[2,1],gramophone:[1,1],vaisselier:[2,1],buste:[1,1],cage:[1,1],jukebox:[1,1],television:[1,1],harpe:[1,1],cabine:[2,2],escalier:[2,1],secours:[2,1],chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
   console:[3,1],labbench:[3,1],planter:[3,1],table:[3,2],rtable:[2,2],chair:[1,1],sofa:[3,1],armchair:[1,1],bed:[2,3],crate:[1,1],barrel:[1,1],plant:[1,1],mannequin:[1,1],spot:[1,1],ropes:[1,1],
   trunk:[2,1],lamp:[1,1],globe:[1,1],stool:[1,1],tank:[1,1],tub:[3,1],toilet:[1,1],shower:[2,1],desk:[3,1],pcdesk:[3,1],commode:[2,1],chevet:[1,1],lift:[2,1],medic:[1,1],washer:[1,1],copier:[1,1],roulette:[3,2],engine:[3,2],
   chairB:[1,1],chairL:[1,1],chairR:[1,1],armchairB:[1,1],armchairL:[1,1],armchairR:[1,1],sofaB:[3,1],basse:[3,1]};
 const DECO=[['chariot','valise'],['bascule','valise'],['banquette','valise'],['fontaine','fontaine'],['radio','skis'],['portant','portant'],['bouee','barre'],['perfusion','brancard'],['armure','armure'],['bandit','jetons','bandit']];
-const FLAVOR={cabine:['La cuvette est propre. Le dérouleur est presque vide.',"Quelqu'un a griffonné un numéro sur la cloison, à moitié effacé."],chariot:['Des serviettes propres et de petits savons.'],valise:["Une étiquette à moitié arrachée. Elle est vide."],bascule:['Il se balance encore un peu.'],banquette:['Le velours est usé aux accoudoirs.'],fontaine:["Elle glougloute toute seule."],radio:['Rien que du grésillement.'],skis:['Les fartages sont encore frais.'],portant:['Des costumes de scène qui sentent la naphtaline.'],bouee:['Elle porte le nom du navire.'],barre:['Elle est bloquée depuis le départ.'],perfusion:["La poche est presque vide."],brancard:['Les draps sont propres.'],armure:["Il n'y a personne dedans. Enfin, j'espère."],bandit:['Trois citrons. Encore perdu.'],jetons:['Quelques jetons abandonnés en plein jeu.'],portemanteau:['Des manteaux encore humides de pluie.','Un chapeau, une écharpe, un vieux pardessus.'],parapluies:['Trois parapluies, encore mouillés.'],chaussures:["Des chaussures bien alignées. Personne n'est sorti ce soir."],videpoche:['Un vide-poches, quelques clés sans étiquette.','Une petite coupelle et le courrier du matin.'],banc:['Un banc pour se déchausser.'],shelf:['Des rangées de livres, rien de plus.','Les reliures sentent le vieux cuir.'],cabinet:['Des tiroirs bien rangés, sans surprise.'],crate:['Des clous et de la paille.'],trunk:['Des vêtements pliés et de vieux journaux.'],
+const FLAVOR={aquarium:["Les poissons tournent en rond. Rien au fond, à part du sable."],coffrefort:["Il est solidement fermé. Quelqu'un connaît la combinaison."],billard:["Une partie abandonnée en cours."],paravent:["Derrière, une robe de chambre pendue."],gramophone:["Un vieux disque de jazz, rayé."],vaisselier:["La belle vaisselle des grands jours."],buste:["Un illustre inconnu au regard sévère."],cage:["L'oiseau vous regarde sans rien dire."],jukebox:["La dernière chanson choisie : un slow."],television:["Un écran tout gris, plein de neige."],harpe:["Une corde est cassée."],cabine:['La cuvette est propre. Le dérouleur est presque vide.',"Quelqu'un a griffonné un numéro sur la cloison, à moitié effacé."],chariot:['Des serviettes propres et de petits savons.'],valise:["Une étiquette à moitié arrachée. Elle est vide."],bascule:['Il se balance encore un peu.'],banquette:['Le velours est usé aux accoudoirs.'],fontaine:["Elle glougloute toute seule."],radio:['Rien que du grésillement.'],skis:['Les fartages sont encore frais.'],portant:['Des costumes de scène qui sentent la naphtaline.'],bouee:['Elle porte le nom du navire.'],barre:['Elle est bloquée depuis le départ.'],perfusion:["La poche est presque vide."],brancard:['Les draps sont propres.'],armure:["Il n'y a personne dedans. Enfin, j'espère."],bandit:['Trois citrons. Encore perdu.'],jetons:['Quelques jetons abandonnés en plein jeu.'],portemanteau:['Des manteaux encore humides de pluie.','Un chapeau, une écharpe, un vieux pardessus.'],parapluies:['Trois parapluies, encore mouillés.'],chaussures:["Des chaussures bien alignées. Personne n'est sorti ce soir."],videpoche:['Un vide-poches, quelques clés sans étiquette.','Une petite coupelle et le courrier du matin.'],banc:['Un banc pour se déchausser.'],shelf:['Des rangées de livres, rien de plus.','Les reliures sentent le vieux cuir.'],cabinet:['Des tiroirs bien rangés, sans surprise.'],crate:['Des clous et de la paille.'],trunk:['Des vêtements pliés et de vieux journaux.'],
  barrel:['Ça sonne plein.'],table:['Quelques papiers sans intérêt.','Des tasses encore tièdes.'],clock:['Elle tique trop fort pour être honnête.','Elle retarde de deux minutes.'],plant:['La terre est humide. Quelqu\'un en prend soin.'],
  locker:['Un casier vide, qui sent le renfermé.'],lamp:['L\'ampoule grésille.'],lift:['L\'ascenseur est à l\'arrêt, impossible de l\'appeler.','Le bouton ne répond plus. Rien à faire.'],tub:['La baignoire est sèche.'],toilet:['Rien ici. Heureusement.'],shower:['Le carrelage est encore humide.'],
  escalier:["L'escalier de service. Une corde rouge barre le passage : « Fermé pendant la tempête ».","Une fine couche de poussière couvre les marches : personne n'est monté ce soir."],
@@ -46,7 +46,7 @@ const avecAnnexes=(P,liste,types)=>{
   return{P:{r:P.r,l:P.l,c:c2},aj};
 };
 const avecEtage=(P,E)=>{const X=Math.max(...[...P.r,...P.c].map(q=>q[0]+q[2]))+5;return{r:P.r,l:P.l,c:[...P.c,[X,12,21,3,E.palier],[X,3,10,6,E.p[0][0]],[X+11,3,10,6,E.p[1][0]]]}};
-const SH_HAUT=['cabine','escalier','secours','shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
+const SH_HAUT=['paravent','vaisselier','harpe','cabine','escalier','secours','shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
 const DIFFW={facile:{lock:1,eni:2,pz:2,bonus:1},moyen:{lock:1,eni:3,pz:3,bonus:1},difficile:{lock:2,eni:4,pz:3,bonus:2},expert:{lock:2,eni:4,pz:3,bonus:2}};
 
 // Un agencement fait à l'éditeur remplace la carte générée ; s'il ne permet pas une partie complète, on garde la carte générée
@@ -82,7 +82,8 @@ function construireMonde(c,CU=null,decor=false){
   w.rooms=w.areas.slice(0,L.rooms.length);
   // Portes : déduites de la position réelle des pièces
   const porteCU=(a,b)=>CU&&CU.portes&&CU.portes[a+'-'+b];
-  const nA=w.areas.length,doors=[...P.l,...AN.aj.filter(a=>a.i!=null&&a.ci>=0).map(a=>[a.i,a.ci]),...(ET?[[nA-2,nA-3],[nA-1,nA-3]]:[])].map(([a,b])=>{
+  const liensCU=CU&&CU.liens?CU.liens.map(([a,b])=>[w.areas.findIndex(A=>A.name===a),w.areas.findIndex(A=>A.name===b)]).filter(([a,b])=>a>=0&&b>=0&&a!==b):[];
+  const nA=w.areas.length,doors=[...P.l,...AN.aj.filter(a=>a.i!=null&&a.ci>=0).map(a=>[a.i,a.ci]),...liensCU,...(ET?[[nA-2,nA-3],[nA-1,nA-3]]:[])].map(([a,b])=>{
     const A=w.areas[a],B=w.areas[b],id=nid();let d,m=null;
     for(const ra of A.rects)for(const rb of B.rects){
       const[g0,h0]=ra.x0<rb.x0?[ra,rb]:[rb,ra],[u0,l0]=ra.y0<rb.y0?[ra,rb]:[rb,ra];
@@ -317,10 +318,10 @@ function construireMonde(c,CU=null,decor=false){
   // Agencement de l'éditeur : chaque meuble à sa place exacte, sols, couleurs et tapis choisis à la main
   const poseCarte=()=>{
     const aire=(x,y)=>w.areas.findIndex(A=>dans(A,x,y));
-    CU.furn.forEach(([n,x,y,v],ci)=>{
+    CU.furn.forEach(([n,x,y,v,op],ci)=>{
       if(!FP[n])return;const[fw,fh]=FP[n],ai=aire(x,y);if(ai<0)return;const A=w.areas[ai];
       for(let a=0;a<fh;a++)for(let b=0;b<fw;b++){const X=x+b,Y=y+a;if(!t[Y]||t[Y][X]!==1||gate[Y][X]||blk[Y][X]||!dans(A,X,Y))return}
-      const f=place(n,x,y,A);if(v!=null)f.v=v;f.ci=ci;
+      const f=place(n,x,y,A);if(v!=null)f.v=v;f.ci=ci;if(op){if(op.m)f.miroir=true;if(op.mod!=null)f.mod=op.mod}
     });
     const pal=w.areas.find(A=>A.palier),e=pal&&w.furn.find(f=>f.room===pal.i&&f.name==='escalier');if(e)e.acces='descend';
     (CU.ent||[]).forEach(([X,y])=>{if(!t[y+1]||t[y+1][X]!==2||t[y+1][X+1]!==2)return;w.entrees.push({x:X,y});for(let k=-1;k<3;k++){if(t[y+2]&&t[y+2][X+k]===1)res[y+2][X+k]=1;if(t[y+3]&&t[y+3][X+k]===1)res[y+3][X+k]=1}});
@@ -490,7 +491,7 @@ function construireMonde(c,CU=null,decor=false){
   });
   if(CU){
     const mur=(x,y,l)=>{for(let i=0;i<l;i++)if(!t[y]||t[y][x+i]!==2||!t[y+1]||t[y+1][x+i]!==2)return false;return true};
-    if(CU.fen)w.windows=CU.fen.filter(([x,y])=>mur(x,y,2)).map(([x,y])=>({x,y}));
+    if(CU.fen)w.windows=CU.fen.filter(([x,y])=>mur(x,y,2)).map(([x,y,t])=>t!=null?{x,y,t}:{x,y});
     if(CU.tab)w.tableaux=CU.tab.filter(([x,y,n])=>mur(x,y,TAB_ETROITS.includes(n)?2:4)).map(([x,y,n])=>({x,y,n}));
   }
   w.plan=P;w.carte=CU;
@@ -501,7 +502,7 @@ function construireMonde(c,CU=null,decor=false){
 function extraireCarte(w,lv,etage){
   return{v:1,lv,etage,plan:{r:w.plan.r.map(q=>q.slice(0,4)),c:w.plan.c.map(q=>q.slice())},
     portes:Object.fromEntries(Object.values(w.doors).map(d=>[d.a+'-'+d.b,[d.x,d.y]])),
-    furn:w.furn.map(f=>[f.name,f.x,f.y,f.v]),fen:w.windows.map(q=>[q.x,q.y]),tab:w.tableaux.map(q=>[q.x,q.y,q.n]),ent:w.entrees.map(q=>[q.x,q.y]),
+    furn:w.furn.map(f=>f.miroir||f.mod!=null?[f.name,f.x,f.y,f.v,{...(f.miroir?{m:1}:{}),...(f.mod!=null?{mod:f.mod}:{})}]:[f.name,f.x,f.y,f.v]),fen:w.windows.map(q=>q.t!=null?[q.x,q.y,q.t]:[q.x,q.y]),tab:w.tableaux.map(q=>[q.x,q.y,q.n]),ent:w.entrees.map(q=>[q.x,q.y]),
     aires:w.areas.map(A=>({f:A.rec.f,t:A.tint,tapis:A.tapis&&A.rec.rug?[A.tapis.x,A.tapis.y,A.tapis.x1,A.tapis.y1,A.rec.rug]:null}))};
 }
 const solidCell=(w,x,y,open)=>{

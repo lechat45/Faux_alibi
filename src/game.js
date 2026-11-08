@@ -191,7 +191,7 @@ function buildMap(){
     for(let i=0;i<2;i++)wallColumn(g,(d.x+i)*TS,(d.y+1)*TS,W.areas[d.bas].tint,L.lamb);
   });
   W.entrees.forEach(e=>{g.drawImage(doorArt('entree',false,null,null),0,0,32,29,e.x*TS,e.y*TS+3,32,29);paillasson(g,e.x*TS,(e.y+2)*TS+1,32,14)});
-  W.windows.forEach((w,i)=>fenetre(g,w.x*TS,w.y*TS,c.lv,i+c.seed%7));
+  W.windows.forEach((w,i)=>w.t!=null?fenetreType(g,w.x*TS,w.y*TS,c.lv,i+c.seed%7,w.t):fenetre(g,w.x*TS,w.y*TS,c.lv,i+c.seed%7));
   W.tableaux.forEach((w,i)=>tableau(g,w.x*TS+1,w.y*TS+1,w.n,c.seed+i));
   if(O.murs)mursTour(g);
   if(O.effets)effetsBords(g);
@@ -618,7 +618,7 @@ function onMapHover(e){
   G.hover=objAt(p.x,p.y);
   $('jeu').style.cursor=G.hover?G.curH:G.curN;
 }
-const NOM_F={cabine:'la cabine',portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur",bed:'le lit',sofa:'le canapé',sofaB:'le canapé',armchair:'le fauteuil',armchairL:'le fauteuil',armchairR:'le fauteuil',armchairB:'le fauteuil',clock:"l'horloge",plant:'le pot de fleurs',piano:'le piano',escalier:"l'escalier de service",secours:'la sortie de secours'};
+const NOM_F={cabine:'la cabine',aquarium:"l'aquarium",coffrefort:'le coffre-fort',billard:'le billard',paravent:'le paravent',gramophone:'le gramophone',vaisselier:'le vaisselier',buste:'le buste',cage:'la cage à oiseau',jukebox:'le juke-box',television:'la télévision',harpe:'la harpe',portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur",bed:'le lit',sofa:'le canapé',sofaB:'le canapé',armchair:'le fauteuil',armchairL:'le fauteuil',armchairR:'le fauteuil',armchairB:'le fauteuil',clock:"l'horloge",plant:'le pot de fleurs',piano:'le piano',escalier:"l'escalier de service",secours:'la sortie de secours'};
 function promptOf(o){
   if(o.kind==='suspect')return`Parler à ${c.suspects[o.s].prenom}`;
   if(o.kind==='vitrine')return`Examiner : ${c.set.rooms[o.room].o}`;

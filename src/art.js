@@ -190,7 +190,8 @@ function furnitureSprite(f){
   g.translate(1+(f.dx||0),1);
   const H=SH[f.name]||24;
   G.fctx=f;SPR[f.name](g,f.v);G.fctx=null;
-  return outlineSprite(k);
+  const s=outlineSprite(k);if(!f.miroir)return s;
+  const[q,h]=cv(s.width,s.height);h.translate(s.width,0);h.scale(-1,1);h.drawImage(s,0,0);return q;
 }
 // Hauteur totale (pixels) de chaque dessin, pour l'ancrer sur sa case
 const SH={shelf:46,cabinet:42,fridge:42,stove:42,sink:42,counter:42,locker:42,winerack:44,skirack:42,rack:42,vanity:42,wardrobe:44,piano:48,fireplace:44,bar:42,clock:42,console:42,labbench:42,planter:42,table:46,rtable:44,chair:25,sofa:30,armchair:26,bed:48,crate:24,barrel:24,plant:25,weights:28,treadmill:44,mannequin:41,sewing:30,spot:37,ropes:24,trunk:24,lamp:40,globe:24,stool:23,tank:28};

@@ -145,9 +145,9 @@ const LAMPES=[
 ];
 const lieuDe=v=>(typeof c!=='undefined'&&c&&c.lv>=0&&c.lv<10)?c.lv:v%10;
 Object.assign(SPR,{
-  bed(g,v){LITS[lieuDe(v)](g,v)},
-  plant(g,v){g.save();g.translate(0,0);PLANTES[v%10](g,v);g.restore()},
-  lamp(g,v){LAMPES[v%10](g,v)},
+  bed(g,v){LITS[G.fctx&&G.fctx.mod!=null?G.fctx.mod%10:lieuDe(v)](g,v)},
+  plant(g,v){g.save();g.translate(0,0);PLANTES[(G.fctx&&G.fctx.mod!=null?G.fctx.mod:v)%10](g,v);g.restore()},
+  lamp(g,v){LAMPES[(G.fctx&&G.fctx.mod!=null?G.fctx.mod:v)%10](g,v)},
   // Escalier de service : une cage d'escalier ouverte dans le mur, aux couleurs de la pièce et des portes du lieu
   escalier(g,v){
     const P=PX(g),f=G.fctx,A=f&&W&&W.areas?W.areas[f.room]:null,L0=typeof c!=='undefined'&&c&&c.set?c.set:{},tint=A?A.tint:'#4a5a6a';

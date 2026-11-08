@@ -678,3 +678,9 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .cpt-pave{display:grid;grid-template-columns:repeat(3,64px);gap:8px;justify-content:center}.cpt-pave button{font-size:1.3rem;min-height:48px}
 .cpt-texte{width:100%;height:120px;font:12px/1.3 monospace;background:#fff8e4;color:var(--encre);border:2px solid rgba(42,58,106,.4);padding:6px;word-break:break-all;resize:vertical}
 @media (max-width:560px){.cpt-photo img{width:88px;height:88px}.carte-cpt img{width:44px;height:44px}.cpt-pave{grid-template-columns:repeat(3,58px)}}
+
+.ed-modeles{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:4px}
+.ed-modeles button{padding:3px;display:grid;justify-items:center;gap:2px;font-size:10px;line-height:1.1}
+.ed-modeles img{height:44px;max-width:100%;object-fit:contain;image-rendering:pixelated}
+.ed-modeles.larges{grid-template-columns:repeat(auto-fill,minmax(74px,1fr))}.ed-modeles.larges img{height:34px}
+.ed-champ{display:grid;gap:3px;font-size:12px}
