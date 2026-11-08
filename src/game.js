@@ -57,8 +57,8 @@ function freeNear(x,y,n=12){
   }
   return o;
 }
-function save(){try{localStorage.setItem(STORE,JSON.stringify({S:S&&!(c&&c.test)?S:null,stats,O}))}catch(e){}}
-function chargeStats(){try{const o=JSON.parse(localStorage.getItem(STORE));if(o){stats=Object.assign(stats,o.stats);O=Object.assign(O,o.O);const enCours=o.S&&!o.S.fin;G.sauve=enCours&&o.S.sig===GEN_SIG&&!o.S.perso?o.S:null;G.sauveVieille=enCours&&o.S.sig!==GEN_SIG}}catch(e){}}
+function save(){try{localStorage.setItem(cleProfil(),JSON.stringify({S:S&&!(c&&c.test)?S:null,stats,O}))}catch(e){}}
+function chargeStats(){cptLit();try{const o=JSON.parse(localStorage.getItem(cleProfil()));if(o){stats=Object.assign(stats,o.stats);O=Object.assign(O,o.O);const enCours=o.S&&!o.S.fin;G.sauve=enCours&&o.S.sig===GEN_SIG&&!o.S.perso?o.S:null;G.sauveVieille=enCours&&o.S.sig!==GEN_SIG}}catch(e){}}
 function continuer(){
   try{
     S=G.sauve;c=generate(S.seed,S.lv,S.mode);habiller(c);W=buildWorld(c);prep();
@@ -121,11 +121,11 @@ function preuve(){
 // ——— Images ———
 function art(){
   [A_REPOS,A_SURVOL,A_ELAN,A_IMPACT].forEach(a=>imageMarteau(a));
-  G.sheet={me:charSheet(INSPECTEUR),ba:charSheet(ADJOINT)};
+  G.sheet={me:charSheet(monLook()),ba:charSheet(ADJOINT)};
   G.look=c.suspects.map((s,i)=>lookOf(s,i,c.seed));
   G.look.forEach((L,i)=>G.sheet[i]=charSheet(L));
   G.vlook=lookOf({g:c.vg,trait:''},9,c.seed);G.sheet.v=charSheet(G.vlook);
-  G.porE={};G.por=G.look.map((L,i)=>portrait(L,i+1));G.porV=portrait(G.vlook,9);G.porBa=portrait(ADJOINT,7);G.porMe=portrait(INSPECTEUR,8);
+  G.porE={};G.por=G.look.map((L,i)=>portrait(L,i+1));G.porV=portrait(G.vlook,9);G.porBa=portrait(ADJOINT,7);G.porMe=portrait(monLook(),8);
   G.furn={};W.furn.forEach(f=>G.furn[f.id]=furnitureSprite(f));
   G.vit={};['lourd','lame','lien','poison'].forEach(k=>G.vit[k]=vitrineSprite(k,true));G.vit.vide=vitrineSprite('',false);
   G.portes={};
@@ -482,7 +482,7 @@ function motDossier(){
 function startVerite(qui){
   const K=c.tueurs.map(i=>c.suspects[i]),A=qui.map(i=>c.suspects[i]),ok=memes(qui,c.tueurs),b=G.body,cells=freeNear(b.x,b.y,16),noms=l=>liste(l.map(q=>q.prenom));
   S.fin={win:ok,qui,arme:G.armeC??null,heure:G.heureC??null};S.fin.note=noteEnquete(ok);
-  if(!G.robot){if(ok){stats.gagnees++;stats.serie++;stats.res[S.lv]=1;stats.notes=stats.notes||{};const a=stats.notes[S.lv];if(!a||S.fin.note.l<a)stats.notes[S.lv]=S.fin.note.l}else stats.serie=0}
+  if(!G.robot){if(ok){stats.gagnees++;stats.serie++;stats.res[S.lv]=1;stats.notes=stats.notes||{};const a=stats.notes[S.lv];if(!a||S.fin.note.l<a)stats.notes[S.lv]=S.fin.note.l}else stats.serie=0;cptFinEnquete(ok)}
   G.sauve=null;save();
   const fin=()=>{marqueFin();render();ouvrir('fin')};
   if(G.noCut)return fin();
@@ -899,7 +899,7 @@ function accueil(){
   $('accueil').hidden=false;$('prompt').hidden=true;$('lieu').hidden=true;$('amb').hidden=true;$('hud').hidden=true;
   const n=stats.gagnees,suite=LEVELS.findIndex((l,i)=>!stats.res[i]);
   const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${O.expert?'Expert':DIFF[l.diff].label}</span>${O.expert?(stats.exp&&stats.exp[i]?`<i>Expert · ${stats.exp[i]}</i>`:''):stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
-  $('acc-ui').innerHTML=`<div class="acc-g"><h1>Faux<br><span>Alibi</span></h1><p>Dix lieux, cinquante pièces, et à chaque fois quelqu'un qui ment.</p>
+  $('acc-ui').innerHTML=`<div class="acc-g">${carteCompte()}<h1>Faux<br><span>Alibi</span></h1><p>Dix lieux, cinquante pièces, et à chaque fois quelqu'un qui ment.</p>
     <div class="ligne"><button class="etiq fort" data-a="nouvelle" data-v="${suite<0?int(Math.random,10):suite}">Nouvelle enquête</button>${G.sauve?'<button class="etiq" data-a="continuer">Continuer</button>':''}<button class="etiq ${O.expert?'actif':''}" data-a="expert" aria-pressed="${!!O.expert}">Expert : ${O.expert?'oui':'non'}</button><button class="etiq" data-a="reglages">Options</button>${boutonInstaller()}</div>${aideInstaller()}</div>
     <div class="acc-d"><div class="tampon"><b>${n}</b><span>enquête${n>1?'s':''} résolue${n>1?'s':''}</span><small>Fins : ${Object.keys(stats.fins||{}).length}/6</small></div><div class="dossiers">${ligneJour()}${dos}</div></div>`;
 }
@@ -1264,6 +1264,7 @@ function pret(){
   $('marteau').addEventListener('mouseleave',()=>{if(!G.frappe)poseMarteau($('mart'),A_REPOS)});
   accueil();
   if(enEditeur())ouvrirEditeur();
+  else if(CPT&&CPT.liste.length>1)ouvrirComptes('liste',true);
   let last=performance.now(),acc=0;
   // La boucle ne s'arrête jamais : une image ratée ne doit pas figer toute la partie
   const vues=new Set(),signale=e=>{const k=String(e&&e.stack||e);if(!vues.has(k)){vues.add(k);console.error(e)}};
