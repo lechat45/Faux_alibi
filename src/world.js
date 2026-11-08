@@ -1,6 +1,6 @@
 // Génération de la carte : architecture, mobilier, portes, cachettes, énigmes d'objets et audit.
 let MW=62,MH=33;
-const FP={sofaL:[1,3],sofaR:[1,3],bedL:[3,2],bedR:[3,2],tableL:[2,3],aquarium:[2,1],coffrefort:[1,1],billard:[3,2],paravent:[2,1],gramophone:[1,1],vaisselier:[2,1],buste:[1,1],cage:[1,1],jukebox:[1,1],television:[1,1],harpe:[1,1],cabine:[2,2],escalier:[2,1],secours:[2,1],chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
+const FP={mur:[1,1],porte:[2,1],porteL:[1,2],sofaL:[1,3],sofaR:[1,3],bedL:[3,2],bedR:[3,2],tableL:[2,3],aquarium:[2,1],coffrefort:[1,1],billard:[3,2],paravent:[2,1],gramophone:[1,1],vaisselier:[2,1],buste:[1,1],cage:[1,1],jukebox:[1,1],television:[1,1],harpe:[1,1],cabine:[2,2],escalier:[2,1],secours:[2,1],chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
   console:[3,1],labbench:[3,1],planter:[3,1],table:[3,2],rtable:[2,2],chair:[1,1],sofa:[3,1],armchair:[1,1],bed:[2,3],crate:[1,1],barrel:[1,1],plant:[1,1],mannequin:[1,1],spot:[1,1],ropes:[1,1],
   trunk:[2,1],lamp:[1,1],globe:[1,1],stool:[1,1],tank:[1,1],tub:[3,1],toilet:[1,1],shower:[2,1],desk:[3,1],pcdesk:[3,1],commode:[2,1],chevet:[1,1],lift:[2,1],medic:[1,1],washer:[1,1],copier:[1,1],roulette:[3,2],engine:[3,2],
   chairB:[1,1],chairL:[1,1],chairR:[1,1],armchairB:[1,1],armchairL:[1,1],armchairR:[1,1],sofaB:[3,1],basse:[3,1]};
@@ -128,7 +128,7 @@ function construireMonde(c,CU=null,decor=false){
     if(cellsOf(A).some(([x,y])=>!blk[y][x]&&!s.has(y*MW+x)))return false;
     // chaque meuble et chaque objet doit garder un côté accessible
     const acces=(x0,y0,w0,h0)=>{for(let y=y0;y<y0+h0;y++)if(s.has(y*MW+x0-1)||s.has(y*MW+x0+w0))return true;for(let x=x0;x<x0+w0;x++)if(s.has((y0-1)*MW+x)||s.has((y0+h0)*MW+x))return true;return false};
-    if(w.furn.some(f=>f.room===A.i&&!acces(f.x,f.y,f.w,f.h)))return false;
+    if(w.furn.some(f=>f.room===A.i&&!/^(mur|porte|porteL)$/.test(f.name)&&!acces(f.x,f.y,f.w,f.h)))return false;
     if(solides.some(q=>dans(A,q[0],q[1])&&!acces(q[0],q[1],1,1)))return false;
     return true;
   };
@@ -323,6 +323,7 @@ function construireMonde(c,CU=null,decor=false){
       for(let a=0;a<fh;a++)for(let b=0;b<fw;b++){const X=x+b,Y=y+a;if(!t[Y]||t[Y][X]!==1||gate[Y][X]||blk[Y][X]||!dans(A,X,Y))return}
       const f=place(n,x,y,A);if(v!=null)f.v=v;f.ci=ci;if(op){if(op.m)f.miroir=true;if(op.mod!=null)f.mod=op.mod}
     });
+    w.furn.filter(f=>f.name==='porte'||f.name==='porteL').forEach(f=>{for(let a=0;a<f.h;a++)for(let b=0;b<f.w;b++){blk[f.y+a][f.x+b]=0;res[f.y+a][f.x+b]=1}});
     const pal=w.areas.find(A=>A.palier),e=pal&&w.furn.find(f=>f.room===pal.i&&f.name==='escalier');if(e)e.acces='descend';
     (CU.ent||[]).forEach(([X,y])=>{if(!t[y+1]||t[y+1][X]!==2||t[y+1][X+1]!==2)return;w.entrees.push({x:X,y});for(let k=-1;k<3;k++){if(t[y+2]&&t[y+2][X+k]===1)res[y+2][X+k]=1;if(t[y+3]&&t[y+3][X+k]===1)res[y+3][X+k]=1}});
     w.areas.forEach((A,i)=>{const z=CU.aires&&CU.aires[i];if(!z)return;A.rec={...A.rec};if(z.f)A.rec.f=z.f;if(z.t)A.tint=z.t;
@@ -408,7 +409,7 @@ function construireMonde(c,CU=null,decor=false){
   });
   // Tout meuble se fouille. Les cachettes sont les meubles à tiroirs, armoires, bibliothèques...
   // Tout se fouille, mais seuls quelques meubles cachent vraiment quelque chose
-  const fou=w.furn.filter(f=>w.etage||!w.areas[f.room].etage).map(f=>({id:nid(),kind:'fouille',acces:w.etage?f.acces:undefined,x:f.x,y:f.y,w:f.w,h:f.h,room:f.room,name:f.name,text:pick(r,FLAVOR[f.name.replace(/[BLR]$/,'')]||['Rien de particulier.'])}));
+  const fou=w.furn.filter(f=>(w.etage||!w.areas[f.room].etage)&&!/^(mur|porte|porteL)$/.test(f.name)).map(f=>({id:nid(),kind:'fouille',acces:w.etage?f.acces:undefined,x:f.x,y:f.y,w:f.w,h:f.h,room:f.room,name:f.name,text:pick(r,FLAVOR[f.name.replace(/[BLR]$/,'')]||['Rien de particulier.'])}));
   const boxes=shuffle(r,fou.filter(o=>MG_BY[o.name]));
   const others=shuffle(r,fou.filter(o=>!MG_BY[o.name]&&!['lift','escalier','secours'].includes(o.name)));
   // On remplit toujours la pièce la moins chargée : rien ne s'entasse au même endroit

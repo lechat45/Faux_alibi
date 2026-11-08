@@ -722,7 +722,7 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
   <section id="accueil" class="accueil"><canvas id="ciel"></canvas><div id="acc-ui" class="acc-ui"></div></section>
 </main>
 <script>
-const GEN_SIG='d45d20037e';
+const GEN_SIG='d07ec96fe5';
 // Agencements faits à la main avec l'éditeur (?editeur) : un par lieu, ils remplacent la carte générée.
 // Le jeu y place toujours lui-même les suspects, les indices, les cachettes et les énigmes.
 // 0 : Hôtel des Cimes, refait le 2026-11-08.
@@ -1400,7 +1400,7 @@ function puzzleSolve(p){
 
 // Génération de la carte : architecture, mobilier, portes, cachettes, énigmes d'objets et audit.
 let MW=62,MH=33;
-const FP={sofaL:[1,3],sofaR:[1,3],bedL:[3,2],bedR:[3,2],tableL:[2,3],aquarium:[2,1],coffrefort:[1,1],billard:[3,2],paravent:[2,1],gramophone:[1,1],vaisselier:[2,1],buste:[1,1],cage:[1,1],jukebox:[1,1],television:[1,1],harpe:[1,1],cabine:[2,2],escalier:[2,1],secours:[2,1],chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
+const FP={mur:[1,1],porte:[2,1],porteL:[1,2],sofaL:[1,3],sofaR:[1,3],bedL:[3,2],bedR:[3,2],tableL:[2,3],aquarium:[2,1],coffrefort:[1,1],billard:[3,2],paravent:[2,1],gramophone:[1,1],vaisselier:[2,1],buste:[1,1],cage:[1,1],jukebox:[1,1],television:[1,1],harpe:[1,1],cabine:[2,2],escalier:[2,1],secours:[2,1],chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
   console:[3,1],labbench:[3,1],planter:[3,1],table:[3,2],rtable:[2,2],chair:[1,1],sofa:[3,1],armchair:[1,1],bed:[2,3],crate:[1,1],barrel:[1,1],plant:[1,1],mannequin:[1,1],spot:[1,1],ropes:[1,1],
   trunk:[2,1],lamp:[1,1],globe:[1,1],stool:[1,1],tank:[1,1],tub:[3,1],toilet:[1,1],shower:[2,1],desk:[3,1],pcdesk:[3,1],commode:[2,1],chevet:[1,1],lift:[2,1],medic:[1,1],washer:[1,1],copier:[1,1],roulette:[3,2],engine:[3,2],
   chairB:[1,1],chairL:[1,1],chairR:[1,1],armchairB:[1,1],armchairL:[1,1],armchairR:[1,1],sofaB:[3,1],basse:[3,1]};
@@ -1528,7 +1528,7 @@ function construireMonde(c,CU=null,decor=false){
     if(cellsOf(A).some(([x,y])=>!blk[y][x]&&!s.has(y*MW+x)))return false;
     // chaque meuble et chaque objet doit garder un côté accessible
     const acces=(x0,y0,w0,h0)=>{for(let y=y0;y<y0+h0;y++)if(s.has(y*MW+x0-1)||s.has(y*MW+x0+w0))return true;for(let x=x0;x<x0+w0;x++)if(s.has((y0-1)*MW+x)||s.has((y0+h0)*MW+x))return true;return false};
-    if(w.furn.some(f=>f.room===A.i&&!acces(f.x,f.y,f.w,f.h)))return false;
+    if(w.furn.some(f=>f.room===A.i&&!/^(mur|porte|porteL)$/.test(f.name)&&!acces(f.x,f.y,f.w,f.h)))return false;
     if(solides.some(q=>dans(A,q[0],q[1])&&!acces(q[0],q[1],1,1)))return false;
     return true;
   };
@@ -1723,6 +1723,7 @@ function construireMonde(c,CU=null,decor=false){
       for(let a=0;a<fh;a++)for(let b=0;b<fw;b++){const X=x+b,Y=y+a;if(!t[Y]||t[Y][X]!==1||gate[Y][X]||blk[Y][X]||!dans(A,X,Y))return}
       const f=place(n,x,y,A);if(v!=null)f.v=v;f.ci=ci;if(op){if(op.m)f.miroir=true;if(op.mod!=null)f.mod=op.mod}
     });
+    w.furn.filter(f=>f.name==='porte'||f.name==='porteL').forEach(f=>{for(let a=0;a<f.h;a++)for(let b=0;b<f.w;b++){blk[f.y+a][f.x+b]=0;res[f.y+a][f.x+b]=1}});
     const pal=w.areas.find(A=>A.palier),e=pal&&w.furn.find(f=>f.room===pal.i&&f.name==='escalier');if(e)e.acces='descend';
     (CU.ent||[]).forEach(([X,y])=>{if(!t[y+1]||t[y+1][X]!==2||t[y+1][X+1]!==2)return;w.entrees.push({x:X,y});for(let k=-1;k<3;k++){if(t[y+2]&&t[y+2][X+k]===1)res[y+2][X+k]=1;if(t[y+3]&&t[y+3][X+k]===1)res[y+3][X+k]=1}});
     w.areas.forEach((A,i)=>{const z=CU.aires&&CU.aires[i];if(!z)return;A.rec={...A.rec};if(z.f)A.rec.f=z.f;if(z.t)A.tint=z.t;
@@ -1808,7 +1809,7 @@ function construireMonde(c,CU=null,decor=false){
   });
   // Tout meuble se fouille. Les cachettes sont les meubles à tiroirs, armoires, bibliothèques...
   // Tout se fouille, mais seuls quelques meubles cachent vraiment quelque chose
-  const fou=w.furn.filter(f=>w.etage||!w.areas[f.room].etage).map(f=>({id:nid(),kind:'fouille',acces:w.etage?f.acces:undefined,x:f.x,y:f.y,w:f.w,h:f.h,room:f.room,name:f.name,text:pick(r,FLAVOR[f.name.replace(/[BLR]$/,'')]||['Rien de particulier.'])}));
+  const fou=w.furn.filter(f=>(w.etage||!w.areas[f.room].etage)&&!/^(mur|porte|porteL)$/.test(f.name)).map(f=>({id:nid(),kind:'fouille',acces:w.etage?f.acces:undefined,x:f.x,y:f.y,w:f.w,h:f.h,room:f.room,name:f.name,text:pick(r,FLAVOR[f.name.replace(/[BLR]$/,'')]||['Rien de particulier.'])}));
   const boxes=shuffle(r,fou.filter(o=>MG_BY[o.name]));
   const others=shuffle(r,fou.filter(o=>!MG_BY[o.name]&&!['lift','escalier','secours'].includes(o.name)));
   // On remplit toujours la pièce la moins chargée : rien ne s'entasse au même endroit
@@ -4393,6 +4394,33 @@ function fenetreType(g,x,y,lv,seed,t){
   if(t===9){cadre('#f0ece4');[x+11,x+20].forEach(c0=>R(g,'#f0ece4',c0,y+5,1,16));[y+10,y+15].forEach(c0=>R(g,'#f0ece4',x+3,c0,26,1));rebord('#e8e4dc');R(g,'rgba(255,255,255,.35)',x+4,y+6,2,4)}
 }
 
+// ——— Murs intérieurs et portes posés à l'éditeur ———
+// Un mur se raccorde à ses voisins : vu de dessus quand le mur continue vers le bas, avec sa face (papier peint
+// et plinthe) au bout de la ligne. Les portes se posent dans ces murs et laissent passer.
+const MURS_INT=/^(mur|porte|porteL)$/;
+function murVoisin(f,dx,dy){return!!(f&&typeof W!=='undefined'&&W&&W.furn&&W.furn.some(q=>q!==f&&MURS_INT.test(q.name)&&f.x+dx>=q.x&&f.x+dx<q.x+q.w&&f.y+dy>=q.y&&f.y+dy<q.y+q.h))}
+function couleursMur(f){
+  const A=f&&typeof W!=='undefined'&&W&&W.areas?W.areas[f.room]:null,ti=A?A.tint:'#8a7a68',lamb=(typeof c!=='undefined'&&c&&c.set&&c.set.lamb)||'#6a4a30';
+  return{ti,lamb,cap:toHex(hx(ti).map((x,i)=>x*.5+[176,168,184][i]*.5))};
+}
+Object.assign(SPR,{
+  mur(g,v){
+    const f=G.fctx,{ti,lamb,cap}=couleursMur(f),L=murVoisin(f,-1,0),Rr=murVoisin(f,1,0),D=murVoisin(f,0,1),xa=L?-1:0,w=(Rr?17:16)-xa,H=30,hc=D?H:8;
+    for(let y=0;y<hc;y++)R(g,tone(cap,(y===0&&!D?.14:0)+((y*7+(f?f.x*3:0))%9===0?-.05:0)),xa,y,w,1);
+    if(!L)R(g,tone(cap,.12),0,0,1,hc);if(!Rr)R(g,tone(cap,-.28),15,0,1,hc);
+    if(D)return;
+    R(g,tone(ti,-.4),xa,8,w,1);
+    for(let y=9;y<H;y++){const pl=y>=H-6;R(g,pl?tone(lamb,y===H-6?.3:y===H-1?-.4:-.05):tone(ti,((y-9)%6===0?.07:0)-.04),xa,y,w,1)}
+    for(let x=0;x<16;x+=6)R(g,tone(ti,-.12),x,10,1,H-17);
+  },
+  porte(g,v){
+    const ks=Object.keys(STYLE_PORTE),st=ks[v%ks.length],{cap}=couleursMur(G.fctx);
+    g.drawImage(doorArt(st,true,null,null),0,0,32,29,0,1,32,29);R(g,cap,-1,0,34,3);R(g,tone(cap,.14),-1,0,34,1);
+  },
+  porteL(g,v){const ks=Object.keys(STYLE_PORTE),st=ks[v%ks.length];g.drawImage(doorVArt(st,true,null),0,0)}
+});
+Object.assign(SH,{mur:30,porte:30,porteL:32});
+
 // Cinq mini-jeux de plus : défaire un lit, soulever des coussins, remettre une horloge à l'heure,
 // déplacer un pot sans le renverser, rejouer une mélodie au piano.
 function toile(shell,txt){
@@ -4895,7 +4923,7 @@ function effetsSol(g){
     const A=W.areas[f.room],spr=G.furn[f.id],base=(f.y+f.h)*TS,H=SH[f.name]||24;
     if(!A||!spr)return;
     const a=REFLET[A.rec&&A.rec.f];
-    if(a&&!/^(lift|escalier|secours|rug)$/.test(f.name)){
+    if(a&&!/^(lift|escalier|secours|rug|mur|porte|porteL)$/.test(f.name)){
       const hr=Math.min(18,H),[rk,rg]=cv(spr.width,hr);
       rg.save();rg.translate(0,hr);rg.scale(1,-1);rg.drawImage(spr,0,H+1-hr,spr.width,hr,0,0,spr.width,hr);rg.restore();
       rg.globalCompositeOperation='destination-in';const q=rg.createLinearGradient(0,0,0,hr);q.addColorStop(0,`rgba(0,0,0,${a})`);q.addColorStop(1,'rgba(0,0,0,0)');rg.fillStyle=q;rg.fillRect(0,0,spr.width,hr);
@@ -5100,7 +5128,7 @@ const ED_CLE='fauxalibi.editeur';
 const enEditeur=()=>/[?&]editeur(?=$|&|=)/.test(location.search)||location.hash==='#editeur';
 const ED_SOLS=[['parquet','Parquet'],['planche','Planches'],['scene','Scène'],['damier','Damier'],['tapis','Moquette'],['marbre','Marbre'],['pierre','Pierre'],['terre','Terre battue'],['metal','Métal'],['lino','Lino'],['sport','Sol de sport'],['beton','Béton']];
 const ED_OUTILS=[['meubles','Meubles','Clique un meuble pour le choisir, glisse-le pour le déplacer.'],['ajout','Ajouter','Choisis un meuble dans la liste, puis clique sur la carte pour le poser.'],
-  ['pieces','Pièces','Glisse le milieu d\'une pièce pour la déplacer avec tout ce qu\'elle contient, ses bords pour l\'agrandir.'],['portes','Portes','Glisse une porte le long de son mur.'],
+  ['pieces','Pièces','Glisse le milieu d\'une pièce pour la déplacer avec tout ce qu\'elle contient, ses bords pour l\'agrandir.'],['portes','Portes','Glisse une porte le long de son mur. Clique le mur entre deux pièces voisines pour y ajouter une porte.'],['murs','Murs','Trace des murs dans les pièces et perces-y des portes.'],
   ['sol','Sols et murs','Clique une pièce pour changer son sol, la couleur de ses murs et son tapis.'],['tapis','Tapis','Trace un rectangle dans une pièce pour y poser un tapis.'],
   ['fenetres','Fenêtres','Choisis une sorte de fenêtre, puis clique sur un mur du fond. Clique une fenêtre posée pour la changer ou la retirer.'],['tableaux','Tableaux','Choisis un tableau, puis clique sur un mur du fond.']];
 const ED_NOMS={chariot:'chariot',valise:'valise',bascule:'balance',banquette:'banquette',fontaine:'fontaine',radio:'radio',skis:'skis',portant:'portant',bouee:'bouée',barre:'barre de danse',
@@ -5145,8 +5173,25 @@ function edConstruit(){
   ED.hors=CU.furn.map((q,i)=>i).filter(i=>!W.furn.some(f=>f.ci===i));
   edVerifie();edDessine();
 }
+// Cases libres qu'on ne peut pas atteindre (enfermées par des murs ou des meubles) et meubles sans accès
+function edEnfermees(){
+  const out=[],sansAcces=[];
+  W.areas.forEach(A=>{
+    const dans=(x,y)=>A.rects.some(q=>x>=q.x0&&x<=q.x1&&y>=q.y0&&y<=q.y1),libre=(x,y)=>dans(x,y)&&W.t[y][x]===1&&!W.blk[y][x],l=[];
+    A.rects.forEach(q=>{for(let y=q.y0;y<=q.y1;y++)for(let x=q.x0;x<=q.x1;x++)if(libre(x,y))l.push([x,y])});
+    const comp=new Map();let n=0;const tailles=[];
+    l.forEach(([x,y])=>{const k=x+','+y;if(comp.has(k))return;const st=[[x,y]];comp.set(k,n);let t=1;while(st.length){const[a,b]=st.pop();for(const[p,q]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=a+p,Y=b+q,K=X+','+Y;if(!libre(X,Y)||comp.has(K))continue;comp.set(K,n);t++;st.push([X,Y])}}tailles.push(t);n++});
+    if(!n)return;const grand=tailles.indexOf(Math.max(...tailles));
+    l.forEach(([x,y])=>{if(comp.get(x+','+y)!==grand)out.push([x,y])});
+    W.furn.filter(f=>f.room===A.i&&!/^(mur|porte|porteL)$/.test(f.name)).forEach(f=>{let ok=false;for(let y=f.y-1;y<=f.y+f.h&&!ok;y++)for(let x=f.x-1;x<=f.x+f.w&&!ok;x++){const bord=(y===f.y-1||y===f.y+f.h)!==(x===f.x-1||x===f.x+f.w);if(bord&&comp.get(x+','+y)===grand)ok=true}if(!ok)sansAcces.push(f)});
+  });
+  return{cases:out,meubles:sansAcces};
+}
 function edVerifie(){
   const pb=[],CU=edCarte();
+  ED.enf=edEnfermees();
+  if(ED.enf.cases.length)pb.push(`${ED.enf.cases.length} case${ED.enf.cases.length>1?'s':''} enfermée${ED.enf.cases.length>1?'s':''} (croix rouges) : on ne peut plus y aller. Ouvre un passage ou bouche-la avec un meuble ou un mur.`);
+  if(ED.enf.meubles.length)pb.push(`${ED.enf.meubles.length} meuble${ED.enf.meubles.length>1?'s':''} qu'on ne peut plus approcher (cadre rouge) : il faut un côté libre pour le fouiller.`);
   if(ED.err)pb.push('Plan impossible : '+edExplique(ED.err));
   if(ED.hors.length)pb.push(`${ED.hors.length} meuble${ED.hors.length>1?'s':''} en rouge : posé${ED.hors.length>1?'s':''} sur un mur, une porte ou un autre meuble, ${ED.hors.length>1?'ils seront ignorés':'il sera ignoré'}.`);
   let ok=0,n=0;
@@ -5217,6 +5262,8 @@ function edPeint(){
   g.font=`${Math.max(4,10/ED.z)}px sans-serif`;
   ED.hors.forEach(i=>{const[n,x,y]=CU.furn[i],[fw,fh]=FP[n]||[1,1];g.fillStyle='rgba(230,60,60,.35)';g.fillRect(x*TS,y*TS,fw*TS,fh*TS);g.strokeStyle='#ff5050';g.strokeRect(x*TS,y*TS,fw*TS,fh*TS);g.fillStyle='#ffd0d0';g.fillText(edNom(n),x*TS+1,y*TS+9/ED.z+2)});
   if(D&&D.meuble!=null&&!W.furn.some(f=>f.ci===D.meuble)||D&&D.nouveau){const n=D.nom,[fw,fh]=FP[n];g.strokeStyle=D.ok?'#ffd23f':'#ff5050';g.strokeRect(D.x*TS,D.y*TS,fw*TS,fh*TS)}
+  // cases enfermées et meubles inaccessibles
+  if(ED.enf){g.strokeStyle='#ff4040';g.lineWidth=2/ED.z;ED.enf.cases.forEach(([x,y])=>{g.beginPath();g.moveTo(x*TS+3,y*TS+3);g.lineTo(x*TS+13,y*TS+13);g.moveTo(x*TS+13,y*TS+3);g.lineTo(x*TS+3,y*TS+13);g.stroke()});ED.enf.meubles.forEach(f=>g.strokeRect(f.x*TS+1,f.y*TS+1,f.w*TS-2,f.h*TS-2))}
   // quadrillage
   if(ED.grille&&ED.z>=2){g.strokeStyle='rgba(255,255,255,.07)';g.lineWidth=lw;g.beginPath();for(let x=0;x<=MW;x++){g.moveTo(x*TS,0);g.lineTo(x*TS,MH*TS)}for(let y=0;y<=MH;y++){g.moveTo(0,y*TS);g.lineTo(MW*TS,y*TS)}g.stroke()}
   const O_=ED.outil,sel=ED.sel;
@@ -5230,6 +5277,7 @@ function edPeint(){
   }
   if(O_==='portes')Object.values(W.doors).forEach(d=>{const p=D&&D.porte===d.id?D.pos:[d.x,d.y];g.strokeStyle=sel&&sel.porte===d.id?'#ffd23f':'rgba(140,220,255,.8)';g.strokeRect(p[0]*TS,p[1]*TS,d.w*TS,d.h*TS)});
   if(O_==='tapis'||O_==='sol')W.areas.forEach(A=>{if(!A.tapis)return;const t=A.tapis;g.strokeStyle='rgba(255,210,63,.7)';g.setLineDash([3/ED.z,3/ED.z]);g.strokeRect(t.x*TS,t.y*TS,(t.x1-t.x+1)*TS,(t.y1-t.y+1)*TS);g.setLineDash([])});
+  if(D&&D.murs){g.fillStyle=D.efface?'rgba(230,70,60,.45)':'rgba(120,220,140,.45)';D.cells.forEach(([x,y])=>g.fillRect(x*TS+1,y*TS+1,TS-2,TS-2))}
   if(D&&D.nouvelle){const[x0,y0,x1,y1]=D.nouvelle;g.fillStyle='rgba(255,210,63,.25)';g.fillRect(Math.min(x0,x1)*TS,Math.min(y0,y1)*TS,(Math.abs(x1-x0)+1)*TS,(Math.abs(y1-y0)+1)*TS);g.strokeStyle='#ffd23f';g.setLineDash([4/ED.z,3/ED.z]);g.strokeRect(Math.min(x0,x1)*TS,Math.min(y0,y1)*TS,(Math.abs(x1-x0)+1)*TS,(Math.abs(y1-y0)+1)*TS);g.setLineDash([])}
   if(sel&&sel.fen!=null&&CU.fen[sel.fen]){const[fx,fy]=CU.fen[sel.fen];g.strokeStyle='#ffd23f';g.lineWidth=2/ED.z;g.strokeRect(fx*TS,fy*TS,2*TS,2*TS)}
   if(D&&D.tapis){const[x0,y0,x1,y1]=D.tapis;g.fillStyle=ED.tapisC+'99';g.fillRect(Math.min(x0,x1)*TS,Math.min(y0,y1)*TS,(Math.abs(x1-x0)+1)*TS,(Math.abs(y1-y0)+1)*TS)}
@@ -5281,6 +5329,11 @@ function edPointe(e){
     if(!edLibre(n,x,y,-1)){ED.msg='Pas de place ici pour ce meuble (mur, autre meuble, ou juste devant une porte).';edEtat();return}
     edModifie(C=>{C.furn.push([n,x,y,(Math.random()*1e6)|0])});ED.sel={meuble:edCarte().furn.length-1};return;
   }
+  if(O_==='murs'){
+    if(ED.murMode==='porte'){edPercePorte(cx,cy);return}
+    if(W.t[cy]&&W.t[cy][cx]!==1&&!CU.furn.some(q=>q[0]==='mur'&&q[1]===cx&&q[2]===cy))return pan();
+    ED.drag={murs:true,efface:CU.furn.some(q=>q[0]==='mur'&&q[1]===cx&&q[2]===cy),x0:cx,y0:cy,cells:[[cx,cy]]};edDessine();return;
+  }
   if(O_==='pieces'&&ED.creer){ED.drag={nouvelle:[cx,cy,cx,cy]};edDessine();return}
   if(O_==='pieces'){
     const R=CU.plan.r.concat(CU.plan.c),bord=6/ED.z/TS;
@@ -5291,7 +5344,7 @@ function edPointe(e){
     ED.sel={rect:i};ED.drag={rect:i,cote,sx:cx,sy:cy,q0:R[i].slice(),q:R[i].slice()};edPanneau();edDessine();return;
   }
   if(O_==='portes'){
-    const d=Object.values(W.doors).find(d=>cx>=d.x&&cx<d.x+d.w&&cy>=d.y&&cy<d.y+d.h);if(!d)return pan();
+    const d=Object.values(W.doors).find(d=>cx>=d.x&&cx<d.x+d.w&&cy>=d.y&&cy<d.y+d.h);if(!d){if(edAjoutePorte(cx,cy))return;return pan()}
     ED.sel={porte:d.id};ED.drag={porte:d.id,pos:[d.x,d.y],d};edDessine();return;
   }
   if(O_==='sol'){const a=W.areas.findIndex(A=>A.rects.some(q=>cx>=q.x0&&cx<=q.x1&&cy>=q.y0&&cy<=q.y1));if(a<0)return pan();ED.sel={aire:a};edPanneau();edDessine();return}
@@ -5318,6 +5371,7 @@ function edBouge(e){
   if(D.porte!=null){const d=D.d;D.pos=d.v?[d.x,cy]:[cx,d.y];edDessine();return}
   if(D.tapis){D.tapis[2]=cx;D.tapis[3]=cy;edDessine()}
   if(D.nouvelle){D.nouvelle[2]=cx;D.nouvelle[3]=cy;edDessine()}
+  if(D.murs){const dx=cx-D.x0,dy=cy-D.y0,l=[];if(Math.abs(dx)>=Math.abs(dy))for(let k=0;k<=Math.abs(dx);k++)l.push([D.x0+Math.sign(dx)*k,D.y0]);else for(let k=0;k<=Math.abs(dy);k++)l.push([D.x0,D.y0+Math.sign(dy)*k]);D.cells=l;edDessine()}
 }
 function edLache(e){
   const D=ED.drag;ED.drag=null;if(!D)return;
@@ -5342,6 +5396,7 @@ function edLache(e){
   }
   if(D.porte!=null){const d=D.d;if(D.pos[0]===d.x&&D.pos[1]===d.y){edDessine();return}edModifie(C=>{C.portes[d.a+'-'+d.b]=D.pos.slice()});
     const n=W.doors[D.porte];if(n&&(n.x!==D.pos[0]||n.y!==D.pos[1])){ED.msg='La porte reste là où le mur commun le permet.';edEtat()}return}
+  if(D.murs){edPoseMurs(D);return}
   if(D.nouvelle){const[a0,b0,a1,b1]=D.nouvelle;edCreePiece(Math.min(a0,a1),Math.min(b0,b1),Math.abs(a1-a0)+1,Math.abs(b1-b0)+1);return}
   if(D.tapis){const A=W.areas[D.aire],[a,b,c2,d]=D.tapis,x0=Math.max(A.x0,Math.min(a,c2)),x1=Math.min(A.x1,Math.max(a,c2)),y0=Math.max(A.y0,Math.min(b,d)),y1=Math.min(A.y1,Math.max(b,d));
     if(x1-x0<1||y1-y0<1){ED.msg='Un tapis fait au moins deux cases sur deux.';edEtat();edDessine();return}
@@ -5373,6 +5428,8 @@ function edPanneau(){
   }
   if(O_==='tapis'&&!(s&&s.aire!=null))h+=`<label class="ed-couleur">Couleur du prochain tapis <input type="color" data-ed-coul="tapis" value="${ED.tapisC}"></label>`;
   if(O_==='tableaux')h+=`<div class="ed-tableaux">${range(10).map(n=>`<button data-ed="tableau" data-v="${n}" class="${ED.tabN===n?'pris':''}"><img alt="" src="${edTableau(n)}"></button>`).join('')}</div><p class="petit">Clique un tableau déjà posé pour l'enlever.</p>`;
+  if(O_==='murs')h+=`<div class="ed-boutons"><button data-ed="murmode" data-v="mur" class="${ED.murMode!=='porte'?'pris':''}">Tracer un mur</button><button data-ed="murmode" data-v="porte" class="${ED.murMode==='porte'?'pris':''}">Percer une porte</button></div><p class="petit">${ED.murMode==='porte'?'Clique un mur pour y percer une porte (il faut deux cases de mur côte à côte, ou l\'une sous l\'autre). Clique une porte pour la reboucher. Pour changer son style : outil Meubles, Autre aspect.':'Glisse sur le sol pour tracer une ligne de mur. Glisse sur un mur déjà posé pour l\'effacer. Attention : un mur qui coupe une pièce en deux la rend injouable (les essais en bas le disent).'}</p>`;
+  if(O_==='portes'&&s&&s.porte!=null&&W.doors[s.porte]){const d=W.doors[s.porte],na=W.areas[d.a].name,nb=W.areas[d.b].name;h+=`<h3>Porte</h3><p class="petit">Entre « ${esc(na)} » et « ${esc(nb)} »</p>`;if((CU.liens||[]).some(l=>l.includes(na)&&l.includes(nb)))h+='<button data-ed="supprlien" class="danger">Supprimer cette porte</button>';else h+='<p class="petit">Cette porte vient du plan du lieu : on peut la déplacer, pas la supprimer.</p>'}
   if(O_==='fenetres'){const fs0=s&&s.fen!=null&&CU.fen[s.fen],tc=fs0?(fs0[2]??-1):ED.fenT;
     h+=`${fs0?'<h3>Fenêtre choisie</h3>':'<p class="petit">Sorte de la prochaine fenêtre</p>'}<div class="ed-modeles larges">${FENETRES.map((nom,t)=>`<button data-ed="fentype" data-v="${t}" class="${tc===t?'pris':''}" title="${nom}"><img alt="" src="${edFenetre(t)}"><span>${nom}</span></button>`).join('')}</div>${fs0?'<button data-ed="fenretire" class="danger">Retirer cette fenêtre</button>':''}`}
   e.innerHTML=h;
@@ -5435,6 +5492,8 @@ function edClic(x){
   if(a==='prends'){ED.ajout=ED.ajout===v?null:v;edPanneau()}
   if(a==='tableau'){ED.tabN=+v;edPanneau()}
   if(a==='miroir'&&s&&s.meuble!=null)edMiroir();
+  if(a==='murmode'){ED.murMode=v;edPanneau()}
+  if(a==='supprlien'&&s&&s.porte!=null&&W.doors[s.porte]){const d=W.doors[s.porte],na=W.areas[d.a].name,nb=W.areas[d.b].name;edModifie(C=>{const noms=edNomsAires(C);delete C.portes[noms.indexOf(na)+'-'+noms.indexOf(nb)];delete C.portes[noms.indexOf(nb)+'-'+noms.indexOf(na)];C.liens=(C.liens||[]).filter(l=>!(l.includes(na)&&l.includes(nb)))},true);ED.sel=null;edPanneau()}
   if(a==='oriente'&&s&&s.meuble!=null){const q=CU.furn[s.meuble];if(edLibre(v,q[1],q[2],s.meuble))edModifie(C=>{C.furn[s.meuble][0]=v});else{ED.msg='Pas la place de le tourner ici.';edEtat()}}
   if(a==='modele'&&s&&s.meuble!=null)edModifie(C=>{const q=C.furn[s.meuble];q[4]={...(q[4]||{}),mod:+v}});
   if(a==='aspectv'&&s&&s.meuble!=null)edModifie(C=>{C.furn[s.meuble][3]=+v});
@@ -5544,6 +5603,41 @@ function edSupprimePiece(i){
     edRenumerote(C,avant,edNomsAires(C));
   },true);
   ED.sel=null;edPanneau();
+}
+
+// ——— Murs intérieurs et portes ———
+const edMurEn=(C,x,y)=>C.furn.findIndex(q=>q[0]==='mur'&&q[1]===x&&q[2]===y);
+function edPoseMurs(D){
+  const CU=edCarte();
+  if(D.efface){const s=new Set(D.cells.map(([x,y])=>x+','+y));if(CU.furn.some(q=>q[0]==='mur'&&s.has(q[1]+','+q[2])))edModifie(C=>{C.furn=C.furn.filter(q=>!(q[0]==='mur'&&s.has(q[1]+','+q[2])))});else edDessine();return}
+  const ok=D.cells.filter(([x,y])=>edMurEn(CU,x,y)<0&&edLibre('mur',x,y,-1));
+  if(!ok.length){ED.msg='Pas de place pour un mur ici : meuble, porte, ou passage devant une porte.';edEtat();edDessine();return}
+  edModifie(C=>{ok.forEach(([x,y])=>C.furn.push(['mur',x,y,1]))});
+  if(ok.length<D.cells.length){ED.msg=(D.cells.length-ok.length)+' case(s) laissée(s) libre(s) : un meuble ou le passage d\'une porte.';edEtat()}
+}
+function edPercePorte(cx,cy){
+  const CU=edCarte(),i=CU.furn.findIndex(q=>(q[0]==='porte'&&cy===q[2]&&cx>=q[1]&&cx<=q[1]+1)||(q[0]==='porteL'&&cx===q[1]&&cy>=q[2]&&cy<=q[2]+1));
+  if(i>=0){const[n,x,y]=CU.furn[i];edModifie(C=>{C.furn.splice(i,1);if(n==='porte')C.furn.push(['mur',x,y,1],['mur',x+1,y,1]);else C.furn.push(['mur',x,y,1],['mur',x,y+1,1])});ED.msg='Porte rebouchée.';edEtat();return}
+  if(edMurEn(CU,cx,cy)<0){ED.msg='Clique sur un mur pour y percer une porte.';edEtat();return}
+  const v=(Math.random()*1e6)|0,g=edMurEn(CU,cx-1,cy)>=0,d=edMurEn(CU,cx+1,cy)>=0,h=edMurEn(CU,cx,cy-1)>=0,b=edMurEn(CU,cx,cy+1)>=0;
+  if(g||d){const x0=d?cx:cx-1;edModifie(C=>{C.furn=C.furn.filter(q=>!(q[0]==='mur'&&q[2]===cy&&(q[1]===x0||q[1]===x0+1)));C.furn.push(['porte',x0,cy,v])});ED.msg='Porte percée.';edEtat();return}
+  if(h||b){const y0=b?cy:cy-1;edModifie(C=>{C.furn=C.furn.filter(q=>!(q[0]==='mur'&&q[1]===cx&&(q[2]===y0||q[2]===y0+1)));C.furn.push(['porteL',cx,y0,v])});ED.msg='Porte percée.';edEtat();return}
+  ED.msg='Il faut deux cases de mur côte à côte (ou l\'une sous l\'autre) pour une porte.';edEtat();
+}
+// Une porte de plus entre deux pièces voisines : on clique le mur qui les sépare
+function edAjoutePorte(cx,cy){
+  const aireEn=(x,y)=>W.areas.findIndex(A=>A.rects.some(q=>x>=q.x0&&x<=q.x1&&y>=q.y0&&y<=q.y1));
+  if(aireEn(cx,cy)>=0)return false;
+  let a=-1,b=-1,pos=null;const g=aireEn(cx-1,cy),d=aireEn(cx+1,cy);
+  if(g>=0&&d>=0&&g!==d){a=g;b=d;pos=[cx,cy]}
+  else{let h=-1,yh=0,bas=-1;for(let k=1;k<=3&&h<0;k++){const i=aireEn(cx,cy-k);if(i>=0){h=i;yh=cy-k}}for(let k=1;k<=3&&bas<0;k++){const i=aireEn(cx,cy+k);if(i>=0)bas=i}
+    if(h>=0&&bas>=0&&h!==bas){a=h;b=bas;pos=[cx,yh+1]}}
+  if(a<0)return false;
+  if(Object.values(W.doors).some(q=>(q.a===a&&q.b===b)||(q.a===b&&q.b===a))){ED.msg='Ces deux pièces ont déjà une porte : glisse-la pour la déplacer.';edEtat();return true}
+  const na=W.areas[a].name,nb=W.areas[b].name;
+  const ok=edModifie(C=>{C.liens=[...(C.liens||[]),[na,nb]];const noms=edNomsAires(C);C.portes=C.portes||{};C.portes[noms.indexOf(na)+'-'+noms.indexOf(nb)]=pos},true);
+  if(ok){ED.msg='Porte ajoutée entre « '+na+' » et « '+nb+' ».';edEtat()}
+  return true;
 }
 
 // Comptes d'inspecteurs : plusieurs joueurs sur le même appareil, chacun sa partie, ses statistiques et ses réglages.
@@ -6383,7 +6477,7 @@ function onMapHover(e){
   G.hover=objAt(p.x,p.y);
   $('jeu').style.cursor=G.hover?G.curH:G.curN;
 }
-const NOM_F={cabine:'la cabine',aquarium:"l'aquarium",coffrefort:'le coffre-fort',billard:'le billard',paravent:'le paravent',gramophone:'le gramophone',vaisselier:'le vaisselier',buste:'le buste',cage:'la cage à oiseau',jukebox:'le juke-box',television:'la télévision',harpe:'la harpe',portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur",bed:'le lit',sofa:'le canapé',sofaB:'le canapé',armchair:'le fauteuil',armchairL:'le fauteuil',armchairR:'le fauteuil',armchairB:'le fauteuil',clock:"l'horloge",plant:'le pot de fleurs',piano:'le piano',escalier:"l'escalier de service",secours:'la sortie de secours'};
+const NOM_F={mur:'le mur',porte:'la porte',porteL:'la porte',cabine:'la cabine',aquarium:"l'aquarium",coffrefort:'le coffre-fort',billard:'le billard',paravent:'le paravent',gramophone:'le gramophone',vaisselier:'le vaisselier',buste:'le buste',cage:'la cage à oiseau',jukebox:'le juke-box',television:'la télévision',harpe:'la harpe',portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur",bed:'le lit',sofa:'le canapé',sofaB:'le canapé',armchair:'le fauteuil',armchairL:'le fauteuil',armchairR:'le fauteuil',armchairB:'le fauteuil',clock:"l'horloge",plant:'le pot de fleurs',piano:'le piano',escalier:"l'escalier de service",secours:'la sortie de secours'};
 function promptOf(o){
   if(o.kind==='suspect')return`Parler à ${c.suspects[o.s].prenom}`;
   if(o.kind==='vitrine')return`Examiner : ${c.set.rooms[o.room].o}`;

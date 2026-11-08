@@ -122,3 +122,30 @@ function fenetreType(g,x,y,lv,seed,t){
   if(t===8){cadre('#5a5a5a');for(let i=0;i<6;i++)R(g,'#3a3a3a',x+5+i*4,y+4,2,19);R(g,'#3a3a3a',x+2,y+9,28,2);R(g,'#3a3a3a',x+2,y+17,28,2);rebord('#8a8478');return}
   if(t===9){cadre('#f0ece4');[x+11,x+20].forEach(c0=>R(g,'#f0ece4',c0,y+5,1,16));[y+10,y+15].forEach(c0=>R(g,'#f0ece4',x+3,c0,26,1));rebord('#e8e4dc');R(g,'rgba(255,255,255,.35)',x+4,y+6,2,4)}
 }
+
+// ——— Murs intérieurs et portes posés à l'éditeur ———
+// Un mur se raccorde à ses voisins : vu de dessus quand le mur continue vers le bas, avec sa face (papier peint
+// et plinthe) au bout de la ligne. Les portes se posent dans ces murs et laissent passer.
+const MURS_INT=/^(mur|porte|porteL)$/;
+function murVoisin(f,dx,dy){return!!(f&&typeof W!=='undefined'&&W&&W.furn&&W.furn.some(q=>q!==f&&MURS_INT.test(q.name)&&f.x+dx>=q.x&&f.x+dx<q.x+q.w&&f.y+dy>=q.y&&f.y+dy<q.y+q.h))}
+function couleursMur(f){
+  const A=f&&typeof W!=='undefined'&&W&&W.areas?W.areas[f.room]:null,ti=A?A.tint:'#8a7a68',lamb=(typeof c!=='undefined'&&c&&c.set&&c.set.lamb)||'#6a4a30';
+  return{ti,lamb,cap:toHex(hx(ti).map((x,i)=>x*.5+[176,168,184][i]*.5))};
+}
+Object.assign(SPR,{
+  mur(g,v){
+    const f=G.fctx,{ti,lamb,cap}=couleursMur(f),L=murVoisin(f,-1,0),Rr=murVoisin(f,1,0),D=murVoisin(f,0,1),xa=L?-1:0,w=(Rr?17:16)-xa,H=30,hc=D?H:8;
+    for(let y=0;y<hc;y++)R(g,tone(cap,(y===0&&!D?.14:0)+((y*7+(f?f.x*3:0))%9===0?-.05:0)),xa,y,w,1);
+    if(!L)R(g,tone(cap,.12),0,0,1,hc);if(!Rr)R(g,tone(cap,-.28),15,0,1,hc);
+    if(D)return;
+    R(g,tone(ti,-.4),xa,8,w,1);
+    for(let y=9;y<H;y++){const pl=y>=H-6;R(g,pl?tone(lamb,y===H-6?.3:y===H-1?-.4:-.05):tone(ti,((y-9)%6===0?.07:0)-.04),xa,y,w,1)}
+    for(let x=0;x<16;x+=6)R(g,tone(ti,-.12),x,10,1,H-17);
+  },
+  porte(g,v){
+    const ks=Object.keys(STYLE_PORTE),st=ks[v%ks.length],{cap}=couleursMur(G.fctx);
+    g.drawImage(doorArt(st,true,null,null),0,0,32,29,0,1,32,29);R(g,cap,-1,0,34,3);R(g,tone(cap,.14),-1,0,34,1);
+  },
+  porteL(g,v){const ks=Object.keys(STYLE_PORTE),st=ks[v%ks.length];g.drawImage(doorVArt(st,true,null),0,0)}
+});
+Object.assign(SH,{mur:30,porte:30,porteL:32});

@@ -7,7 +7,7 @@ const ED_CLE='fauxalibi.editeur';
 const enEditeur=()=>/[?&]editeur(?=$|&|=)/.test(location.search)||location.hash==='#editeur';
 const ED_SOLS=[['parquet','Parquet'],['planche','Planches'],['scene','Scène'],['damier','Damier'],['tapis','Moquette'],['marbre','Marbre'],['pierre','Pierre'],['terre','Terre battue'],['metal','Métal'],['lino','Lino'],['sport','Sol de sport'],['beton','Béton']];
 const ED_OUTILS=[['meubles','Meubles','Clique un meuble pour le choisir, glisse-le pour le déplacer.'],['ajout','Ajouter','Choisis un meuble dans la liste, puis clique sur la carte pour le poser.'],
-  ['pieces','Pièces','Glisse le milieu d\'une pièce pour la déplacer avec tout ce qu\'elle contient, ses bords pour l\'agrandir.'],['portes','Portes','Glisse une porte le long de son mur.'],
+  ['pieces','Pièces','Glisse le milieu d\'une pièce pour la déplacer avec tout ce qu\'elle contient, ses bords pour l\'agrandir.'],['portes','Portes','Glisse une porte le long de son mur. Clique le mur entre deux pièces voisines pour y ajouter une porte.'],['murs','Murs','Trace des murs dans les pièces et perces-y des portes.'],
   ['sol','Sols et murs','Clique une pièce pour changer son sol, la couleur de ses murs et son tapis.'],['tapis','Tapis','Trace un rectangle dans une pièce pour y poser un tapis.'],
   ['fenetres','Fenêtres','Choisis une sorte de fenêtre, puis clique sur un mur du fond. Clique une fenêtre posée pour la changer ou la retirer.'],['tableaux','Tableaux','Choisis un tableau, puis clique sur un mur du fond.']];
 const ED_NOMS={chariot:'chariot',valise:'valise',bascule:'balance',banquette:'banquette',fontaine:'fontaine',radio:'radio',skis:'skis',portant:'portant',bouee:'bouée',barre:'barre de danse',
@@ -52,8 +52,25 @@ function edConstruit(){
   ED.hors=CU.furn.map((q,i)=>i).filter(i=>!W.furn.some(f=>f.ci===i));
   edVerifie();edDessine();
 }
+// Cases libres qu'on ne peut pas atteindre (enfermées par des murs ou des meubles) et meubles sans accès
+function edEnfermees(){
+  const out=[],sansAcces=[];
+  W.areas.forEach(A=>{
+    const dans=(x,y)=>A.rects.some(q=>x>=q.x0&&x<=q.x1&&y>=q.y0&&y<=q.y1),libre=(x,y)=>dans(x,y)&&W.t[y][x]===1&&!W.blk[y][x],l=[];
+    A.rects.forEach(q=>{for(let y=q.y0;y<=q.y1;y++)for(let x=q.x0;x<=q.x1;x++)if(libre(x,y))l.push([x,y])});
+    const comp=new Map();let n=0;const tailles=[];
+    l.forEach(([x,y])=>{const k=x+','+y;if(comp.has(k))return;const st=[[x,y]];comp.set(k,n);let t=1;while(st.length){const[a,b]=st.pop();for(const[p,q]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=a+p,Y=b+q,K=X+','+Y;if(!libre(X,Y)||comp.has(K))continue;comp.set(K,n);t++;st.push([X,Y])}}tailles.push(t);n++});
+    if(!n)return;const grand=tailles.indexOf(Math.max(...tailles));
+    l.forEach(([x,y])=>{if(comp.get(x+','+y)!==grand)out.push([x,y])});
+    W.furn.filter(f=>f.room===A.i&&!/^(mur|porte|porteL)$/.test(f.name)).forEach(f=>{let ok=false;for(let y=f.y-1;y<=f.y+f.h&&!ok;y++)for(let x=f.x-1;x<=f.x+f.w&&!ok;x++){const bord=(y===f.y-1||y===f.y+f.h)!==(x===f.x-1||x===f.x+f.w);if(bord&&comp.get(x+','+y)===grand)ok=true}if(!ok)sansAcces.push(f)});
+  });
+  return{cases:out,meubles:sansAcces};
+}
 function edVerifie(){
   const pb=[],CU=edCarte();
+  ED.enf=edEnfermees();
+  if(ED.enf.cases.length)pb.push(`${ED.enf.cases.length} case${ED.enf.cases.length>1?'s':''} enfermée${ED.enf.cases.length>1?'s':''} (croix rouges) : on ne peut plus y aller. Ouvre un passage ou bouche-la avec un meuble ou un mur.`);
+  if(ED.enf.meubles.length)pb.push(`${ED.enf.meubles.length} meuble${ED.enf.meubles.length>1?'s':''} qu'on ne peut plus approcher (cadre rouge) : il faut un côté libre pour le fouiller.`);
   if(ED.err)pb.push('Plan impossible : '+edExplique(ED.err));
   if(ED.hors.length)pb.push(`${ED.hors.length} meuble${ED.hors.length>1?'s':''} en rouge : posé${ED.hors.length>1?'s':''} sur un mur, une porte ou un autre meuble, ${ED.hors.length>1?'ils seront ignorés':'il sera ignoré'}.`);
   let ok=0,n=0;
@@ -124,6 +141,8 @@ function edPeint(){
   g.font=`${Math.max(4,10/ED.z)}px sans-serif`;
   ED.hors.forEach(i=>{const[n,x,y]=CU.furn[i],[fw,fh]=FP[n]||[1,1];g.fillStyle='rgba(230,60,60,.35)';g.fillRect(x*TS,y*TS,fw*TS,fh*TS);g.strokeStyle='#ff5050';g.strokeRect(x*TS,y*TS,fw*TS,fh*TS);g.fillStyle='#ffd0d0';g.fillText(edNom(n),x*TS+1,y*TS+9/ED.z+2)});
   if(D&&D.meuble!=null&&!W.furn.some(f=>f.ci===D.meuble)||D&&D.nouveau){const n=D.nom,[fw,fh]=FP[n];g.strokeStyle=D.ok?'#ffd23f':'#ff5050';g.strokeRect(D.x*TS,D.y*TS,fw*TS,fh*TS)}
+  // cases enfermées et meubles inaccessibles
+  if(ED.enf){g.strokeStyle='#ff4040';g.lineWidth=2/ED.z;ED.enf.cases.forEach(([x,y])=>{g.beginPath();g.moveTo(x*TS+3,y*TS+3);g.lineTo(x*TS+13,y*TS+13);g.moveTo(x*TS+13,y*TS+3);g.lineTo(x*TS+3,y*TS+13);g.stroke()});ED.enf.meubles.forEach(f=>g.strokeRect(f.x*TS+1,f.y*TS+1,f.w*TS-2,f.h*TS-2))}
   // quadrillage
   if(ED.grille&&ED.z>=2){g.strokeStyle='rgba(255,255,255,.07)';g.lineWidth=lw;g.beginPath();for(let x=0;x<=MW;x++){g.moveTo(x*TS,0);g.lineTo(x*TS,MH*TS)}for(let y=0;y<=MH;y++){g.moveTo(0,y*TS);g.lineTo(MW*TS,y*TS)}g.stroke()}
   const O_=ED.outil,sel=ED.sel;
@@ -137,6 +156,7 @@ function edPeint(){
   }
   if(O_==='portes')Object.values(W.doors).forEach(d=>{const p=D&&D.porte===d.id?D.pos:[d.x,d.y];g.strokeStyle=sel&&sel.porte===d.id?'#ffd23f':'rgba(140,220,255,.8)';g.strokeRect(p[0]*TS,p[1]*TS,d.w*TS,d.h*TS)});
   if(O_==='tapis'||O_==='sol')W.areas.forEach(A=>{if(!A.tapis)return;const t=A.tapis;g.strokeStyle='rgba(255,210,63,.7)';g.setLineDash([3/ED.z,3/ED.z]);g.strokeRect(t.x*TS,t.y*TS,(t.x1-t.x+1)*TS,(t.y1-t.y+1)*TS);g.setLineDash([])});
+  if(D&&D.murs){g.fillStyle=D.efface?'rgba(230,70,60,.45)':'rgba(120,220,140,.45)';D.cells.forEach(([x,y])=>g.fillRect(x*TS+1,y*TS+1,TS-2,TS-2))}
   if(D&&D.nouvelle){const[x0,y0,x1,y1]=D.nouvelle;g.fillStyle='rgba(255,210,63,.25)';g.fillRect(Math.min(x0,x1)*TS,Math.min(y0,y1)*TS,(Math.abs(x1-x0)+1)*TS,(Math.abs(y1-y0)+1)*TS);g.strokeStyle='#ffd23f';g.setLineDash([4/ED.z,3/ED.z]);g.strokeRect(Math.min(x0,x1)*TS,Math.min(y0,y1)*TS,(Math.abs(x1-x0)+1)*TS,(Math.abs(y1-y0)+1)*TS);g.setLineDash([])}
   if(sel&&sel.fen!=null&&CU.fen[sel.fen]){const[fx,fy]=CU.fen[sel.fen];g.strokeStyle='#ffd23f';g.lineWidth=2/ED.z;g.strokeRect(fx*TS,fy*TS,2*TS,2*TS)}
   if(D&&D.tapis){const[x0,y0,x1,y1]=D.tapis;g.fillStyle=ED.tapisC+'99';g.fillRect(Math.min(x0,x1)*TS,Math.min(y0,y1)*TS,(Math.abs(x1-x0)+1)*TS,(Math.abs(y1-y0)+1)*TS)}
@@ -188,6 +208,11 @@ function edPointe(e){
     if(!edLibre(n,x,y,-1)){ED.msg='Pas de place ici pour ce meuble (mur, autre meuble, ou juste devant une porte).';edEtat();return}
     edModifie(C=>{C.furn.push([n,x,y,(Math.random()*1e6)|0])});ED.sel={meuble:edCarte().furn.length-1};return;
   }
+  if(O_==='murs'){
+    if(ED.murMode==='porte'){edPercePorte(cx,cy);return}
+    if(W.t[cy]&&W.t[cy][cx]!==1&&!CU.furn.some(q=>q[0]==='mur'&&q[1]===cx&&q[2]===cy))return pan();
+    ED.drag={murs:true,efface:CU.furn.some(q=>q[0]==='mur'&&q[1]===cx&&q[2]===cy),x0:cx,y0:cy,cells:[[cx,cy]]};edDessine();return;
+  }
   if(O_==='pieces'&&ED.creer){ED.drag={nouvelle:[cx,cy,cx,cy]};edDessine();return}
   if(O_==='pieces'){
     const R=CU.plan.r.concat(CU.plan.c),bord=6/ED.z/TS;
@@ -198,7 +223,7 @@ function edPointe(e){
     ED.sel={rect:i};ED.drag={rect:i,cote,sx:cx,sy:cy,q0:R[i].slice(),q:R[i].slice()};edPanneau();edDessine();return;
   }
   if(O_==='portes'){
-    const d=Object.values(W.doors).find(d=>cx>=d.x&&cx<d.x+d.w&&cy>=d.y&&cy<d.y+d.h);if(!d)return pan();
+    const d=Object.values(W.doors).find(d=>cx>=d.x&&cx<d.x+d.w&&cy>=d.y&&cy<d.y+d.h);if(!d){if(edAjoutePorte(cx,cy))return;return pan()}
     ED.sel={porte:d.id};ED.drag={porte:d.id,pos:[d.x,d.y],d};edDessine();return;
   }
   if(O_==='sol'){const a=W.areas.findIndex(A=>A.rects.some(q=>cx>=q.x0&&cx<=q.x1&&cy>=q.y0&&cy<=q.y1));if(a<0)return pan();ED.sel={aire:a};edPanneau();edDessine();return}
@@ -225,6 +250,7 @@ function edBouge(e){
   if(D.porte!=null){const d=D.d;D.pos=d.v?[d.x,cy]:[cx,d.y];edDessine();return}
   if(D.tapis){D.tapis[2]=cx;D.tapis[3]=cy;edDessine()}
   if(D.nouvelle){D.nouvelle[2]=cx;D.nouvelle[3]=cy;edDessine()}
+  if(D.murs){const dx=cx-D.x0,dy=cy-D.y0,l=[];if(Math.abs(dx)>=Math.abs(dy))for(let k=0;k<=Math.abs(dx);k++)l.push([D.x0+Math.sign(dx)*k,D.y0]);else for(let k=0;k<=Math.abs(dy);k++)l.push([D.x0,D.y0+Math.sign(dy)*k]);D.cells=l;edDessine()}
 }
 function edLache(e){
   const D=ED.drag;ED.drag=null;if(!D)return;
@@ -249,6 +275,7 @@ function edLache(e){
   }
   if(D.porte!=null){const d=D.d;if(D.pos[0]===d.x&&D.pos[1]===d.y){edDessine();return}edModifie(C=>{C.portes[d.a+'-'+d.b]=D.pos.slice()});
     const n=W.doors[D.porte];if(n&&(n.x!==D.pos[0]||n.y!==D.pos[1])){ED.msg='La porte reste là où le mur commun le permet.';edEtat()}return}
+  if(D.murs){edPoseMurs(D);return}
   if(D.nouvelle){const[a0,b0,a1,b1]=D.nouvelle;edCreePiece(Math.min(a0,a1),Math.min(b0,b1),Math.abs(a1-a0)+1,Math.abs(b1-b0)+1);return}
   if(D.tapis){const A=W.areas[D.aire],[a,b,c2,d]=D.tapis,x0=Math.max(A.x0,Math.min(a,c2)),x1=Math.min(A.x1,Math.max(a,c2)),y0=Math.max(A.y0,Math.min(b,d)),y1=Math.min(A.y1,Math.max(b,d));
     if(x1-x0<1||y1-y0<1){ED.msg='Un tapis fait au moins deux cases sur deux.';edEtat();edDessine();return}
@@ -280,6 +307,8 @@ function edPanneau(){
   }
   if(O_==='tapis'&&!(s&&s.aire!=null))h+=`<label class="ed-couleur">Couleur du prochain tapis <input type="color" data-ed-coul="tapis" value="${ED.tapisC}"></label>`;
   if(O_==='tableaux')h+=`<div class="ed-tableaux">${range(10).map(n=>`<button data-ed="tableau" data-v="${n}" class="${ED.tabN===n?'pris':''}"><img alt="" src="${edTableau(n)}"></button>`).join('')}</div><p class="petit">Clique un tableau déjà posé pour l'enlever.</p>`;
+  if(O_==='murs')h+=`<div class="ed-boutons"><button data-ed="murmode" data-v="mur" class="${ED.murMode!=='porte'?'pris':''}">Tracer un mur</button><button data-ed="murmode" data-v="porte" class="${ED.murMode==='porte'?'pris':''}">Percer une porte</button></div><p class="petit">${ED.murMode==='porte'?'Clique un mur pour y percer une porte (il faut deux cases de mur côte à côte, ou l\'une sous l\'autre). Clique une porte pour la reboucher. Pour changer son style : outil Meubles, Autre aspect.':'Glisse sur le sol pour tracer une ligne de mur. Glisse sur un mur déjà posé pour l\'effacer. Attention : un mur qui coupe une pièce en deux la rend injouable (les essais en bas le disent).'}</p>`;
+  if(O_==='portes'&&s&&s.porte!=null&&W.doors[s.porte]){const d=W.doors[s.porte],na=W.areas[d.a].name,nb=W.areas[d.b].name;h+=`<h3>Porte</h3><p class="petit">Entre « ${esc(na)} » et « ${esc(nb)} »</p>`;if((CU.liens||[]).some(l=>l.includes(na)&&l.includes(nb)))h+='<button data-ed="supprlien" class="danger">Supprimer cette porte</button>';else h+='<p class="petit">Cette porte vient du plan du lieu : on peut la déplacer, pas la supprimer.</p>'}
   if(O_==='fenetres'){const fs0=s&&s.fen!=null&&CU.fen[s.fen],tc=fs0?(fs0[2]??-1):ED.fenT;
     h+=`${fs0?'<h3>Fenêtre choisie</h3>':'<p class="petit">Sorte de la prochaine fenêtre</p>'}<div class="ed-modeles larges">${FENETRES.map((nom,t)=>`<button data-ed="fentype" data-v="${t}" class="${tc===t?'pris':''}" title="${nom}"><img alt="" src="${edFenetre(t)}"><span>${nom}</span></button>`).join('')}</div>${fs0?'<button data-ed="fenretire" class="danger">Retirer cette fenêtre</button>':''}`}
   e.innerHTML=h;
@@ -342,6 +371,8 @@ function edClic(x){
   if(a==='prends'){ED.ajout=ED.ajout===v?null:v;edPanneau()}
   if(a==='tableau'){ED.tabN=+v;edPanneau()}
   if(a==='miroir'&&s&&s.meuble!=null)edMiroir();
+  if(a==='murmode'){ED.murMode=v;edPanneau()}
+  if(a==='supprlien'&&s&&s.porte!=null&&W.doors[s.porte]){const d=W.doors[s.porte],na=W.areas[d.a].name,nb=W.areas[d.b].name;edModifie(C=>{const noms=edNomsAires(C);delete C.portes[noms.indexOf(na)+'-'+noms.indexOf(nb)];delete C.portes[noms.indexOf(nb)+'-'+noms.indexOf(na)];C.liens=(C.liens||[]).filter(l=>!(l.includes(na)&&l.includes(nb)))},true);ED.sel=null;edPanneau()}
   if(a==='oriente'&&s&&s.meuble!=null){const q=CU.furn[s.meuble];if(edLibre(v,q[1],q[2],s.meuble))edModifie(C=>{C.furn[s.meuble][0]=v});else{ED.msg='Pas la place de le tourner ici.';edEtat()}}
   if(a==='modele'&&s&&s.meuble!=null)edModifie(C=>{const q=C.furn[s.meuble];q[4]={...(q[4]||{}),mod:+v}});
   if(a==='aspectv'&&s&&s.meuble!=null)edModifie(C=>{C.furn[s.meuble][3]=+v});
@@ -451,4 +482,39 @@ function edSupprimePiece(i){
     edRenumerote(C,avant,edNomsAires(C));
   },true);
   ED.sel=null;edPanneau();
+}
+
+// ——— Murs intérieurs et portes ———
+const edMurEn=(C,x,y)=>C.furn.findIndex(q=>q[0]==='mur'&&q[1]===x&&q[2]===y);
+function edPoseMurs(D){
+  const CU=edCarte();
+  if(D.efface){const s=new Set(D.cells.map(([x,y])=>x+','+y));if(CU.furn.some(q=>q[0]==='mur'&&s.has(q[1]+','+q[2])))edModifie(C=>{C.furn=C.furn.filter(q=>!(q[0]==='mur'&&s.has(q[1]+','+q[2])))});else edDessine();return}
+  const ok=D.cells.filter(([x,y])=>edMurEn(CU,x,y)<0&&edLibre('mur',x,y,-1));
+  if(!ok.length){ED.msg='Pas de place pour un mur ici : meuble, porte, ou passage devant une porte.';edEtat();edDessine();return}
+  edModifie(C=>{ok.forEach(([x,y])=>C.furn.push(['mur',x,y,1]))});
+  if(ok.length<D.cells.length){ED.msg=(D.cells.length-ok.length)+' case(s) laissée(s) libre(s) : un meuble ou le passage d\'une porte.';edEtat()}
+}
+function edPercePorte(cx,cy){
+  const CU=edCarte(),i=CU.furn.findIndex(q=>(q[0]==='porte'&&cy===q[2]&&cx>=q[1]&&cx<=q[1]+1)||(q[0]==='porteL'&&cx===q[1]&&cy>=q[2]&&cy<=q[2]+1));
+  if(i>=0){const[n,x,y]=CU.furn[i];edModifie(C=>{C.furn.splice(i,1);if(n==='porte')C.furn.push(['mur',x,y,1],['mur',x+1,y,1]);else C.furn.push(['mur',x,y,1],['mur',x,y+1,1])});ED.msg='Porte rebouchée.';edEtat();return}
+  if(edMurEn(CU,cx,cy)<0){ED.msg='Clique sur un mur pour y percer une porte.';edEtat();return}
+  const v=(Math.random()*1e6)|0,g=edMurEn(CU,cx-1,cy)>=0,d=edMurEn(CU,cx+1,cy)>=0,h=edMurEn(CU,cx,cy-1)>=0,b=edMurEn(CU,cx,cy+1)>=0;
+  if(g||d){const x0=d?cx:cx-1;edModifie(C=>{C.furn=C.furn.filter(q=>!(q[0]==='mur'&&q[2]===cy&&(q[1]===x0||q[1]===x0+1)));C.furn.push(['porte',x0,cy,v])});ED.msg='Porte percée.';edEtat();return}
+  if(h||b){const y0=b?cy:cy-1;edModifie(C=>{C.furn=C.furn.filter(q=>!(q[0]==='mur'&&q[1]===cx&&(q[2]===y0||q[2]===y0+1)));C.furn.push(['porteL',cx,y0,v])});ED.msg='Porte percée.';edEtat();return}
+  ED.msg='Il faut deux cases de mur côte à côte (ou l\'une sous l\'autre) pour une porte.';edEtat();
+}
+// Une porte de plus entre deux pièces voisines : on clique le mur qui les sépare
+function edAjoutePorte(cx,cy){
+  const aireEn=(x,y)=>W.areas.findIndex(A=>A.rects.some(q=>x>=q.x0&&x<=q.x1&&y>=q.y0&&y<=q.y1));
+  if(aireEn(cx,cy)>=0)return false;
+  let a=-1,b=-1,pos=null;const g=aireEn(cx-1,cy),d=aireEn(cx+1,cy);
+  if(g>=0&&d>=0&&g!==d){a=g;b=d;pos=[cx,cy]}
+  else{let h=-1,yh=0,bas=-1;for(let k=1;k<=3&&h<0;k++){const i=aireEn(cx,cy-k);if(i>=0){h=i;yh=cy-k}}for(let k=1;k<=3&&bas<0;k++){const i=aireEn(cx,cy+k);if(i>=0)bas=i}
+    if(h>=0&&bas>=0&&h!==bas){a=h;b=bas;pos=[cx,yh+1]}}
+  if(a<0)return false;
+  if(Object.values(W.doors).some(q=>(q.a===a&&q.b===b)||(q.a===b&&q.b===a))){ED.msg='Ces deux pièces ont déjà une porte : glisse-la pour la déplacer.';edEtat();return true}
+  const na=W.areas[a].name,nb=W.areas[b].name;
+  const ok=edModifie(C=>{C.liens=[...(C.liens||[]),[na,nb]];const noms=edNomsAires(C);C.portes=C.portes||{};C.portes[noms.indexOf(na)+'-'+noms.indexOf(nb)]=pos},true);
+  if(ok){ED.msg='Porte ajoutée entre « '+na+' » et « '+nb+' ».';edEtat()}
+  return true;
 }

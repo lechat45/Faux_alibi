@@ -8,7 +8,7 @@ function effetsSol(g){
     const A=W.areas[f.room],spr=G.furn[f.id],base=(f.y+f.h)*TS,H=SH[f.name]||24;
     if(!A||!spr)return;
     const a=REFLET[A.rec&&A.rec.f];
-    if(a&&!/^(lift|escalier|secours|rug)$/.test(f.name)){
+    if(a&&!/^(lift|escalier|secours|rug|mur|porte|porteL)$/.test(f.name)){
       const hr=Math.min(18,H),[rk,rg]=cv(spr.width,hr);
       rg.save();rg.translate(0,hr);rg.scale(1,-1);rg.drawImage(spr,0,H+1-hr,spr.width,hr,0,0,spr.width,hr);rg.restore();
       rg.globalCompositeOperation='destination-in';const q=rg.createLinearGradient(0,0,0,hr);q.addColorStop(0,`rgba(0,0,0,${a})`);q.addColorStop(1,'rgba(0,0,0,0)');rg.fillStyle=q;rg.fillRect(0,0,spr.width,hr);
