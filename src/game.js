@@ -25,17 +25,16 @@ let tick=0,cam={x:0,y:0},parts=[],toastT=0,modal=null,VW=400,VH=250,SC=3,ctx,Cut
 function neuf(lv,seed,intro=true,mode=O.expert&&lv<10?'expert':null){
   if(seed==null){const rec=stats.mobRec||[];for(let n=0;n<25;n++){seed=1000+Math.floor(Math.random()*8999);if(lv>=10)break;try{const q=generate(seed,lv,mode);if(!rec.includes(q.suspects[q.k].mid))break}catch(x){}}}
   c=generate(seed,lv,mode);habiller(c);
-  if(lv<10&&!G.robot)stats.mobRec=[c.suspects[c.k].mid,...(stats.mobRec||[])].slice(0,6);if(lv===10)preparerTest(c);
-  W=buildWorld(c);prep();if(lv===10)finirTest();
+  if(lv<10&&!G.robot)stats.mobRec=[c.suspects[c.k].mid,...(stats.mobRec||[])].slice(0,6);
+  W=buildWorld(c);prep();
   S={sig:GEN_SIG,seed,lv,mode,t:{},liens:[],aides:0,jeu:0,evDocs:[],stress:{},vues:{},sujets:{},traces:{},asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
   Object.values(W.doors).forEach(d=>{if(d.lock===null)S.open[d.id]=1});
   if(Cut){Cut.onEnd=null;endCut()}
-  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.retour=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('but').hidden=true;$('tuto-p').hidden=true;G.planCible=null;G.tutoO=null;
+  closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.retour=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=false;$('but').hidden=true;$('tuto-p').hidden=true;G.planCible=null;G.tutoO=null;
   cam.x=S.p.x-VW/2;cam.y=S.p.y-VH/2;G.snap=true;
   S.papiers.push(W.iAuto);
   save();render();
-  if(lv===10){S.introDone=true;dit(JOUEUR,"Six salles, six façons d'interroger. Tout se joue dans la pièce.",300)}
-  else if(intro&&O.scenario)startIntro();else{S.introDone=true;if(intro)tutoLance()}
+  if(intro&&O.scenario)startIntro();else{S.introDone=true;if(intro)tutoLance()}
 }
 function prep(){
   W.obj.forEach(o=>{if(o.kind==='suspect'){W.blk[o.y][o.x]=0;o.fx=o.x*TS+8;o.fy=o.y*TS+11;o.wait=60+(o.s*97)%300;o.dir=0}});
@@ -272,7 +271,6 @@ function draw(){
     ctx.drawImage(G.trace||(G.trace=traceCraie()),o.x*TS,o.y*TS);
   });
   (G.rip||[]).forEach(r=>{const s=(30-r.t)>>2;ctx.fillStyle=r.o?'#ff9a6a':'#ffd23f';ctx.fillRect(r.x-s-2,r.y-s,4,1);ctx.fillRect(r.x+s-1,r.y-s,4,1);ctx.fillRect(r.x-s-2,r.y+s,4,1);ctx.fillRect(r.x+s-1,r.y+s,4,1);ctx.fillRect(r.x-s-2,r.y-s,1,3);ctx.fillRect(r.x+s+2,r.y-s,1,3);ctx.fillRect(r.x-s-2,r.y+s-2,1,3);ctx.fillRect(r.x+s+2,r.y+s-2,1,3)});
-  if(c.test)dessinSol();
   const L=[],inView=(x,y)=>x>cx-80&&x<cx+VW+80&&y>cy-60&&y<cy+VH+90;
   W.furn.forEach(f=>{const y=(f.y+f.h)*TS;if(inView(f.x*TS,y))L.push({y,d:()=>{ctx.drawImage(G.furn[f.id]||(G.furn[f.id]=furnitureSprite(f)),f.x*TS-1,y-SH[f.name]-1);if(f.name==='fireplace')feuDessine(ctx,f.x*TS,y-SH[f.name],tick)}})});
   W.obj.forEach(o=>{
@@ -286,7 +284,6 @@ function draw(){
     if(a.down){ctx.save();ctx.translate(Math.round(a.x),Math.round(a.y-4));ctx.rotate(Math.PI/2);ctx.drawImage(G.sheet[a.sh],0,0,20,30,-15,-10,20,30);ctx.restore();return}
     shadow(a.x,a.y,12);drawChar2(G.sheet[a.sh],a.x,a.y,a.dir,a.mv?(tick>>3)&3:0)}})});
   L.sort((a,b)=>a.y-b.y).forEach(i=>i.d());
-  if(c.test)dessinDessus();
   if(S.tu)tutoDessus();
   if(G.hover&&!modal){
     const[x,y,w,h]=objRect(G.hover),q=tick>>4&1;ctx.fillStyle='#ffd23f';
@@ -361,7 +358,6 @@ function closeAll(){modal=null;$('bulle').hidden=true;$('pz').hidden=true;$('car
 const at0=()=>({x:S.p.x,y:S.p.y});
 function say(nom,txt,at,por){modal='dlg';bulle({at:at||at0(),nom,txt,por,btn:[{t:'Compris',f:closeAll}]})}
 function talk(o,msg,refus,e){
-  if(c.test)return salleParle(o.s);
   if(S.tu)S.tu.parle=1;
   const s=o.s,su=c.suspects[s],V=VOIX(s),need=su.niveau-1,pret=()=>(S.conf[s]||0)>=need;
   o.mv=false;modal='dlg';
@@ -690,7 +686,6 @@ function update(){
   if(modal)return;
   npcLife();
   evenements();if(modal)return;
-  if(c.test)tickTest();
   if(!G.eclair&&W.windows.length&&!O.calme&&Math.random()<.0014)eclair();
   let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0),f=dx&&dy?.72:1;
   if(G.bot){botStep();dx=G.bvx||0;dy=G.bvy||0;f=1}
@@ -714,7 +709,7 @@ function update(){
   }
   const a=areaIdx(P.x>>4,(P.y-3)>>4);
   if(a>=0&&a!==G.area){
-    G.area=a;G.hover=null;if(c.test)entreeTest();
+    G.area=a;G.hover=null;
     if(!S.visit[a]){S.visit[a]=1;if(a<c.set.rooms.length&&!c.test){toast(c.set.rooms[a].n,true);render()}}
     miniCarte();
   }
@@ -768,7 +763,6 @@ function enigme(o){
 const puzzleFor=o=>makePuzzle(RNG(o.id*7919+c.seed),o.ptype,{facile:0,moyen:1,difficile:2,expert:2}[c.key]);
 function interact(o){
   if(!o)return;
-  if(c.test&&o.kind==='fouille')return fouilleTest(o);
   if(o.acces&&W.etage)return voyage(o);
   if(o.kind==='suspect')return talk(o);
   if(o.kind==='vitrine'){const n=inspecter(o.room);return say(cap(c.set.rooms[o.room].o),n.join(' '))}
@@ -880,7 +874,6 @@ function pFin(){
 const TABS={notes:['Notes','#d8483e',pNotes],temoins:['Témoins','#3a7ad8',pTemoins],deduc:['Déductions','#b0406a',pDeduc],gens:['Personnes','#58a65a',pGens],objets:['Objets','#e0a03a',pObjets],papiers:['Documents','#8a5ac8',pPapiers],fin:['Verdict','#ffd23f',pFin]};
 function ouvrir(t){
   if(modal==='cut')return;
-  if(c&&c.test)return ouvrirTest(t);
   if(!t||t==='calepin')t=G.tab&&['notes','temoins','deduc','gens','objets','papiers'].includes(G.tab)?G.tab:'notes';
   $('bulle').hidden=true;$('pz').hidden=true;$('doc').hidden=true;G.pzT=null;G.mini=null;
   const e=$('carnet'),ancien=modal==='carnet'&&!e.hidden&&G.tab!==t?G.tab:null,vieux=ancien?e.querySelector('.feuille'):null,defil=vieux&&vieux.querySelector('.corps')?vieux.querySelector('.corps').scrollTop:0;
@@ -908,7 +901,7 @@ function accueil(){
   const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${O.expert?'Expert':DIFF[l.diff].label}</span>${O.expert?(stats.exp&&stats.exp[i]?`<i>Expert · ${stats.exp[i]}</i>`:''):stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
   $('acc-ui').innerHTML=`<div class="acc-g"><h1>Faux<br><span>Alibi</span></h1><p>Dix lieux, cinquante pièces, et à chaque fois quelqu'un qui ment.</p>
     <div class="ligne"><button class="etiq fort" data-a="nouvelle" data-v="${suite<0?int(Math.random,10):suite}">Nouvelle enquête</button>${G.sauve?'<button class="etiq" data-a="continuer">Continuer</button>':''}<button class="etiq ${O.expert?'actif':''}" data-a="expert" aria-pressed="${!!O.expert}">Expert : ${O.expert?'oui':'non'}</button><button class="etiq" data-a="reglages">Options</button>${boutonInstaller()}</div>${aideInstaller()}</div>
-    <div class="acc-d"><div class="tampon"><b>${n}</b><span>enquête${n>1?'s':''} résolue${n>1?'s':''}</span><small>Fins : ${Object.keys(stats.fins||{}).length}/6</small></div><div class="dossiers">${ligneJour()}${dos}<button class="dossier essai" data-a="test"><span class="no">T</span><span class="nom">Niveau test : 6 interrogatoires</span><span class="dif">Essai</span></button></div></div>`;
+    <div class="acc-d"><div class="tampon"><b>${n}</b><span>enquête${n>1?'s':''} résolue${n>1?'s':''}</span><small>Fins : ${Object.keys(stats.fins||{}).length}/6</small></div><div class="dossiers">${ligneJour()}${dos}</div></div>`;
 }
 // ——— Options : une fenêtre unique, depuis l'accueil comme depuis le jeu ———
 const OPTS=[
@@ -1208,7 +1201,6 @@ function pret(){
     if(e.target.closest('button'))son('clic');
     const b=e.target.closest('[data-a]');if(!b)return;
     const a=b.dataset.a,v=b.dataset.v;
-    if(a==='vote'){const[k,x]=v.split(':');stats.sys=stats.sys||{};stats.sys[k]=x;save();return ouvrirTest()}
     if(a==='jour')return lanceJour();
     if(a==='partage')return partager();
     if(a==='installer')return installer();
@@ -1216,7 +1208,6 @@ function pret(){
     if(a==='tem')return choisirTem(v);
     if(a==='comparer')return comparer();
     if(a==='aide'){const t=aideTexte();closeAll();return say('Basile',t,null,G.porBa)}
-    if(a==='test')return neuf(10,4321,false);
     if(a==='onglet')return ouvrir(v);
     if(a==='fermer'){if(modal==='doc'&&G.tab&&!$('carnet').hidden){$('doc').hidden=true;modal='carnet';return}return closeAll()}
     if(a==='lire')return ouvrirDoc(+v);

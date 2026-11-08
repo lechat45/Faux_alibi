@@ -405,8 +405,6 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .lettre{flex:none;width:76px;height:76px;display:grid;place-items:center;font:700 52px/1 var(--f);border:4px solid currentColor;transform:rotate(-7deg)}
 .l-A,.l-B{color:#2e7a4a}.l-C,.l-D{color:#b87a1a}.l-E{color:#a32a2a}
 .petitp{font:400 16px var(--main);color:#5a4a3a}
-.dossier.essai{background:#2a3a6a;color:#fff4e0}
-.dossier.essai .no,.dossier.essai .dif{color:#ffd23f}
 /* Nouveaux mini-jeux */
 .ecrits{position:absolute;inset:6% 5%;display:grid;grid-template-columns:1fr 1.5fr;gap:3%;min-height:0}
 .modele,.quatre button{background:#f4ead0;color:#1a1626;box-shadow:2px 3px 0 rgba(0,0,0,.4);padding:6px 8px;text-align:left;display:grid;align-content:start;gap:2px;min-width:0;overflow:hidden}
