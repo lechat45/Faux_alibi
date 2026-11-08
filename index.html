@@ -643,6 +643,7 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
   <section id="accueil" class="accueil"><canvas id="ciel"></canvas><div id="acc-ui" class="acc-ui"></div></section>
 </main>
 <script>
+const GEN_SIG='eca2d23ee4';
 // Les 10 lieux : 5 pièces chacun (cuisine, salon, salle de bain, chambre, pièce libre), soit 50 pièces.
 // Chaque plan décrit l'architecture réelle : circulations, pièces et portes.
 const NR=5;
@@ -3835,8 +3836,10 @@ function dessinTraces(){
   });
 }
 // ——— Rejouabilité ———
+// « le collier » → « du collier », « la liasse » → « de la liasse »
+function duVol(v){return v.replace(/^le /,'du ').replace(/^les /,'des ').replace(/^(la |l')/,'de $1')}
 function titreAffaire(){
-  const n={poison:"L'affaire du verre empoisonné",suicide:'Le faux suicide',vol:`Le vol ${c.vole.replace(/^l[ae] /,'de ').replace(/^de la /,'de la ')}`,accident:'La chute de trop',message:'Justice est faite',chantage:"L'enveloppe de minuit",meurtre:`Une nuit à ${c.set.nom}`}[c.crime];
+  const n={poison:"L'affaire du verre empoisonné",suicide:'Le faux suicide',vol:`Le vol ${duVol(c.vole)}`,accident:'La chute de trop',message:'Justice est faite',chantage:"L'enveloppe de minuit",meurtre:`Une nuit à ${c.set.nom}`}[c.crime];
   return n||`Affaire n° ${c.seed}`;
 }
 function motsCrime(){
@@ -4523,7 +4526,7 @@ function neuf(lv,seed,intro=true,mode=O.expert&&lv<10?'expert':null){
   c=generate(seed,lv,mode);habiller(c);
   if(lv<10&&!G.robot)stats.mobRec=[c.suspects[c.k].mid,...(stats.mobRec||[])].slice(0,6);if(lv===10)preparerTest(c);
   W=buildWorld(c);prep();if(lv===10)finirTest();
-  S={seed,lv,mode,t:{},liens:[],aides:0,jeu:0,evDocs:[],stress:{},vues:{},sujets:{},traces:{},asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
+  S={sig:GEN_SIG,seed,lv,mode,t:{},liens:[],aides:0,jeu:0,evDocs:[],stress:{},vues:{},sujets:{},traces:{},asked:{},seenRooms:{},cards:[],fin:null,p:{x:W.spawn.x*TS+8,y:W.spawn.y*TS+11,dir:0},open:{},inv:[],cles:{},docs:{},papiers:[],visit:{[c.rc]:1},conf:{},rel:{},notes:{},introDone:false};
   Object.values(W.doors).forEach(d=>{if(d.lock===null)S.open[d.id]=1});
   if(Cut){Cut.onEnd=null;endCut()}
   closeAll();G.walk=null;G.area=null;G.lu=0;G.choix=[];G.sel=[];G.noir=0;G.retour=0;G.eclair=0;G.plan=null;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;$('marteau').hidden=lv===10;$('but').hidden=true;$('tuto-p').hidden=true;G.planCible=null;G.tutoO=null;
@@ -4555,10 +4558,14 @@ function freeNear(x,y,n=12){
   return o;
 }
 function save(){try{localStorage.setItem(STORE,JSON.stringify({S:S&&!(c&&c.test)?S:null,stats,O}))}catch(e){}}
-function chargeStats(){try{const o=JSON.parse(localStorage.getItem(STORE));if(o){stats=Object.assign(stats,o.stats);O=Object.assign(O,o.O);G.sauve=o.S&&!o.S.fin?o.S:null}}catch(e){}}
+function chargeStats(){try{const o=JSON.parse(localStorage.getItem(STORE));if(o){stats=Object.assign(stats,o.stats);O=Object.assign(O,o.O);const enCours=o.S&&!o.S.fin;G.sauve=enCours&&o.S.sig===GEN_SIG?o.S:null;G.sauveVieille=enCours&&o.S.sig!==GEN_SIG}}catch(e){}}
 function continuer(){
   try{
-    S=G.sauve;c=generate(S.seed,S.lv,S.mode);habiller(c);W=buildWorld(c);prep();(S.evDocs||[]).forEach(d=>W.docs.push(d));G.choix=[];G.sel=[];G.noir=0;G.retour=0;G.plan=null;$('marteau').hidden=false;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
+    S=G.sauve;c=generate(S.seed,S.lv,S.mode);habiller(c);W=buildWorld(c);prep();
+    // les portes jamais verrouillées sont toujours ouvertes, et le personnage ne reprend jamais coincé
+    Object.values(W.doors).forEach(d=>{if(d.lock===null)S.open[d.id]=1});
+    if(hit(S.p.x,S.p.y)){S.p.x=W.spawn.x*TS+8;S.p.y=W.spawn.y*TS+11}
+(S.evDocs||[]).forEach(d=>W.docs.push(d));G.choix=[];G.sel=[];G.noir=0;G.retour=0;G.plan=null;$('marteau').hidden=false;art();enJeu=true;$('accueil').hidden=true;$('hud').hidden=false;G.area=null;G.snap=true;render();
     if(!S.introDone)startIntro();
   }catch(e){neuf(0)}
 }
@@ -4605,7 +4612,7 @@ function preuve(){
   }
   if(c.win.length>1)out.push(c.useWatch?`La montre brisée de ${c.vName} fixe la mort à ${hr}.`:`${p(c.W)} a vu ${c.vName} vivant${c.vg==='f'?'e':''} à ${HOURS[c.hc-1]}. La mort date donc de ${hr}.`);
   out.push(`${cap(r[c.wpn].o)} manquait : c'est la seule arme disparue qui correspond à ${CLASSES[c.cls]}.`);
-  if(c.crime==='vol')out.push(`Le vol de ${c.vole} a mal tourné : la victime a surpris son voleur.`);
+  if(c.crime==='vol')out.push(`Le vol ${duVol(c.vole)} a mal tourné : la victime a surpris son voleur.`);
   if(c.crime==='suicide')out.push('La mise en scène du suicide ne tenait pas face à l\'autopsie.');
   c.tueurs.forEach(i=>out.push(`Le mobile : ${p(i)} ${c.suspects[i].mobile}.`));
   return out;
@@ -4765,7 +4772,7 @@ function draw(){
   (G.rip||[]).forEach(r=>{const s=(30-r.t)>>2;ctx.fillStyle=r.o?'#ff9a6a':'#ffd23f';ctx.fillRect(r.x-s-2,r.y-s,4,1);ctx.fillRect(r.x+s-1,r.y-s,4,1);ctx.fillRect(r.x-s-2,r.y+s,4,1);ctx.fillRect(r.x+s-1,r.y+s,4,1);ctx.fillRect(r.x-s-2,r.y-s,1,3);ctx.fillRect(r.x+s+2,r.y-s,1,3);ctx.fillRect(r.x-s-2,r.y+s-2,1,3);ctx.fillRect(r.x+s+2,r.y+s-2,1,3)});
   if(c.test)dessinSol();
   const L=[],inView=(x,y)=>x>cx-80&&x<cx+VW+80&&y>cy-60&&y<cy+VH+90;
-  W.furn.forEach(f=>{const y=(f.y+f.h)*TS;if(inView(f.x*TS,y))L.push({y,d:()=>{ctx.drawImage(G.furn[f.id],f.x*TS-1,y-SH[f.name]-1);if(f.name==='fireplace')feuDessine(ctx,f.x*TS,y-SH[f.name],tick)}})});
+  W.furn.forEach(f=>{const y=(f.y+f.h)*TS;if(inView(f.x*TS,y))L.push({y,d:()=>{ctx.drawImage(G.furn[f.id]||(G.furn[f.id]=furnitureSprite(f)),f.x*TS-1,y-SH[f.name]-1);if(f.name==='fireplace')feuDessine(ctx,f.x*TS,y-SH[f.name],tick)}})});
   W.obj.forEach(o=>{
     const x=o.x*TS,y=(o.y+1)*TS;
     if(o.kind==='vitrine'&&inView(x,y))L.push({y,d:()=>ctx.drawImage((o.room===c.wpn||o.room===c.leurre)?G.vit.vide:G.vit[c.set.rooms[o.room].c],x-1,y-37)});
@@ -5390,6 +5397,7 @@ function render(){
 // ——— Page d'accueil ———
 function ligneJour(){const j=jourDuJour(),f=(stats.jours||{})[j.k];return`<button class="dossier jour" data-a="jour"><span class="no">J</span><span class="nom">Enquête du jour : ${esc(LEVELS[j.lv].nom)}</span><span class="dif">${f?`Faite · ${f}`:stats.serieJ?`Série : ${stats.serieJ}`:'Nouvelle'}</span></button>`}
 function accueil(){
+  if(G.sauveVieille){G.sauveVieille=false;setTimeout(()=>toast("Ta partie en cours venait d'une version précédente du jeu : elle ne peut pas reprendre. Une nouvelle enquête t'attend !",true),400)}
   closeAll();enJeu=false;$('but').hidden=true;$('tuto-p').hidden=true;['calepin','marteau'].forEach(n=>$(n).classList.remove('appel'));if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
   $('accueil').hidden=false;$('prompt').hidden=true;$('lieu').hidden=true;$('amb').hidden=true;$('hud').hidden=true;
   const n=stats.gagnees,suite=LEVELS.findIndex((l,i)=>!stats.res[i]);
@@ -5759,12 +5767,14 @@ function pret(){
   $('marteau').addEventListener('mouseleave',()=>{if(!G.frappe)poseMarteau($('mart'),A_REPOS)});
   accueil();
   let last=performance.now(),acc=0;
+  // La boucle ne s'arrête jamais : une image ratée ne doit pas figer toute la partie
+  const vues=new Set(),signale=e=>{const k=String(e&&e.stack||e);if(!vues.has(k)){vues.add(k);console.error(e)}};
   const loop=n=>{
-    acc+=Math.min(100,n-last);last=n;
-    while(acc>=16.6){update();acc-=16.6}
-    draw();
-    if(enJeu){const hov=modal||!O.labels?null:G.hover,e=$('prompt'),t=hov?promptOf(hov):'';if(t!==G.pt){G.pt=t;e.hidden=!hov;e.textContent=t}}
     requestAnimationFrame(loop);
+    acc+=Math.min(100,n-last);last=n;
+    try{while(acc>=16.6){update();acc-=16.6}}catch(e){acc=0;signale(e)}
+    try{draw()}catch(e){signale(e)}
+    if(enJeu){const hov=modal||!O.labels?null:G.hover,e=$('prompt'),t=hov?promptOf(hov):'';if(t!==G.pt){G.pt=t;e.hidden=!hov;e.textContent=t}}
   };
   requestAnimationFrame(loop);
   window.FA={O,memes,talk,ouvrirOptions,objAt,skipCut,startVerite,closeAll,ouvrir,interact,openCaisse,openMini,ouvrirDoc,accueil,cutClick,get cam(){return cam},get SC(){return SC},get Cut(){return Cut},get c(){return c},get S(){return S},get W(){return W},get G(){return G},get modal(){return modal},neuf,update,startBot,draw};

@@ -95,8 +95,10 @@ function dessinTraces(){
   });
 }
 // ——— Rejouabilité ———
+// « le collier » → « du collier », « la liasse » → « de la liasse »
+function duVol(v){return v.replace(/^le /,'du ').replace(/^les /,'des ').replace(/^(la |l')/,'de $1')}
 function titreAffaire(){
-  const n={poison:"L'affaire du verre empoisonné",suicide:'Le faux suicide',vol:`Le vol ${c.vole.replace(/^l[ae] /,'de ').replace(/^de la /,'de la ')}`,accident:'La chute de trop',message:'Justice est faite',chantage:"L'enveloppe de minuit",meurtre:`Une nuit à ${c.set.nom}`}[c.crime];
+  const n={poison:"L'affaire du verre empoisonné",suicide:'Le faux suicide',vol:`Le vol ${duVol(c.vole)}`,accident:'La chute de trop',message:'Justice est faite',chantage:"L'enveloppe de minuit",meurtre:`Une nuit à ${c.set.nom}`}[c.crime];
   return n||`Affaire n° ${c.seed}`;
 }
 function motsCrime(){

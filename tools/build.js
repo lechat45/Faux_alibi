@@ -1,5 +1,6 @@
 const fs=require('fs'),path=require('path'),d=path.join(__dirname,'..');
 const js=['levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','salles','vie','tuto','sons','mobilier','minis2','lieux','rendu','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
+const SIG=require('crypto').createHash('sha1').update(['levels','data','engine','puzzles','world'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('')).digest('hex').slice(0,10);
 const css=fs.readFileSync(path.join(d,'src/style.css'),'utf8');
 const out=`<!DOCTYPE html>
 <html lang="fr">
@@ -40,6 +41,7 @@ const out=`<!DOCTYPE html>
   <section id="accueil" class="accueil"><canvas id="ciel"></canvas><div id="acc-ui" class="acc-ui"></div></section>
 </main>
 <script>
+const GEN_SIG='${SIG}';
 ${js}
 </script>
 </body>
