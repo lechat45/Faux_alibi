@@ -6455,7 +6455,8 @@ function objAt(mx,my){
   let best=null,score=-1;const ar=G.area!=null?G.area:c.rc;
   const test=o=>{
     if(o.kind==='trace'&&((S.traces&&S.traces[o.id])||Math.hypot(S.p.x-(o.x+.5)*TS,S.p.y-(o.y+.5)*TS)>66))return;
-    if(!visible(ar,o.kind==='suspect'?(o.fx>>4):o.x,o.kind==='suspect'?((o.fy-3)>>4):o.y))return;
+    // une porte en haut d'un mur se voit des deux pièces : d'en bas, c'est son pied qui est visible, pas son sommet
+    if(!visible(ar,o.kind==='suspect'?(o.fx>>4):o.x,o.kind==='suspect'?((o.fy-3)>>4):o.y)&&!(o.kind==='door'&&visible(ar,o.x+o.w-1,o.y+o.h-1)))return;
     const[x,y,w,h]=objRect(o);
     if(mx<x||my<y||mx>=x+w||my>=y+h)return;
     const v=(o.kind==='fouille'?0:10000)+(o.y+o.h);
