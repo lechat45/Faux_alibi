@@ -684,3 +684,30 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .ed-modeles img{height:44px;max-width:100%;object-fit:contain;image-rendering:pixelated}
 .ed-modeles.larges{grid-template-columns:repeat(auto-fill,minmax(74px,1fr))}.ed-modeles.larges img{height:34px}
 .ed-champ{display:grid;gap:3px;font-size:12px}
+
+/* ——— Fiches des suspects : dossier de police ——— */
+.tetes{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}
+.tete{flex:1 0 74px;max-width:120px;display:grid;justify-items:center;gap:2px;padding:6px 4px;background:#fff8e4;color:var(--encre);box-shadow:2px 2px 0 rgba(0,0,0,.2);border-bottom:4px solid transparent}
+.tete img{width:56px;height:56px;image-rendering:pixelated;background:#2a3a5a;border:2px solid #2a2418}
+.tete b{font:700 15px var(--f)}.tete small{font:500 11.5px var(--f);color:#5a4a30}.tete .alerte{color:#a33a3a;font-style:normal;font-weight:700}
+.tete.choisi{border-bottom-color:#8a2830;background:#fff3cf}.tete:hover{background:#fff3cf}
+.dossier-s{background:#f6ecd0 var(--grain);box-shadow:3px 4px 0 rgba(0,0,0,.25);padding:12px 14px;display:grid;gap:8px;border-left:10px solid #c8a468;position:relative}
+.dossier-s header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-bottom:2px solid rgba(42,36,24,.25);padding-bottom:8px}
+.dossier-s header img{width:96px;height:96px;image-rendering:pixelated;background:#2a3a5a;border:3px solid #2a2418;flex:none}
+.ds-id{display:grid;gap:2px;flex:1;min-width:150px}.ds-id small{font:500 12px var(--f);color:#5a4a30;letter-spacing:.04em;text-transform:uppercase}
+.ds-id b{font:700 1.45rem/1.1 var(--f);color:#2a2418}.ds-id span{font:500 15px var(--f)}.ds-id em{font:700 14px var(--f);color:var(--stylo);font-style:normal}
+.ds-tampon{font:700 15px var(--f);font-style:normal;color:#2a3a8a;border:3px double #2a3a8a;padding:3px 10px;transform:rotate(-6deg);text-transform:uppercase;letter-spacing:.06em;opacity:.85}
+.ds-tampon.rouge{color:#a33a3a;border-color:#a33a3a}
+.ds-grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.ds-grille section{background:rgba(255,248,228,.7);padding:6px 9px;box-shadow:1px 1px 0 rgba(0,0,0,.12)}
+.dossier-s h4{font:700 1rem var(--f);color:#8a2830;margin:2px 0}.dossier-s h4 small{font:500 12px var(--f);color:#5a4a30}
+.dossier-s p{font:500 14.5px/1.25 var(--f);margin:2px 0}
+.ds-jauge{height:9px;background:rgba(42,36,24,.2);border-radius:4px;overflow:hidden;margin:4px 0}.ds-jauge i{display:block;height:100%;background:linear-gradient(90deg,#58a65a,#e8c040 55%,#c8382a)}
+.ds-heures{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:5px}
+.ds-heures li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;background:#fff8e4;padding:5px 8px;border-left:4px solid #2a3a8a;font:500 14px var(--f)}
+.ds-heures li b{font:700 15px var(--f);color:#2a3a8a}.ds-heures li small{display:block;font-size:12.5px;color:#5a4a30}
+.ds-heures li.vide{opacity:.6;border-left-color:#8a8478}.ds-heures li.vide span{font-style:italic}
+.ds-heures li.crime{border-left-color:#a33a3a;background:#fbe9dc}.ds-heures li.crime b{color:#a33a3a}
+.ds-cloche{margin:0;padding-left:18px}.ds-cloche li{font:600 14.5px/1.25 var(--f);color:#a33a3a;margin:2px 0}
+.ds-rien{color:#5a4a30;font-style:italic}.ds-mobile{color:#a33a3a;font-weight:700}
+@media (max-width:520px){.dossier-s header img{width:72px;height:72px}.dossier-s{padding:10px}.tete{flex-basis:66px}.tete img{width:46px;height:46px}}

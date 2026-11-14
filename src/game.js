@@ -776,10 +776,7 @@ function pTemoins(){
   }).join('')}</tr>`).join('');
   return`<h2>Emploi du temps</h2><p class="main">En rouge, l'heure du meurtre d'après l'autopsie.</p><div class="edt-wrap"><table class="edt"><thead><tr><th></th>${tete}</tr></thead><tbody>${lignes}</tbody></table></div><textarea id="note-t" data-n="t" rows="2" placeholder="Mes notes..." aria-label="Mes notes">${esc(S.notes.t||'')}</textarea>`;
 }
-function pGens(){
-  return`<h2>Les personnages</h2><div class="gens">${c.suspects.map((s,i)=>`<div class="fiche"><img alt="" src="${imgURL('p'+i)}"><span><b>${esc(s.nom)}</b>${esc(s.role)}, ${s.age} ans<br><em>${NIVEAUX[s.niveau-1]}</em><br><span class="tr">${esc(s.bio)}</span>${s.trait?`<br><span class="tr">${esc(s.trait)}</span>`:''}${S.docs[i]?`<br><span class="mb">${esc(cap(s.mobile))}.</span>`:''}</span></div>`).join('')}</div>
-  <p class="main">Victime : ${esc(c.vName)}, ${esc(c.vrole)}.</p>`;
-}
+function pGens(){return fichesSuspects()}
 function pObjets(){
   const cl=Object.keys(S.cles).map(i=>`<div class="objet-c"><img alt="" src="${imgURL('cle')}"><span>Clé : ${esc(nomCle(+i))}</span></div>`).join('');
   const it=S.inv.map(id=>`<button class="objet-c" data-a="objet" data-v="${id}"><img alt="" src="${imgURL(id)}"><span>${esc(OBJ[id].nom)}</span></button>`).join('');
@@ -1187,6 +1184,7 @@ function pret(){
     if(a==='comparer')return comparer();
     if(a==='aide'){const t=aideTexte();closeAll();return say('Basile',t,null,G.porBa)}
     if(a==='onglet')return ouvrir(v);
+    if(a==='fiche'){G.fiche=+v;return ouvrir('gens')}
     if(a==='fermer'){if(modal==='doc'&&G.tab&&!$('carnet').hidden){$('doc').hidden=true;modal='carnet';return}return closeAll()}
     if(a==='lire')return ouvrirDoc(+v);
     if(a==='objet')return vueObjet(v,'Dans ma poche');
