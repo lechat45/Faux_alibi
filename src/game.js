@@ -958,6 +958,9 @@ function pzRender(){
     h+=`<p>Tourne les pièces pour relier la gauche (ligne ${p.y0+1}) à la droite (ligne ${p.y1+1}).</p><div class="pgrid" style="grid-template-columns:repeat(${p.n},46px)">${p.cells.map((m,i)=>`<button data-g="${i}" aria-label="Pièce ${i+1}"><svg viewBox="0 0 30 30">${seg(m,fl.has(i)?'#a33a3a':'#5a6a8a')}</svg></button>`).join('')}</div>`;
   }
   if(p.type==='menteur'){h+=`<p>Une seule de ces phrases est vraie. Où est la clé ?</p><div class="clue">${p.st.map((s,i)=>`<span><b>${p.who[i]} :</b> ${esc(s.txt)}</span>`).join('')}</div><div class="ligne">${['A','B','C'].map(x=>`<button class="etiq" data-m="${x}">Tiroir ${x}</button>`).join('')}</div>`}
+  if(p.type==='grille')h+=`<p>Relis ces indices et déduis-en la réponse : une seule possibilité tient.</p><div class="clue">${p.clues.map(t=>`<span>${esc(t)}</span>`).join('')}</div><p><b>${esc(p.question)}</b></p><div class="ligne">${p.gens.map(n=>`<button class="etiq" data-m="${esc(n)}">${esc(n)}</button>`).join('')}</div>`;
+  if(p.type==='horloges'){h+=`<p>Un mot glissé sous la pendule. Toutes les pendules de la maison sont fausses…</p><div class="clue">${p.txt.map(t=>`<span>${esc(t)}</span>`).join('')}</div><p><b>Quelle heure était-il vraiment ?</b> (par exemple 21 h 35)</p>`;field=1}
+  if(p.type==='balance'){h+=`<p>Des pesées notées au crayon, sur le carnet de la balance.</p><div class="clue">${p.eqs.map(t=>`<span class="code">${esc(t)}</span>`).join('')}</div><p class="petit">${esc(p.note)}</p><p><b>${esc(p.question)}</b> (en kg)</p>`;field=1}
   if(field)h+=`<form id="pz-f" class="ligne"><input id="pz-in" type="text" autocomplete="off" aria-label="Réponse" value="${esc(z.input)}"><button class="etiq">Valider</button></form>`;
   if(z.msg)h+=`<p class="err">${esc(z.msg)}</p>`;
   h+=`<div class="ligne">${z.aide?'<button class="etiq alt" data-x="force">Forcer la serrure</button>':''}<button class="etiq alt" data-x="ferme">Plus tard</button></div>`;

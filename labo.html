@@ -749,7 +749,7 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
   <section id="accueil" class="accueil"><canvas id="ciel"></canvas><div id="acc-ui" class="acc-ui"></div></section>
 </main>
 <script>
-const GEN_SIG='ff6833e1bc';
+const GEN_SIG='1baa020bf1';
 // Agencements faits à la main avec l'éditeur (?editeur) : un par lieu, ils remplacent la carte générée.
 // Le jeu y place toujours lui-même les suspects, les indices, les cachettes et les énigmes.
 // Cartes reçues le 2026-11-08 : les six premiers lieux.
@@ -1283,7 +1283,8 @@ function generate(seed,lv,mode){
 
 // Algorithme d'énigmes : chaque générateur construit une instance puis la vérifie.
 const PTYPES={code:'Cadenas logique',suite:'Suite numérique',anagramme:'Mot brouillé',cesar:'Message chiffré',ordre:'Ordre des leviers',
-  lumieres:'Tableau de voyants',taquin:'Taquin',tuyaux:'Circuit à relier',menteur:'Les trois gardiens'};
+  lumieres:'Tableau de voyants',taquin:'Taquin',tuyaux:'Circuit à relier',menteur:'Les trois gardiens',
+  grille:'Qui avait quoi ?',horloges:'Les pendules',balance:'La balance'};
 const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'');
 const WORDS=[['chandelier','Il éclaire sans électricité'],['testament','Il décide de ton héritage'],['poignard','Une petite lame'],['alibi','Ce que chaque suspect défend'],
   ['empreinte','Elle reste sur le verre'],['serrure','La clé y entre'],['horloge','Elle sonne minuit'],['mobile','La raison du crime'],['enquete','Ce que tu mènes'],
@@ -1405,6 +1406,59 @@ const PGEN={
       if(ok.length===1)return{type:'menteur',who,st,answer:ok[0],cand:1};
     }
     return{type:'menteur',who,st:[],answer:'A',cand:0};
+  },
+  // Grille de déduction : chacun était dans une pièce et tenait un objet. Des indices, une seule réponse possible.
+  grille(r,l){
+    const n=l>1?4:3,cs=typeof c!=='undefined'&&c&&c.suspects?c.suspects.map(s=>s.prenom):null;
+    const gens=shuffle(r,cs&&cs.length>=n?cs:['Hector','Lise','Paul','Rose','Victor']).slice(0,n);
+    const lieux=shuffle(r,['le salon','la cuisine','la bibliothèque','le jardin','la cave','le grenier']).slice(0,n);
+    const objets=shuffle(r,['la lampe','le livre','la tasse','la clé','le parapluie','la lettre']).slice(0,n);
+    const P=perms(range(n)),tout=[];P.forEach(a=>P.forEach(b=>tout.push([a,b])));
+    const vrai=[pick(r,P),pick(r,P)],cible=int(r,n),qui=s=>s[1].indexOf(cible);
+    const faits=[];
+    for(let i=0;i<n;i++)for(let k=0;k<n;k++){
+      const ici=vrai[0][i]===k,tient=vrai[1][i]===k;
+      faits.push({t:ici?`${gens[i]} était dans ${lieux[k]}.`:`${gens[i]} n'était pas dans ${lieux[k]}.`,f:s=>(s[0][i]===k)===ici,poids:ici?3:1});
+      faits.push({t:tient?`${gens[i]} avait ${objets[k]}.`:`${gens[i]} n'avait pas ${objets[k]}.`,f:s=>(s[1][i]===k)===tient,poids:tient?4:1});
+    }
+    for(let o=0;o<n;o++)for(let k=0;k<n;k++){
+      const ou=vrai[0][vrai[1].indexOf(o)]===k;
+      faits.push({t:ou?`Celui qui avait ${objets[o]} était dans ${lieux[k]}.`:`Celui qui avait ${objets[o]} n'était pas dans ${lieux[k]}.`,f:s=>(s[0][s[1].indexOf(o)]===k)===ou,poids:ou?3:1});
+    }
+    let reste=tout;const clues=[];
+    const reponses=l2=>new Set(l2.map(qui)).size;
+    for(const q of shuffle(r,faits).sort((a,b)=>a.poids-b.poids)){
+      if(reponses(reste)===1&&reste.length<=(l>1?6:4))break;
+      const n2=reste.filter(q.f);if(n2.length<reste.length&&n2.length>0){reste=n2;clues.push(q.t)}
+    }
+    return{type:'grille',gens,question:`Qui avait ${objets[cible]} ?`,clues:shuffle(r,clues),answer:gens[qui(vrai)],cand:reponses(reste)};
+  },
+  // Trois pendules qui avancent ou retardent l'une sur l'autre : quelle heure était-il vraiment ?
+  horloges(r,l){
+    const noms=shuffle(r,['du salon','du hall','de la cuisine','du bureau','de la gare']),n=l>1?3:2,ecarts=range(n).map(()=>(1+int(r,4))*5*(r()<.5?-1:1));
+    const vraie=20*60+int(r,24)*5,montre=[vraie+ecarts[0]];for(let i=1;i<n;i++)montre.push(montre[i-1]+ecarts[i]);
+    const hm=m=>`${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`,d=e=>e>0?`avance de ${e} minutes`:`retarde de ${-e} minutes`;
+    const txt=[`La pendule ${noms[0]} ${d(ecarts[0])} sur l'heure exacte.`];
+    for(let i=1;i<n;i++)txt.push(`Celle ${noms[i]} ${d(ecarts[i])} sur celle ${noms[i-1]}.`);
+    txt.push(`Le rendez-vous était fixé à ${hm(montre[n-1])} à la pendule ${noms[n-1]}.`);
+    return{type:'horloges',txt,answer:hm(vraie),cand:1};
+  },
+  // Des pesées sur une balance de cuisine : combien pèse l'objet demandé ?
+  balance(r,l){
+    const noms=shuffle(r,['la boîte rouge','la boîte bleue','la boîte verte','la boîte noire']).slice(0,l>1?3:3),n=noms.length;
+    for(let essai=0;essai<200;essai++){
+      const vrai=shuffle(r,range(9).map(i=>i+1)).slice(0,n),eqs=[];
+      const toutes=[];for(let a=1;a<=9;a++)for(let b=1;b<=9;b++)for(let d=1;d<=9;d++)if(a!==b&&a!==d&&b!==d)toutes.push([a,b,d]);
+      let reste=toutes;
+      for(let t=0;t<12&&reste.length>1;t++){
+        const co=range(n).map(()=>int(r,l>1?3:2));if(co.every(x=>!x)||co.filter(Boolean).length<2)continue;
+        const tot=co.reduce((s,k,i)=>s+k*vrai[i],0),n2=reste.filter(q=>co.reduce((s,k,i)=>s+k*q[i],0)===tot);
+        if(n2.length<reste.length){reste=n2;eqs.push((t0=>t0[0].toUpperCase()+t0.slice(1))(co.map((k,i)=>k?(k>1?k+' × ':'')+noms[i]:null).filter(Boolean).join(' + ')+' = '+tot+' kg'))}
+      }
+      const cible=int(r,n);
+      if(reste.length===1)return{type:'balance',eqs,question:`Combien pèse ${noms[cible]} ?`,note:'Les trois boîtes ont des poids différents, des nombres entiers de 1 à 9 kg.',answer:String(vrai[cible]),cand:1};
+    }
+    return{type:'balance',eqs:[],question:'',answer:'0',cand:0};
   }
 };
 function lightPress(p,i){const n=p.n,x=i%n,y=(i/n)|0;[[0,0],[1,0],[-1,0],[0,1],[0,-1]].forEach(([a,b])=>{const X=x+a,Y=y+b;if(X>=0&&Y>=0&&X<n&&Y<n)p.grid[Y*n+X]=!p.grid[Y*n+X]})}
@@ -1425,6 +1479,8 @@ function puzzleWon(p,input){
   if(p.type==='taquin')return p.b.every((v,i)=>v===(i+1)%9);
   if(p.type==='tuyaux')return pipeFlow(p).win;
   if(p.type==='ordre')return p.pick.join(',')===p.answer;
+  if(p.type==='horloges')return String(input).replace(/\D/g,'')===p.answer.replace(/\D/g,'');
+  if(p.type==='balance')return String(input).replace(/\D/g,'')===p.answer;
   return norm(input)===norm(p.answer);
 }
 // Solution exacte, utilisée par le robot et les tests : elle prouve que l'instance se résout.
@@ -7172,6 +7228,9 @@ function pzRender(){
     h+=`<p>Tourne les pièces pour relier la gauche (ligne ${p.y0+1}) à la droite (ligne ${p.y1+1}).</p><div class="pgrid" style="grid-template-columns:repeat(${p.n},46px)">${p.cells.map((m,i)=>`<button data-g="${i}" aria-label="Pièce ${i+1}"><svg viewBox="0 0 30 30">${seg(m,fl.has(i)?'#a33a3a':'#5a6a8a')}</svg></button>`).join('')}</div>`;
   }
   if(p.type==='menteur'){h+=`<p>Une seule de ces phrases est vraie. Où est la clé ?</p><div class="clue">${p.st.map((s,i)=>`<span><b>${p.who[i]} :</b> ${esc(s.txt)}</span>`).join('')}</div><div class="ligne">${['A','B','C'].map(x=>`<button class="etiq" data-m="${x}">Tiroir ${x}</button>`).join('')}</div>`}
+  if(p.type==='grille')h+=`<p>Relis ces indices et déduis-en la réponse : une seule possibilité tient.</p><div class="clue">${p.clues.map(t=>`<span>${esc(t)}</span>`).join('')}</div><p><b>${esc(p.question)}</b></p><div class="ligne">${p.gens.map(n=>`<button class="etiq" data-m="${esc(n)}">${esc(n)}</button>`).join('')}</div>`;
+  if(p.type==='horloges'){h+=`<p>Un mot glissé sous la pendule. Toutes les pendules de la maison sont fausses…</p><div class="clue">${p.txt.map(t=>`<span>${esc(t)}</span>`).join('')}</div><p><b>Quelle heure était-il vraiment ?</b> (par exemple 21 h 35)</p>`;field=1}
+  if(p.type==='balance'){h+=`<p>Des pesées notées au crayon, sur le carnet de la balance.</p><div class="clue">${p.eqs.map(t=>`<span class="code">${esc(t)}</span>`).join('')}</div><p class="petit">${esc(p.note)}</p><p><b>${esc(p.question)}</b> (en kg)</p>`;field=1}
   if(field)h+=`<form id="pz-f" class="ligne"><input id="pz-in" type="text" autocomplete="off" aria-label="Réponse" value="${esc(z.input)}"><button class="etiq">Valider</button></form>`;
   if(z.msg)h+=`<p class="err">${esc(z.msg)}</p>`;
   h+=`<div class="ligne">${z.aide?'<button class="etiq alt" data-x="force">Forcer la serrure</button>':''}<button class="etiq alt" data-x="ferme">Plus tard</button></div>`;
