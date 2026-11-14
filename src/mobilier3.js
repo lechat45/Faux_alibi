@@ -155,7 +155,7 @@ Object.assign(SPR,{
   vase(g,v){
     const c0=['#2e5a9a','#9a2e3a','#2e7a5a','#c8a040'][v%4];
     ellipseP(g,8,20,6,6,'#f0ece4');ellipseP(g,8,20,5,5,'#f8f4ec');R(g,'#f0ece4',5,9,6,4);R(g,'#d8d4cc',5,12,6,1);
-    for(let i=0;i<5;i++)R(g,c0,4+i*2,16+((i*3)%4),1,5);R(g,c0,3,19,10,1);R(g,'#ffffff',5,15,1,6);R(g,'#c8c4bc',12,17,1,7);
+    R(g,c0,3,17,10,1);R(g,c0,3,22,10,1);for(let i=0;i<3;i++){const x=5+i*3;R(g,c0,x,19,1,1);R(g,c0,x-1,20,3,1);R(g,c0,x,21,1,1)}R(g,'#ffffff',4,15,1,8);R(g,'#c8c4bc',12,16,1,8);
     [[4,3,'#e8484a'],[8,1,'#ffd23f'],[11,4,'#f08ac0'],[6,6,'#ffffff']].forEach(([x,y,f])=>{R(g,'#3d8a3e',x+1,y+2,1,6);disque(g,x+1,y+1,1,f)});
   },
   livres(g,v){

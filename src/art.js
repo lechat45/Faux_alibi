@@ -26,13 +26,27 @@ function box(g,x,y,w,h,c){
   R(g,tone(c,-.62),x,y,w,h);R(g,c,x+1,y+1,w-2,h-2);R(g,tone(c,.28),x+1,y+1,w-2,1);R(g,tone(c,.12),x+1,y+2,1,h-4);
   R(g,tone(c,-.28),x+1,y+h-3,w-2,2);R(g,tone(c,-.16),x+w-2,y+2,1,h-4);
 }
-function outlineSprite(k,col='#141226'){
-  const g=k.getContext('2d'),W=k.width,H=k.height,d=g.getImageData(0,0,W,H),a=d.data,o=[];
+// Finition de chaque image : contour teinté (une version très sombre de la couleur qu'il borde, plus doux
+// qu'un noir uniforme) et léger relief sur les bords, éclairés en haut à gauche comme tout le jeu.
+let FINITION=true;
+function outlineSprite(k,col){
+  const g=k.getContext('2d'),W=k.width,H=k.height,d=g.getImageData(0,0,W,H),a=d.data,src=new Uint8ClampedArray(a),plein=i=>src[i*4+3]>120;
+  const fixe=col?hx(col):null,fond=[20,18,38];
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-    if(a[(y*W+x)*4+3]>0)continue;
-    for(const[p,q]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=x+p,Y=y+q;if(X>=0&&Y>=0&&X<W&&Y<H&&a[(Y*W+X)*4+3]>120){o.push([x,y]);break}}
+    const i=y*W+x,p=i*4;
+    if(src[p+3]>0){
+      if(!FINITION||!plein(i))continue;
+      const vide=(X,Y)=>X<0||Y<0||X>=W||Y>=H||!plein(Y*W+X),f=(vide(x,y-1)||vide(x-1,y))?1.1:(vide(x,y+1)||vide(x+1,y))?.9:1;
+      if(f!==1)for(let c0=0;c0<3;c0++)a[p+c0]=f>1?src[p+c0]+(255-src[p+c0])*.1:src[p+c0]*f;
+      continue;
+    }
+    let n=0,r=0,gg=0,b=0;
+    for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=W||Y>=H)continue;const j=Y*W+X;if(plein(j)){n++;r+=src[j*4];gg+=src[j*4+1];b+=src[j*4+2]}}
+    if(!n)continue;
+    const cl=fixe||(FINITION?[r/n*.3+fond[0]*.7,gg/n*.3+fond[1]*.7,b/n*.3+fond[2]*.7]:fond);
+    a[p]=cl[0];a[p+1]=cl[1];a[p+2]=cl[2];a[p+3]=255;
   }
-  o.forEach(([x,y])=>R(g,col,x,y));
+  g.putImageData(d,0,0);
   return k;
 }
 
