@@ -6,8 +6,7 @@ function lbMonde(){
   c=generate(LB.graine,LB.lv,LB.mode);habiller(c);W=buildWorld(c);
   W.obj.filter(o=>o.kind==='suspect').forEach(o=>{W.blk[o.y][o.x]=0});
   G.furn={};W.furn.forEach(f=>G.furn[f.id]=furnitureSprite(f));G.portes={};G.map=buildMap();
-  const V=n=>({nerveux:{nerveux:.85,sociable:.4},bavard:{sociable:.9},froid:{sociable:.2,curieux:.4},timide:{sociable:.25,peureux:.9}}[n]||{});
-  const persos=W.obj.filter(o=>o.kind==='suspect').map(o=>{const s=c.suspects[o.s];return{nom:s.prenom,cx:o.x,cy:o.y,coupable:c.tueurs.includes(o.s),traits:{...V(typeof VOIX==='function'?VOIX(o.s).nom:''),peureux:peureux(o.s)?.8:.15}}});
+  const persos=W.obj.filter(o=>o.kind==='suspect').map(o=>{const k=caractereDe(o.s);return{nom:c.suspects[o.s].prenom,cx:o.x,cy:o.y,coupable:c.tueurs.includes(o.s),traits:k.traits,gouts:k.gouts,vit:k.vit,evite:c.tueurs.includes(o.s)?c.rc:-1}});
   LB.ia=creerIA(W,{rng:RNG(LB.graine),personnages:persos,hasard:LB.hasard,noir:LB.noir,froid:LB.lv===4});
   LB.sheets=W.obj.filter(o=>o.kind==='suspect').map(o=>charSheet(lookOf(c.suspects[o.s],o.s,c.seed)));
   LB.sel=0;lbCentre();lbPanneau();

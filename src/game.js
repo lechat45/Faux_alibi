@@ -38,7 +38,7 @@ function neuf(lv,seed,intro=true,mode=O.expert&&lv<10?'expert':null){
 }
 function prep(){
   W.obj.forEach(o=>{if(o.kind==='suspect'){W.blk[o.y][o.x]=0;o.fx=o.x*TS+8;o.fy=o.y*TS+11;o.wait=60+(o.s*97)%300;o.dir=0}});
-  asseoir();
+  G.ia=null; // le comportement se prépare au premier pas de temps, quand la partie existe
   G.body=W.obj.find(o=>o.kind==='corps');
   poseIndices();
   W.iAuto=W.docs.length;
@@ -276,7 +276,7 @@ function draw(){
   W.obj.forEach(o=>{
     const x=o.x*TS,y=(o.y+1)*TS;
     if(o.kind==='vitrine'&&inView(x,y))L.push({y,d:()=>ctx.drawImage((o.room===c.wpn||o.room===c.leurre)?G.vit.vide:G.vit[c.set.rooms[o.room].c],x-1,y-37)});
-    if(o.kind==='suspect'&&!(Cut&&Cut.hideNpc))L.push({y:o.assis?(o.y+1)*TS+1:o.fy,d:()=>{dessinePNJ(o);if(o.em>0)emote(Math.round(o.fx),Math.round(o.fy-29),o.emc)}});
+    if(o.kind==='suspect'&&!(Cut&&Cut.hideNpc))L.push({y:o.assis?(o.y+1)*TS+1:o.fy,d:()=>{dessinePNJ(o);if(o.em>0)emote(Math.round(o.fx),Math.round(o.fy-29),o.emc);else if(o.bulle)bulleParle(Math.round(o.fx),Math.round(o.fy-(o.assis?24:29)))}});
   });
   const moving=!Cut&&(keys.up||keys.down||keys.left||keys.right||G.bot||G.walk||G.moved);
   if(!Cut||(!Cut.actors.me&&!Cut.hideNpc))L.push({y:P.y,d:()=>{shadow(P.x,P.y,12);drawChar2(G.sheet.me,P.x,P.y-(moving&&(tick>>2)&1?1:0),P.dir,moving?(tick>>(G.run?2:3))&3:0);if(G.emT>0)emote(Math.round(P.x),Math.round(P.y-29),G.emC)}});
@@ -638,31 +638,8 @@ function promptOf(o){
 const npcLine=(x0,y0,x1,y1)=>{const n=Math.ceil(Math.hypot(x1-x0,y1-y0)/6);for(let i=1;i<=n;i++){const x=x0+(x1-x0)*i/n,y=y0+(y1-y0)*i/n;if(solidCell(W,(x-5)>>4,(y-3)>>4,{})||solidCell(W,(x+5)>>4,(y-3)>>4,{}))return false}return true};
 function npcLife(){
   const P=S.p,ar=G.area!=null?G.area:c.rc;
-  W.obj.forEach(o=>{
-    if(o.kind!=='suspect')return;
-    if(o.em>0)o.em--;
-    const peur=G.noir>0&&peureux(o.s);if(peur&&(tick+o.s*53)%420===0){o.em=50;o.emc='!'}
-    gesteMaj(o);if(o.assis||o.pilote)return;
-    if(peur){o.mv=false;return}
-    const R=reglage(),near=Math.hypot(P.x-o.fx,P.y-o.fy)<R.vue*.7&&visible(ar,o.fx>>4,(o.fy-3)>>4);
-    if(o.hold>0)o.hold--;
-    if(!near&&!(o.hold>0)&&trajet(o,R))return;
-    if(near||o.hold>0){
-      o.mv=false;o.tx=undefined;
-      if(near){const dx=P.x-o.fx,dy=P.y-o.fy;o.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?0:2);if(!o.seen){o.seen=240;o.em=45;o.emc='!'}}
-    }else if(o.seen>0)o.seen--;
-    if(!near&&!(o.hold>0)&&o.tx===undefined&&--o.wait<=0){
-      const A=W.rooms[o.room],opts=[];
-      for(let i=0;i<8;i++){const x=A.x0+int(Math.random,A.x1-A.x0+1),y=A.y0+1+int(Math.random,A.y1-A.y0),tx=x*TS+8,ty=y*TS+11;if(!solidCell(W,x,y,{})&&Math.hypot(tx-o.fx,ty-o.fy)<70&&npcLine(o.fx,o.fy,tx,ty))opts.push([tx,ty])}
-      if(opts.length){o.tx=opts[0][0];o.ty=opts[0][1]}
-      o.wait=(120+Math.random()*340)*R.att;
-    }
-    if(o.tx!==undefined){
-      const dx=o.tx-o.fx,dy=o.ty-o.fy,d=Math.hypot(dx,dy);
-      if(d<1){o.tx=undefined;o.mv=false}
-      else{o.fx+=dx/d*.45*R.npc;o.fy+=dy/d*.45*R.npc;o.mv=true;o.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?1:3):(dy>0?0:2);o.x=o.fx>>4;o.y=(o.fy-3)>>4}
-    }
-  });
+  vieTick(ar);
+  W.obj.forEach(o=>{if(o.kind!=='suspect')return;if(o.em>0)o.em--;if(G.noir>0&&peureux(o.s)&&(tick+o.s*53)%420===0){o.em=50;o.emc='!'}if(o.assis)gesteMaj(o)});
   if(G.noir>0){if(O.bavard&&!c.test&&tick%900===450&&!G.ambO){const ici=W.obj.filter(o=>o.kind==='suspect'&&peureux(o.s)&&visible(ar,o.fx>>4,(o.fy-3)>>4));if(ici.length)dit(ici[tick%ici.length],PEUR[(tick>>9)%PEUR.length],150)}}
   else if(O.bavard&&!c.test&&tick%520===260&&!G.ambO){
     const ici=W.obj.filter(o=>o.kind==='suspect'&&visible(ar,o.fx>>4,(o.fy-3)>>4));

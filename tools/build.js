@@ -1,5 +1,5 @@
 const fs=require('fs'),path=require('path'),d=path.join(__dirname,'..');
-const js=['cartes','levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','marche','vie','tuto','sons','mobilier','mobilier2','mobilier3','minis2','minis3','minis4','lieux','rendu','editeur','comptes','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
+const js=['cartes','levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','marche','vie','tuto','sons','mobilier','mobilier2','mobilier3','minis2','minis3','minis4','lieux','rendu','ia','vivants','editeur','comptes','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
 const SIG=require('crypto').createHash('sha1').update(['cartes','levels','data','engine','puzzles','world'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('')).digest('hex').slice(0,10);
 const css=fs.readFileSync(path.join(d,'src/style.css'),'utf8');
 const out=`<!DOCTYPE html>
@@ -51,7 +51,7 @@ if(/gsk_[A-Za-z0-9]/.test(out))throw new Error('Une clé est présente dans la p
 // La version privée (claude.ai) ne peut pas s'installer : elle ne reçoit pas les balises d'application
 fs.writeFileSync(path.join(d,'faux-alibi.html'),out.replace('<!--APP-->\n',''));
 // Labo des personnages (labo.html) : une page à part, pour essayer la nouvelle IA. Le jeu n'en charge rien.
-{const ia=fs.readFileSync(path.join(d,'labo','ia.js'),'utf8').replace(/^if\(typeof module.*$/m,''),lb=fs.readFileSync(path.join(d,'labo','labo.js'),'utf8'),k=out.lastIndexOf('\n</script>');
+{const ia='',lb=fs.readFileSync(path.join(d,'labo','labo.js'),'utf8'),k=out.lastIndexOf('\n</script>');
  fs.writeFileSync(path.join(d,'labo.html'),(out.slice(0,k)+'\n'+ia+'\n'+lb+out.slice(k)).replace('<!--APP-->\n','').replace('<title>Faux Alibi</title>','<title>Labo des personnages</title>'))}
 // Application installable (Chrome sur Android, Safari et Chrome sur iPhone) : manifeste, icônes, service worker
 const desc="Jeu d'enquête en pixel art : interroge les suspects, fouille les lieux et démasque le menteur.";

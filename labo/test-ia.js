@@ -4,7 +4,7 @@
 const fs=require('fs'),path=require('path'),root=path.join(__dirname,'..');
 const src=['cartes','levels','data','engine','puzzles','world','documents','papiers','tableaux'].map(f=>fs.readFileSync(path.join(root,'src',f+'.js'),'utf8')).join('\n');
 const E=new Function(src+';return{generate,buildWorld,RNG,LEVELS}')();
-const{creerIA,IA_ACTIONS}=require('./ia.js');
+const{creerIA,IA_ACTIONS}=require('../src/ia.js');
 const TICKS=+process.argv[2]||18000;
 const monde=(lv,seed,mode)=>{const c=E.generate(seed,lv,mode),W=E.buildWorld(c);W.obj.filter(o=>o.kind==='suspect').forEach(o=>{W.blk[o.y][o.x]=0});return{c,W}};
 const persos=(c,W)=>W.obj.filter(o=>o.kind==='suspect').map(o=>({nom:c.suspects[o.s].prenom,cx:o.x,cy:o.y,coupable:c.tueurs.includes(o.s)}));

@@ -1,4 +1,4 @@
-// IA des personnages — PROTOTYPE DE LABO, PAS BRANCHÉ AU JEU.
+// Comportement des personnages (utilisé par le jeu et par la page de labo).
 // Chaque personnage a un caractère et des besoins qui montent avec le temps (fatigue, ennui, envie de parler,
 // stress, soif, froid). Quand il a fini ce qu'il fait, il regarde ce que les lieux lui offrent — un fauteuil,
 // la cheminée, une fenêtre, une bibliothèque, le bar, quelqu'un à qui parler — et choisit ce qui lui ferait
@@ -48,6 +48,7 @@ function creerIA(W,opts={}){
   const voisinLibre=(x,y)=>[[0,1],[1,0],[-1,0],[0,-1]].map(([a,b])=>[x+a,y+b]).find(([a,b])=>posable(a,b));
   [...W.furn].sort((p,q)=>(IA_MEUBLES[q.name]==='asseoir')-(IA_MEUBLES[p.name]==='asseoir')).forEach(f=>{
     const t=IA_MEUBLES[f.name];if(!t)return;
+    if(t==='asseoir'&&O.sieges&&!O.sieges.includes(f.name))return;
     if(t==='asseoir'){
       const places=f.name==='bed'?[[f.x,f.y+f.h-1]]:range0(f.w).map(k=>[f.x+k,f.y]);
       places.forEach(([x,y])=>{const v=voisinLibre(x,y);if(v)ajoute('asseoir',v[0],v[1],IA_FACE[f.name]??0,f,[x,y])});
@@ -63,8 +64,8 @@ function creerIA(W,opts={}){
   const agents=(opts.personnages||[]).map((p,i)=>{
     const tr=p.traits||{},A={id:i,nom:p.nom||('Perso '+(i+1)),x:p.cx*IA_TS+8,y:p.cy*IA_TS+11,dir:0,maison:aire(p.cx,p.cy),
       traits:{sociable:tr.sociable??rng(),nerveux:tr.nerveux??rng(),curieux:tr.curieux??rng(),paresseux:tr.paresseux??rng(),peureux:tr.peureux??(rng()<.7?.8:.1)},
-      coupable:!!p.coupable,besoins:Object.fromEntries(IA_BESOINS.map(b=>[b,rng()*.6])),action:null,chemin:null,attente:0,assis:false,bulle:null,
-      vit:(.5+.18*(tr.nerveux??.5)-.14*(tr.paresseux??.5))*(.9+rng()*.2),recents:[],stats:{},bloque:0,echecs:0,cell:[p.cx,p.cy]};
+      coupable:!!p.coupable,gouts:p.gouts||{},evite:p.evite??-1,gele:false,besoins:Object.fromEntries(IA_BESOINS.map(b=>[b,rng()*.6])),action:null,chemin:null,attente:0,assis:false,bulle:null,
+      vit:(.5+.18*(tr.nerveux??.5)-.14*(tr.paresseux??.5))*(.9+rng()*.2)*(p.vit||1),recents:[],stats:{},bloque:0,echecs:0,cell:[p.cx,p.cy]};
     return A;
   });
   const caseDe=a=>a.cell.slice();
@@ -82,13 +83,13 @@ function creerIA(W,opts={}){
   function choisir(a){
     const dep=caseDe(a),R=bfs(dep),cands=[],ici=aire(dep[0],dep[1]),Bs=a.besoins,T=a.traits;
     const proximite=d=>1/(1+d/7),nouveau=t=>a.recents.includes(t)?.45:1;
-    const note=(type,base,d,extra=1)=>{const A=IA_ACTIONS[type];let m=1;for(const[k,v]of Object.entries(A.trait||{}))m+=v*(T[k]-.5)*2;return Math.max(0,base*m*proximite(d)*nouveau(type)*extra)};
+    const note=(type,base,d,extra=1)=>{const A=IA_ACTIONS[type];let m=1;for(const[k,v]of Object.entries(A.trait||{}))m+=v*(T[k]-.5)*2;return Math.max(0,base*m*proximite(d)*nouveau(type)*extra*(a.gouts[type]||1))};
     if(O.noir&&T.peureux>.5){
       spots.filter(s=>s.type==='lumiere'&&!s.pris&&R.D[s.y*MW+s.x]>=0).forEach(s=>cands.push({type:'lumiere',spot:s,n:3*proximite(R.D[s.y*MW+s.x])}));
     }
     spots.forEach(s=>{
       if(s.type==='lumiere'||s.pris!==null&&s.pris!==a.id)return;const d=R.D[s.y*MW+s.x];if(d<0)return;
-      const A=IA_ACTIONS[s.type],dehors=s.aire!==ici&&s.aire!==a.maison?.55:1;
+      const A=IA_ACTIONS[s.type],dehors=(s.aire!==ici&&s.aire!==a.maison?.55:1)*(s.aire===a.evite?.3:1);
       if(O.noir&&s.type!=='asseoir')return;
       cands.push({type:s.type,spot:s,n:note(s.type,(A.besoin?Bs[A.besoin]:.1)+.05,d,dehors)});
     });
@@ -144,6 +145,7 @@ function creerIA(W,opts={}){
     tick++;
     const J=O.joueur;
     agents.forEach(a=>{
+      if(a.gele)return; // quelqu'un lui parle ou s'approche : il attend
       // les besoins montent doucement, chacun selon son caractère
       const B=a.besoins,T=a.traits,assis=a.assis;
       B.fatigue=enfer(B.fatigue+(assis?0:.00009*(.6+T.paresseux)));B.ennui=enfer(B.ennui+.00011*(.6+T.curieux));
