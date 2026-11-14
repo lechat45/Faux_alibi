@@ -732,3 +732,10 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .ed-palette.recents{grid-template-columns:repeat(auto-fill,minmax(56px,1fr))}.ed-palette.recents span{display:none}.ed-palette.recents img{height:38px}
 .ed-palette button{background:#fff8e4}
 .ed-etat{background:#2a1c10;border-top:3px solid #c8983a}
+
+/* Niveau test des points de vue */
+.dossier.essai{background:#2a3a6a;color:#fff4e0}
+.dossier.essai .no,.dossier.essai .dif{color:#ffd23f}
+.vues{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:15;display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:center;background:rgba(20,16,36,.85);padding:5px 8px;border-radius:6px;box-shadow:0 2px 0 rgba(0,0,0,.5);max-width:calc(100% - 140px)}
+.vues span{color:#ffd23f;font:600 13px var(--f)}
+.vues .etiq{font-size:13px;padding:4px 9px}

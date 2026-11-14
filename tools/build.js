@@ -1,5 +1,5 @@
 const fs=require('fs'),path=require('path'),d=path.join(__dirname,'..');
-const js=['cartes','levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','marche','vie','tuto','sons','mobilier','mobilier2','mobilier3','minis2','minis3','minis4','lieux','rendu','ia','vivants','fiches','editeur','comptes','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
+const js=['cartes','levels','data','engine','puzzles','world','art','art2','meubles','tableaux','decor','art3','interieur','fonds','minis','documents','papiers','accueil','enquete','marche','vie','tuto','sons','mobilier','mobilier2','mobilier3','minis2','minis3','minis4','lieux','rendu','ia','vivants','fiches','vues','editeur','comptes','game'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('\n');
 const SIG=require('crypto').createHash('sha1').update(['cartes','levels','data','engine','puzzles','world'].map(f=>fs.readFileSync(path.join(d,'src',f+'.js'),'utf8')).join('')).digest('hex').slice(0,10);
 const css=fs.readFileSync(path.join(d,'src/style.css'),'utf8');
 const out=`<!DOCTYPE html>
@@ -29,6 +29,7 @@ const out=`<!DOCTYPE html>
   <div id="but" class="but" hidden></div>
   <button id="tuto-p" class="tuto-p" data-a="passertuto" hidden>Passer le tutoriel</button>
   <div id="toast" class="toast" hidden></div>
+  <div id="vues" class="vues" hidden></div>
   <div id="prompt" class="prompt" hidden></div>
   <div id="bulle" class="bulle" hidden></div>
   <div id="carte" class="carte" hidden></div>

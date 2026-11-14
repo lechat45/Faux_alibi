@@ -307,6 +307,7 @@ function draw(){
   if(G.noir>0)noirDessine(pxx,pyy,1,cx,cy);else if(G.retour>0)noirDessine(pxx,pyy,Math.pow(G.retour/240,1.4)*(G.retour>200&&(G.retour>>2)%4===0?.55:1),cx,cy);
   if(G.fl>0){ctx.fillStyle=`rgba(255,240,230,${G.fl/20})`;ctx.fillRect(0,0,VW,VH)}
   if(G.fade>0){ctx.fillStyle=`rgba(4,3,10,${G.fade})`;ctx.fillRect(0,0,VW,VH)}
+  if(G.vue===1)vueInclinee();else if(G.vue===2)vuePlan();
   posBulles();
 }
 const toScreen=(x,y)=>[(x-Math.round(cam.x))*SC,(y-Math.round(cam.y))*SC];
@@ -596,7 +597,7 @@ function objAt(mx,my){
   Object.values(W.doors).forEach(d=>{if(!S.open[d.id]&&d.lock!==null)test(d)});
   return best;
 }
-function mouseScreen(e){const r=$('jeu').getBoundingClientRect();return{x:(e.clientX-r.left)/SC+Math.round(cam.x),y:(e.clientY-r.top)/SC+Math.round(cam.y)}}
+function mouseScreen(e){const r=$('jeu').getBoundingClientRect(),sx=(e.clientX-r.left)/SC,sy=(e.clientY-r.top)/SC,v=G.vue?sourisVue(sx,sy):null;return v||{x:sx+Math.round(cam.x),y:sy+Math.round(cam.y)}}
 function onMapClick(e){
   if(modal||G.bot)return;
   const p=mouseScreen(e),o=objAt(p.x,p.y),cx=p.x>>4,cy=p.y>>4,ar=G.area!=null?G.area:c.rc;
@@ -869,6 +870,7 @@ function render(){
 // ——— Page d'accueil ———
 function ligneJour(){const j=jourDuJour(),f=(stats.jours||{})[j.k];return`<button class="dossier jour" data-a="jour"><span class="no">J</span><span class="nom">Enquête du jour : ${esc(LEVELS[j.lv].nom)}</span><span class="dif">${f?`Faite · ${f}`:stats.serieJ?`Série : ${stats.serieJ}`:'Nouvelle'}</span></button>`}
 function accueil(){
+  if($('vues'))$('vues').hidden=true;G.vue=0;
   if(G.sauveVieille){G.sauveVieille=false;setTimeout(()=>toast("Ta partie en cours venait d'une version précédente du jeu : elle ne peut pas reprendre. Une nouvelle enquête t'attend !",true),400)}
   closeAll();enJeu=false;$('but').hidden=true;$('tuto-p').hidden=true;['calepin','marteau'].forEach(n=>$(n).classList.remove('appel'));if(S&&!S.fin&&!(c&&c.test))G.sauve=S;
   $('accueil').hidden=false;$('prompt').hidden=true;$('lieu').hidden=true;$('amb').hidden=true;$('hud').hidden=true;
@@ -876,7 +878,7 @@ function accueil(){
   const dos=LEVELS.map((l,i)=>`<button class="dossier ${stats.res[i]?'fait':''}" data-a="niveau" data-v="${i}"><span class="no">${i+1}</span><span class="nom">${esc(l.nom)}</span><span class="dif">${O.expert?'Expert':DIFF[l.diff].label}</span>${O.expert?(stats.exp&&stats.exp[i]?`<i>Expert · ${stats.exp[i]}</i>`:''):stats.res[i]?`<i>Résolu${stats.notes&&stats.notes[i]?' · '+stats.notes[i]:''}</i>`:''}</button>`).join('');
   $('acc-ui').innerHTML=`<div class="acc-g">${carteCompte()}<h1>Faux<br><span>Alibi</span></h1><p>Dix lieux, cinquante pièces, et à chaque fois quelqu'un qui ment.</p>
     <div class="ligne"><button class="etiq fort" data-a="nouvelle" data-v="${suite<0?int(Math.random,10):suite}">Nouvelle enquête</button>${G.sauve?'<button class="etiq" data-a="continuer">Continuer</button>':''}<button class="etiq ${O.expert?'actif':''}" data-a="expert" aria-pressed="${!!O.expert}">Expert : ${O.expert?'oui':'non'}</button><button class="etiq" data-a="reglages">Options</button>${boutonInstaller()}</div>${aideInstaller()}</div>
-    <div class="acc-d"><div class="tampon"><b>${n}</b><span>enquête${n>1?'s':''} résolue${n>1?'s':''}</span><small>Fins : ${Object.keys(stats.fins||{}).length}/6</small></div><div class="dossiers">${ligneJour()}${dos}</div></div>`;
+    <div class="acc-d"><div class="tampon"><b>${n}</b><span>enquête${n>1?'s':''} résolue${n>1?'s':''}</span><small>Fins : ${Object.keys(stats.fins||{}).length}/6</small></div><div class="dossiers">${ligneJour()}${dos}<button class="dossier essai" data-a="vues"><span class="no">T</span><span class="nom">Niveau test : 3 points de vue</span><span class="dif">Essai</span></button></div></div>`;
 }
 // ——— Options : une fenêtre unique, depuis l'accueil comme depuis le jeu ———
 const OPTS=[
@@ -1157,6 +1159,7 @@ function startBot(){skipCut();closeAll();S.introDone=true;G.robot=true;G.bot=tru
 const KEYMAP={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',z:'up',w:'up',s:'down',q:'left',a:'left',d:'right',Z:'up',W:'up',S:'down',Q:'left',A:'left',D:'right'};
 function onKey(e,v){
   if(ED.on)return;
+  if(v&&S&&S.vuesTest&&enJeu&&!modal&&/^[123]$/.test(e.key)){choisitVue(+e.key-1);return}
   const tag=e.target.tagName;
   if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA'){if(e.key==='Escape'&&v&&modal)closeAll();return}
   if(!enJeu)return;
@@ -1187,6 +1190,8 @@ function pret(){
     if(a==='comparer')return comparer();
     if(a==='aide'){const t=aideTexte();closeAll();return say('Basile',t,null,G.porBa)}
     if(a==='onglet')return ouvrir(v);
+    if(a==='vues')return lanceVues();
+    if(a==='vue')return choisitVue(+v);
     if(a==='fiche'){G.fiche=+v;return ouvrir('gens')}
     if(a==='fermer'){if(modal==='doc'&&G.tab&&!$('carnet').hidden){$('doc').hidden=true;modal='carnet';return}return closeAll()}
     if(a==='lire')return ouvrirDoc(+v);
