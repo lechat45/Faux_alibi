@@ -149,3 +149,42 @@ Object.assign(SPR,{
   porteL(g,v){const ks=Object.keys(STYLE_PORTE),st=ks[v%ks.length];g.drawImage(doorVArt(st,true,null),0,0)}
 });
 Object.assign(SH,{mur:30,porte:30,porteL:32});
+
+// ——— Six décors de plus pour l'éditeur ———
+Object.assign(SPR,{
+  vase(g,v){
+    const c0=['#2e5a9a','#9a2e3a','#2e7a5a','#c8a040'][v%4];
+    ellipseP(g,8,20,6,6,'#f0ece4');ellipseP(g,8,20,5,5,'#f8f4ec');R(g,'#f0ece4',5,9,6,4);R(g,'#d8d4cc',5,12,6,1);
+    for(let i=0;i<5;i++)R(g,c0,4+i*2,16+((i*3)%4),1,5);R(g,c0,3,19,10,1);R(g,'#ffffff',5,15,1,6);R(g,'#c8c4bc',12,17,1,7);
+    [[4,3,'#e8484a'],[8,1,'#ffd23f'],[11,4,'#f08ac0'],[6,6,'#ffffff']].forEach(([x,y,f])=>{R(g,'#3d8a3e',x+1,y+2,1,6);disque(g,x+1,y+1,1,f)});
+  },
+  livres(g,v){
+    const cols=['#a33a3a','#2e6a8c','#3d7a4c','#c29a3a','#6b3d78','#3a3a5c'];
+    for(let i=0;i<5;i++){const w=12-((i*3+v)%4),x=2+((i*5+v)%3),y=14-i*3,col=cols[(i+v)%6];R(g,col,x,y,w,3);R(g,tone(col,.3),x,y,w,1);R(g,'#f4ecd8',x+w-1,y+1,1,2);R(g,'#e8c060',x+2,y+1,1,1)}
+  },
+  statue(g,v){
+    const p=['#e8e4dc','#c8c0b0','#8a939e'][v%3];
+    R(g,tone(p,-.1),2,34,12,8);R(g,tone(p,.15),2,34,12,2);R(g,tone(p,-.3),2,41,12,1);
+    R(g,p,5,14,6,20);R(g,tone(p,.2),5,14,2,20);R(g,tone(p,-.25),10,16,1,18);for(let y=20;y<34;y+=3)R(g,tone(p,-.12),6,y,4,1);
+    R(g,p,4,12,8,4);R(g,p,3,13,2,8);R(g,p,11,13,2,6);R(g,p,12,8,2,6);
+    disque(g,8,7,3,p);R(g,tone(p,.25),6,5,2,3);R(g,tone(p,-.3),10,6,1,3);
+  },
+  echelle(g,v){
+    const b=BOIS_M[v%4];
+    for(let y=0;y<42;y++){R(g,tone(b,.1),2+Math.round(y*.06),y,2,1);R(g,tone(b,-.15),12-Math.round(y*.06),y,2,1)}
+    for(let y=6;y<40;y+=8){R(g,tone(b,.2),3,y,10,2);R(g,tone(b,-.3),3,y+2,10,1)}
+    R(g,'#8a939e',7,1,2,40);
+  },
+  poele(g,v){
+    R(g,'#2a2a30',7,0,3,14);R(g,'#4a4a52',7,0,1,14);R(g,'#1a1a20',6,12,5,2);
+    R(g,'#2a2a30',2,14,12,18);R(g,'#4a4a52',2,14,12,2);R(g,'#1a1a20',2,30,12,2);
+    R(g,'#5a2a10',5,19,6,7);R(g,'#ff8a2a',6,21,4,4);R(g,'#ffd23f',7,22,2,2);R(g,'#8a939e',4,18,8,1);
+    pied(g,3,32,4,'#1a1a20');pied(g,11,32,4,'#1a1a20');
+  },
+  cartons(g,v){
+    const k='#b88a4a';
+    caisse(g,1,12,14,12,3,k,v,'#c89a5a');R(g,'#e8d8b0',7,12,2,12);R(g,'#5a3a1a',3,17,4,2);
+    caisse(g,3,2,10,10,3,tone(k,.08),v+1,'#d0a868');R(g,'#e8d8b0',7,2,2,10);
+  }
+});
+Object.assign(SH,{vase:24,livres:18,statue:42,echelle:42,poele:36,cartons:24});

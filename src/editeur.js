@@ -206,7 +206,7 @@ function edPointe(e){
   if(O_==='ajout'){
     if(!ED.ajout)return pan();const n=ED.ajout,[fw,fh]=FP[n],x=cx-((fw-1)>>1),y=cy-fh+1;
     if(!edLibre(n,x,y,-1)){ED.msg='Pas de place ici pour ce meuble (mur, autre meuble, ou juste devant une porte).';edEtat();return}
-    edModifie(C=>{C.furn.push([n,x,y,(Math.random()*1e6)|0])});ED.sel={meuble:edCarte().furn.length-1};return;
+    edModifie(C=>{C.furn.push([n,x,y,(Math.random()*1e6)|0])});ED.sel={meuble:edCarte().furn.length-1};ED.recents=[n,...(ED.recents||[]).filter(q=>q!==n)].slice(0,8);return;
   }
   if(O_==='murs'){
     if(ED.murMode==='porte'){edPercePorte(cx,cy);return}
@@ -294,7 +294,7 @@ function edPanneau(){
     ${nm?`<p class="petit">Modèle</p><div class="ed-modeles">${range(nm).map(k=>`<button data-ed="modele" data-v="${k}" class="${(op.mod??(n==='bed'?-1:CU.furn[s.meuble][3]%10))===k?'pris':''}"><img alt="" src="${edVignette(n,CU.furn[s.meuble][3],{...op,mod:k})}"></button>`).join('')}</div>`
       :/^(lift|escalier|secours)$/.test(n)?'':`<p class="petit">Aspect</p><div class="ed-modeles">${edAspects(CU.furn[s.meuble][3]).map(v=>`<button data-ed="aspectv" data-v="${v}" class="${v===CU.furn[s.meuble][3]?'pris':''}"><img alt="" src="${edVignette(n,v,op)}"></button>`).join('')}</div>`}
     <p class="petit">Flèches du clavier : déplacer d'une case.</p>`}
-  if(O_==='ajout'){h+=`<input id="ed-cherche" class="ed-cherche" placeholder="Chercher un meuble…" value="${esc(ED.cherche||'')}"><div class="ed-palette">${Object.keys(FP).filter(n=>SPR[n]&&(!ED.cherche||edNom(n).toLowerCase().includes(ED.cherche.toLowerCase())||n.includes(ED.cherche))).sort((a,b)=>edNom(a).localeCompare(edNom(b))).map(n=>`<button data-ed="prends" data-v="${n}" class="${ED.ajout===n?'pris':''}" title="${esc(edNom(n))}"><img alt="" src="${edIcone(n).toDataURL()}"><span>${esc(edNom(n))}</span></button>`).join('')}</div>`}
+  if(O_==='ajout')h+=edPalette();
   if(O_==='pieces'&&!(s&&s.rect!=null))h+=`<h3>Créer une pièce</h3><label class="ed-champ">Nom <input id="ed-nompiece" class="ed-cherche" maxlength="28" value="${esc(ED.nomPiece||'Nouvelle pièce')}"></label><button data-ed="creer" class="${ED.creer?'pris':''}">${ED.creer?'Trace-la sur la carte…':'Tracer la nouvelle pièce'}</button><p class="petit">Place-la contre une autre pièce : une case de mur sur le côté, ou trois rangées en haut et en bas. Une porte se pose toute seule.</p>`;
   if(O_==='pieces'&&s&&s.rect!=null){const R0=CU.plan.r.concat(CU.plan.c),q0=R0[s.rect];if(q0&&q0[4]&&(CU.crees||[]).includes(q0[4]))h+=`<button data-ed="supprpiece" class="danger">Supprimer « ${esc(q0[4])} »</button>`}
   if(O_==='pieces'&&s&&s.rect!=null){const R=CU.plan.r.concat(CU.plan.c),q=R[s.rect],A=W.areas.find(A=>A.rects.some(r=>r.x0===q[0]&&r.y0===q[1]));
@@ -326,7 +326,7 @@ function edInterface(){
   const e=$('ed');
   e.innerHTML=`<header id="ed-barre" class="ed-barre">
     <select id="ed-lv" aria-label="Lieu">${LEVELS.slice(0,10).map((l,i)=>`<option value="${i}">${i+1}. ${esc(l.nom)}</option>`).join('')}</select>
-    <span class="ed-outils" role="toolbar">${ED_OUTILS.map(([k,l])=>`<button data-ed-outil="${k}">${l}</button>`).join('')}</span>
+    <span class="ed-outils" role="toolbar">${ED_OUTILS.map(([k,l])=>`<button data-ed-outil="${k}" title="${esc(l)}"><img alt="" src="${edIconeOutil(k)}"><span>${l}</span></button>`).join('')}</span>
     <span class="ed-groupe"><button data-ed="annule" title="Annuler (Ctrl+Z)">↶</button><button data-ed="refait" title="Rétablir (Ctrl+Y)">↷</button><button data-ed="grille" title="Quadrillage">#</button><button data-ed="moins" title="Dézoomer">−</button><button data-ed="plus" title="Zoomer">+</button><button data-ed="centre" title="Tout voir">⤢</button></span>
     <span class="ed-groupe"><button data-ed="essai-n">Tester</button><button data-ed="essai-e">Tester en expert</button></span>
     <span class="ed-groupe"><button data-ed="exporte" class="fort">Exporter</button><button data-ed="copie">Copier</button><button data-ed="importe">Importer</button><input type="file" id="ed-fichier" accept=".json,application/json" hidden></span>
@@ -369,6 +369,7 @@ function edClic(x){
   if(a==='base'){if(!b.classList.contains('sur')){b.classList.add('sur');b.textContent='Sûr ? Re-clique';setTimeout(()=>{b.classList.remove('sur');b.textContent='Carte générée'},3000);return}
     b.classList.remove('sur');b.textContent='Carte générée';const avant=JSON.stringify(CU);ED.hist.push(avant);ED.base=(ED.base||0)+1;ED.cartes[ED.lv]=edBase(1000+ED.lv*7+ED.base*101);ED.msg='Nouvelle carte générée (Annuler pour revenir).';edSauve();edConstruit();edPanneau();edBarre()}
   if(a==='prends'){ED.ajout=ED.ajout===v?null:v;edPanneau()}
+  if(a==='cat'){ED.cat=v;ED.cherche='';edPanneau()}
   if(a==='tableau'){ED.tabN=+v;edPanneau()}
   if(a==='miroir'&&s&&s.meuble!=null)edMiroir();
   if(a==='murmode'){ED.murMode=v;edPanneau()}
@@ -517,4 +518,43 @@ function edAjoutePorte(cx,cy){
   const ok=edModifie(C=>{C.liens=[...(C.liens||[]),[na,nb]];const noms=edNomsAires(C);C.portes=C.portes||{};C.portes[noms.indexOf(na)+'-'+noms.indexOf(nb)]=pos},true);
   if(ok){ED.msg='Porte ajoutée entre « '+na+' » et « '+nb+' ».';edEtat()}
   return true;
+}
+
+// ——— Le menu de construction : des catégories, des récents, une icône par outil ———
+const ED_CATS=[
+  ['salon','Salon','armchairR',/^(sofa|armchair|basse|fireplace|piano|gramophone|harpe|jukebox|television|billard|bar$|banquette|vaisselier|paravent|aquarium|cage)/],
+  ['chambre','Chambre','bed',/^(bed|chevet|wardrobe|commode|vanity|trunk|valise|portant|mannequin|paravent)/],
+  ['cuisine','Cuisine','stove',/^(fridge|stove|sink|counter|table|rtable|chair|stool|poele)/],
+  ['bain','Bain','tub',/^(tub|toilet|shower|sink|medic|washer|cabine|bascule)/],
+  ['bureau','Bureau','desk',/^(desk|pcdesk|shelf|cabinet|copier|console|coffrefort|livres|globe|clock)/],
+  ['deco','Décor','plant',/^(plant|planter|lamp|vase|statue|buste|armure|fontaine|cage|aquarium|livres|globe|clock|banc|portemanteau|parapluies|chaussures|videpoche)/],
+  ['stock','Rangement','crate',/^(barre|crate|barrel|trunk|locker|cartons|echelle|chariot|valise|ropes|skis|bouee|portant)/],
+  ['tech','Technique','engine',/^(engine|tank|labbench|rack|console|spot|radio|perfusion|brancard|weights|treadmill|bandit|roulette|jetons|winerack|skirack)/],
+  ['struct','Structure','escalier',/^(mur|porte|escalier|secours|lift)/]
+];
+const edTousMeubles=()=>Object.keys(FP).filter(n=>SPR[n]);
+function edPalette(){
+  const tous=edTousMeubles(),q=(ED.cherche||'').toLowerCase(),cat=ED.cat||'salon';
+  const classes=n=>ED_CATS.filter(([,,,re])=>re.test(n)).map(c0=>c0[0]),divers=tous.filter(n=>!classes(n).length);
+  const liste=q?tous.filter(n=>edNom(n).toLowerCase().includes(q)||n.includes(q)):cat==='divers'?divers:tous.filter(n=>classes(n).includes(cat));
+  const bouton=n=>`<button data-ed="prends" data-v="${n}" class="${ED.ajout===n?'pris':''}" title="${esc(edNom(n))}"><img alt="" src="${edIcone(n).toDataURL()}"><span>${esc(edNom(n))}</span></button>`;
+  const rec=(ED.recents||[]).filter(n=>FP[n]);
+  return `<input id="ed-cherche" class="ed-cherche" placeholder="Chercher parmi ${tous.length} meubles…" value="${esc(ED.cherche||'')}">
+    ${rec.length?`<p class="ed-titre">Récents</p><div class="ed-palette recents">${rec.map(bouton).join('')}</div>`:''}
+    <div class="ed-cats" role="tablist">${[...ED_CATS,['divers','Divers','valise']].map(([k,l,ic])=>`<button data-ed="cat" data-v="${k}" class="${!q&&cat===k?'pris':''}" role="tab" aria-selected="${!q&&cat===k}"><img alt="" src="${edIcone(ic).toDataURL()}"><span>${l}</span></button>`).join('')}</div>
+    <p class="ed-titre">${q?'Résultats':(ED_CATS.find(c0=>c0[0]===cat)||[0,'Divers'])[1]} · ${liste.length}</p>
+    <div class="ed-palette">${liste.sort((a,b)=>edNom(a).localeCompare(edNom(b))).map(bouton).join('')||'<p class="petit">Aucun meuble ne porte ce nom.</p>'}</div>`;
+}
+const ED_ICO=new Map();
+function edIconeOutil(k){
+  if(ED_ICO.has(k))return ED_ICO.get(k);
+  const[q,g]=cv(28,28);g.imageSmoothingEnabled=false;
+  const meuble={meubles:'armchairR',ajout:'plant',murs:'mur',portes:'porte'}[k];
+  if(meuble){const s=edIcone(meuble),f=Math.min(28/s.width,28/s.height);g.drawImage(s,(28-s.width*f)/2,(28-s.height*f)/2,s.width*f,s.height*f)}
+  else if(k==='pieces'){R(g,'#5a4a3a',2,2,24,24);floorTile(g,'parquet',0,0,4,4,'#8a6a44');R(g,'#efe3c4',2,2,24,2);R(g,'#efe3c4',2,2,2,24);R(g,'#efe3c4',24,2,2,24);R(g,'#efe3c4',2,24,24,2)}
+  else if(k==='sol'){floorTile(g,'damier',0,0,6,6,'#8a7a68')}
+  else if(k==='tapis'){R(g,'#d8b35c',3,6,22,16);R(g,'#7a2f35',5,8,18,12);R(g,'#d8b35c',13,12,2,4)}
+  else if(k==='fenetres'){fenetreType(g,-2,2,typeof c!=='undefined'&&c?c.lv:0,3,0)}
+  else if(k==='tableaux'){tableau(g,4,4,0,7)}
+  const u=q.toDataURL();ED_ICO.set(k,u);return u;
 }

@@ -711,3 +711,24 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .ds-cloche{margin:0;padding-left:18px}.ds-cloche li{font:600 14.5px/1.25 var(--f);color:#a33a3a;margin:2px 0}
 .ds-rien{color:#5a4a30;font-style:italic}.ds-mobile{color:#a33a3a;font-weight:700}
 @media (max-width:520px){.dossier-s header img{width:72px;height:72px}.dossier-s{padding:10px}.tete{flex-basis:66px}.tete img{width:46px;height:46px}}
+
+/* ——— Menu de construction : bois et papier ——— */
+.ed-barre{background:linear-gradient(#5a3a22,#3a2414);border-bottom:3px solid #c8983a;box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.ed-barre button,.ed-barre select{background:linear-gradient(#f4e8c8,#d8c49a);color:#2a1c10;border:1px solid #8a6a3a;box-shadow:0 2px 0 #2a1c10}
+.ed-barre button:hover{background:linear-gradient(#fff4d8,#e8d4a8)}
+.ed-barre button[aria-pressed="true"]{background:linear-gradient(#ffd86a,#e0a830);border-color:#6a4410}
+.ed-barre button.fort{background:linear-gradient(#8ad89a,#4a9a5a);color:#0a2010}
+.ed-outils button{display:flex;align-items:center;gap:5px;padding:3px 8px 3px 4px}.ed-outils img{width:26px;height:26px;image-rendering:pixelated;background:rgba(42,28,16,.15);border-radius:3px}
+.ed-panneau{background:#efe3c4 var(--grain);color:#2a1c10;border-left:3px solid #c8983a}
+.ed-panneau .ed-aide{color:#5a4224;background:rgba(255,248,228,.7);padding:6px 8px;border-left:3px solid #c8983a}
+.ed-panneau .petit{color:#6a5434}.ed-panneau h3{color:#8a2830}
+.ed-panneau button{background:#fff8e4;color:#2a1c10;border:1px solid #c8b088;box-shadow:1px 1px 0 rgba(0,0,0,.15)}
+.ed-panneau button:hover{background:#fff1c8}.ed-panneau button.pris{background:#ffd86a;border-color:#8a6a2a}
+.ed-panneau button.danger{background:#f2c8c0;border-color:#a8404a;color:#5a1010}
+.ed-panneau .ed-cherche,.ed-panneau input[type=number]{background:#fff8e4;color:#2a1c10;border:1px solid #c8b088}
+.ed-titre{font:700 13px system-ui;color:#8a2830;text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.ed-cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:4px}
+.ed-cats button{display:grid;justify-items:center;gap:2px;padding:4px 2px;font-size:11px}.ed-cats img{height:30px;max-width:100%;object-fit:contain;image-rendering:pixelated}
+.ed-palette.recents{grid-template-columns:repeat(auto-fill,minmax(56px,1fr))}.ed-palette.recents span{display:none}.ed-palette.recents img{height:38px}
+.ed-palette button{background:#fff8e4}
+.ed-etat{background:#2a1c10;border-top:3px solid #c8983a}

@@ -729,6 +729,27 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
 .ds-cloche{margin:0;padding-left:18px}.ds-cloche li{font:600 14.5px/1.25 var(--f);color:#a33a3a;margin:2px 0}
 .ds-rien{color:#5a4a30;font-style:italic}.ds-mobile{color:#a33a3a;font-weight:700}
 @media (max-width:520px){.dossier-s header img{width:72px;height:72px}.dossier-s{padding:10px}.tete{flex-basis:66px}.tete img{width:46px;height:46px}}
+
+/* ——— Menu de construction : bois et papier ——— */
+.ed-barre{background:linear-gradient(#5a3a22,#3a2414);border-bottom:3px solid #c8983a;box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.ed-barre button,.ed-barre select{background:linear-gradient(#f4e8c8,#d8c49a);color:#2a1c10;border:1px solid #8a6a3a;box-shadow:0 2px 0 #2a1c10}
+.ed-barre button:hover{background:linear-gradient(#fff4d8,#e8d4a8)}
+.ed-barre button[aria-pressed="true"]{background:linear-gradient(#ffd86a,#e0a830);border-color:#6a4410}
+.ed-barre button.fort{background:linear-gradient(#8ad89a,#4a9a5a);color:#0a2010}
+.ed-outils button{display:flex;align-items:center;gap:5px;padding:3px 8px 3px 4px}.ed-outils img{width:26px;height:26px;image-rendering:pixelated;background:rgba(42,28,16,.15);border-radius:3px}
+.ed-panneau{background:#efe3c4 var(--grain);color:#2a1c10;border-left:3px solid #c8983a}
+.ed-panneau .ed-aide{color:#5a4224;background:rgba(255,248,228,.7);padding:6px 8px;border-left:3px solid #c8983a}
+.ed-panneau .petit{color:#6a5434}.ed-panneau h3{color:#8a2830}
+.ed-panneau button{background:#fff8e4;color:#2a1c10;border:1px solid #c8b088;box-shadow:1px 1px 0 rgba(0,0,0,.15)}
+.ed-panneau button:hover{background:#fff1c8}.ed-panneau button.pris{background:#ffd86a;border-color:#8a6a2a}
+.ed-panneau button.danger{background:#f2c8c0;border-color:#a8404a;color:#5a1010}
+.ed-panneau .ed-cherche,.ed-panneau input[type=number]{background:#fff8e4;color:#2a1c10;border:1px solid #c8b088}
+.ed-titre{font:700 13px system-ui;color:#8a2830;text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.ed-cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:4px}
+.ed-cats button{display:grid;justify-items:center;gap:2px;padding:4px 2px;font-size:11px}.ed-cats img{height:30px;max-width:100%;object-fit:contain;image-rendering:pixelated}
+.ed-palette.recents{grid-template-columns:repeat(auto-fill,minmax(56px,1fr))}.ed-palette.recents span{display:none}.ed-palette.recents img{height:38px}
+.ed-palette button{background:#fff8e4}
+.ed-etat{background:#2a1c10;border-top:3px solid #c8983a}
 </style>
 </head>
 <body>
@@ -758,7 +779,7 @@ button.objet-c:hover,.pap:hover{background:#ffe9a0}
   <section id="accueil" class="accueil"><canvas id="ciel"></canvas><div id="acc-ui" class="acc-ui"></div></section>
 </main>
 <script>
-const GEN_SIG='1baa020bf1';
+const GEN_SIG='91287da4cf';
 // Agencements faits à la main avec l'éditeur (?editeur) : un par lieu, ils remplacent la carte générée.
 // Le jeu y place toujours lui-même les suspects, les indices, les cachettes et les énigmes.
 // Cartes reçues le 2026-11-08 : les six premiers lieux.
@@ -1503,12 +1524,12 @@ function puzzleSolve(p){
 
 // Génération de la carte : architecture, mobilier, portes, cachettes, énigmes d'objets et audit.
 let MW=62,MH=33;
-const FP={mur:[1,1],porte:[2,1],porteL:[1,2],sofaL:[1,3],sofaR:[1,3],bedL:[3,2],bedR:[3,2],tableL:[2,3],aquarium:[2,1],coffrefort:[1,1],billard:[3,2],paravent:[2,1],gramophone:[1,1],vaisselier:[2,1],buste:[1,1],cage:[1,1],jukebox:[1,1],television:[1,1],harpe:[1,1],cabine:[2,2],escalier:[2,1],secours:[2,1],chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
+const FP={vase:[1,1],livres:[1,1],statue:[1,1],echelle:[1,1],poele:[1,1],cartons:[1,1],mur:[1,1],porte:[2,1],porteL:[1,2],sofaL:[1,3],sofaR:[1,3],bedL:[3,2],bedR:[3,2],tableL:[2,3],aquarium:[2,1],coffrefort:[1,1],billard:[3,2],paravent:[2,1],gramophone:[1,1],vaisselier:[2,1],buste:[1,1],cage:[1,1],jukebox:[1,1],television:[1,1],harpe:[1,1],cabine:[2,2],escalier:[2,1],secours:[2,1],chariot:[2,1],valise:[1,1],bascule:[1,1],banquette:[2,1],fontaine:[1,1],radio:[2,1],skis:[1,1],portant:[2,1],bouee:[1,1],barre:[2,1],perfusion:[1,1],brancard:[2,1],armure:[1,1],bandit:[1,1],jetons:[1,1],portemanteau:[1,1],parapluies:[1,1],chaussures:[2,1],videpoche:[2,1],banc:[2,1],shelf:[2,1],cabinet:[2,1],fridge:[1,1],stove:[2,1],sink:[2,1],counter:[2,1],locker:[1,1],rack:[1,1],vanity:[2,1],wardrobe:[2,1],piano:[3,2],fireplace:[3,1],bar:[4,1],clock:[1,1],
   console:[3,1],labbench:[3,1],planter:[3,1],table:[3,2],rtable:[2,2],chair:[1,1],sofa:[3,1],armchair:[1,1],bed:[2,3],crate:[1,1],barrel:[1,1],plant:[1,1],mannequin:[1,1],spot:[1,1],ropes:[1,1],
   trunk:[2,1],lamp:[1,1],globe:[1,1],stool:[1,1],tank:[1,1],tub:[3,1],toilet:[1,1],shower:[2,1],desk:[3,1],pcdesk:[3,1],commode:[2,1],chevet:[1,1],lift:[2,1],medic:[1,1],washer:[1,1],copier:[1,1],roulette:[3,2],engine:[3,2],
   chairB:[1,1],chairL:[1,1],chairR:[1,1],armchairB:[1,1],armchairL:[1,1],armchairR:[1,1],sofaB:[3,1],basse:[3,1]};
 const DECO=[['chariot','valise'],['bascule','valise'],['banquette','valise'],['fontaine','fontaine'],['radio','skis'],['portant','portant'],['bouee','barre'],['perfusion','brancard'],['armure','armure'],['bandit','jetons','bandit']];
-const FLAVOR={aquarium:["Les poissons tournent en rond. Rien au fond, à part du sable."],coffrefort:["Il est solidement fermé. Quelqu'un connaît la combinaison."],billard:["Une partie abandonnée en cours."],paravent:["Derrière, une robe de chambre pendue."],gramophone:["Un vieux disque de jazz, rayé."],vaisselier:["La belle vaisselle des grands jours."],buste:["Un illustre inconnu au regard sévère."],cage:["L'oiseau vous regarde sans rien dire."],jukebox:["La dernière chanson choisie : un slow."],television:["Un écran tout gris, plein de neige."],harpe:["Une corde est cassée."],cabine:['La cuvette est propre. Le dérouleur est presque vide.',"Quelqu'un a griffonné un numéro sur la cloison, à moitié effacé."],chariot:['Des serviettes propres et de petits savons.'],valise:["Une étiquette à moitié arrachée. Elle est vide."],bascule:['Il se balance encore un peu.'],banquette:['Le velours est usé aux accoudoirs.'],fontaine:["Elle glougloute toute seule."],radio:['Rien que du grésillement.'],skis:['Les fartages sont encore frais.'],portant:['Des costumes de scène qui sentent la naphtaline.'],bouee:['Elle porte le nom du navire.'],barre:['Elle est bloquée depuis le départ.'],perfusion:["La poche est presque vide."],brancard:['Les draps sont propres.'],armure:["Il n'y a personne dedans. Enfin, j'espère."],bandit:['Trois citrons. Encore perdu.'],jetons:['Quelques jetons abandonnés en plein jeu.'],portemanteau:['Des manteaux encore humides de pluie.','Un chapeau, une écharpe, un vieux pardessus.'],parapluies:['Trois parapluies, encore mouillés.'],chaussures:["Des chaussures bien alignées. Personne n'est sorti ce soir."],videpoche:['Un vide-poches, quelques clés sans étiquette.','Une petite coupelle et le courrier du matin.'],banc:['Un banc pour se déchausser.'],shelf:['Des rangées de livres, rien de plus.','Les reliures sentent le vieux cuir.'],cabinet:['Des tiroirs bien rangés, sans surprise.'],crate:['Des clous et de la paille.'],trunk:['Des vêtements pliés et de vieux journaux.'],
+const FLAVOR={vase:["De l’eau croupie et trois tiges fanées."],livres:["Des romans policiers, cornés aux bons endroits."],statue:["Le socle sonne creux… non, plein."],echelle:["Un barreau grince."],poele:["Encore tiède. Rien dans les cendres."],cartons:["De vieux journaux et des guirlandes de Noël."],aquarium:["Les poissons tournent en rond. Rien au fond, à part du sable."],coffrefort:["Il est solidement fermé. Quelqu'un connaît la combinaison."],billard:["Une partie abandonnée en cours."],paravent:["Derrière, une robe de chambre pendue."],gramophone:["Un vieux disque de jazz, rayé."],vaisselier:["La belle vaisselle des grands jours."],buste:["Un illustre inconnu au regard sévère."],cage:["L'oiseau vous regarde sans rien dire."],jukebox:["La dernière chanson choisie : un slow."],television:["Un écran tout gris, plein de neige."],harpe:["Une corde est cassée."],cabine:['La cuvette est propre. Le dérouleur est presque vide.',"Quelqu'un a griffonné un numéro sur la cloison, à moitié effacé."],chariot:['Des serviettes propres et de petits savons.'],valise:["Une étiquette à moitié arrachée. Elle est vide."],bascule:['Il se balance encore un peu.'],banquette:['Le velours est usé aux accoudoirs.'],fontaine:["Elle glougloute toute seule."],radio:['Rien que du grésillement.'],skis:['Les fartages sont encore frais.'],portant:['Des costumes de scène qui sentent la naphtaline.'],bouee:['Elle porte le nom du navire.'],barre:['Elle est bloquée depuis le départ.'],perfusion:["La poche est presque vide."],brancard:['Les draps sont propres.'],armure:["Il n'y a personne dedans. Enfin, j'espère."],bandit:['Trois citrons. Encore perdu.'],jetons:['Quelques jetons abandonnés en plein jeu.'],portemanteau:['Des manteaux encore humides de pluie.','Un chapeau, une écharpe, un vieux pardessus.'],parapluies:['Trois parapluies, encore mouillés.'],chaussures:["Des chaussures bien alignées. Personne n'est sorti ce soir."],videpoche:['Un vide-poches, quelques clés sans étiquette.','Une petite coupelle et le courrier du matin.'],banc:['Un banc pour se déchausser.'],shelf:['Des rangées de livres, rien de plus.','Les reliures sentent le vieux cuir.'],cabinet:['Des tiroirs bien rangés, sans surprise.'],crate:['Des clous et de la paille.'],trunk:['Des vêtements pliés et de vieux journaux.'],
  barrel:['Ça sonne plein.'],table:['Quelques papiers sans intérêt.','Des tasses encore tièdes.'],clock:['Elle tique trop fort pour être honnête.','Elle retarde de deux minutes.'],plant:['La terre est humide. Quelqu\'un en prend soin.'],
  locker:['Un casier vide, qui sent le renfermé.'],lamp:['L\'ampoule grésille.'],lift:['L\'ascenseur est à l\'arrêt, impossible de l\'appeler.','Le bouton ne répond plus. Rien à faire.'],tub:['La baignoire est sèche.'],toilet:['Rien ici. Heureusement.'],shower:['Le carrelage est encore humide.'],
  escalier:["L'escalier de service. Une corde rouge barre le passage : « Fermé pendant la tempête ».","Une fine couche de poussière couvre les marches : personne n'est monté ce soir."],
@@ -1549,7 +1570,7 @@ const avecAnnexes=(P,liste,types)=>{
   return{P:{r:P.r,l:P.l,c:c2},aj};
 };
 const avecEtage=(P,E)=>{const X=Math.max(...[...P.r,...P.c].map(q=>q[0]+q[2]))+5;return{r:P.r,l:P.l,c:[...P.c,[X,12,21,3,E.palier],[X,3,10,6,E.p[0][0]],[X+11,3,10,6,E.p[1][0]]]}};
-const SH_HAUT=['paravent','vaisselier','harpe','cabine','escalier','secours','shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
+const SH_HAUT=['statue','echelle','paravent','vaisselier','harpe','cabine','escalier','secours','shelf','wardrobe','fridge','locker','clock','medic','rack','shower','lift','cabinet','vanity','lamp','plant'];
 const DIFFW={facile:{lock:1,eni:2,pz:2,bonus:1},moyen:{lock:1,eni:3,pz:3,bonus:1},difficile:{lock:2,eni:4,pz:3,bonus:2},expert:{lock:2,eni:4,pz:3,bonus:2}};
 
 // Un agencement fait à l'éditeur remplace la carte générée ; s'il ne permet pas une partie complète, on garde la carte générée
@@ -4524,6 +4545,45 @@ Object.assign(SPR,{
 });
 Object.assign(SH,{mur:30,porte:30,porteL:32});
 
+// ——— Six décors de plus pour l'éditeur ———
+Object.assign(SPR,{
+  vase(g,v){
+    const c0=['#2e5a9a','#9a2e3a','#2e7a5a','#c8a040'][v%4];
+    ellipseP(g,8,20,6,6,'#f0ece4');ellipseP(g,8,20,5,5,'#f8f4ec');R(g,'#f0ece4',5,9,6,4);R(g,'#d8d4cc',5,12,6,1);
+    for(let i=0;i<5;i++)R(g,c0,4+i*2,16+((i*3)%4),1,5);R(g,c0,3,19,10,1);R(g,'#ffffff',5,15,1,6);R(g,'#c8c4bc',12,17,1,7);
+    [[4,3,'#e8484a'],[8,1,'#ffd23f'],[11,4,'#f08ac0'],[6,6,'#ffffff']].forEach(([x,y,f])=>{R(g,'#3d8a3e',x+1,y+2,1,6);disque(g,x+1,y+1,1,f)});
+  },
+  livres(g,v){
+    const cols=['#a33a3a','#2e6a8c','#3d7a4c','#c29a3a','#6b3d78','#3a3a5c'];
+    for(let i=0;i<5;i++){const w=12-((i*3+v)%4),x=2+((i*5+v)%3),y=14-i*3,col=cols[(i+v)%6];R(g,col,x,y,w,3);R(g,tone(col,.3),x,y,w,1);R(g,'#f4ecd8',x+w-1,y+1,1,2);R(g,'#e8c060',x+2,y+1,1,1)}
+  },
+  statue(g,v){
+    const p=['#e8e4dc','#c8c0b0','#8a939e'][v%3];
+    R(g,tone(p,-.1),2,34,12,8);R(g,tone(p,.15),2,34,12,2);R(g,tone(p,-.3),2,41,12,1);
+    R(g,p,5,14,6,20);R(g,tone(p,.2),5,14,2,20);R(g,tone(p,-.25),10,16,1,18);for(let y=20;y<34;y+=3)R(g,tone(p,-.12),6,y,4,1);
+    R(g,p,4,12,8,4);R(g,p,3,13,2,8);R(g,p,11,13,2,6);R(g,p,12,8,2,6);
+    disque(g,8,7,3,p);R(g,tone(p,.25),6,5,2,3);R(g,tone(p,-.3),10,6,1,3);
+  },
+  echelle(g,v){
+    const b=BOIS_M[v%4];
+    for(let y=0;y<42;y++){R(g,tone(b,.1),2+Math.round(y*.06),y,2,1);R(g,tone(b,-.15),12-Math.round(y*.06),y,2,1)}
+    for(let y=6;y<40;y+=8){R(g,tone(b,.2),3,y,10,2);R(g,tone(b,-.3),3,y+2,10,1)}
+    R(g,'#8a939e',7,1,2,40);
+  },
+  poele(g,v){
+    R(g,'#2a2a30',7,0,3,14);R(g,'#4a4a52',7,0,1,14);R(g,'#1a1a20',6,12,5,2);
+    R(g,'#2a2a30',2,14,12,18);R(g,'#4a4a52',2,14,12,2);R(g,'#1a1a20',2,30,12,2);
+    R(g,'#5a2a10',5,19,6,7);R(g,'#ff8a2a',6,21,4,4);R(g,'#ffd23f',7,22,2,2);R(g,'#8a939e',4,18,8,1);
+    pied(g,3,32,4,'#1a1a20');pied(g,11,32,4,'#1a1a20');
+  },
+  cartons(g,v){
+    const k='#b88a4a';
+    caisse(g,1,12,14,12,3,k,v,'#c89a5a');R(g,'#e8d8b0',7,12,2,12);R(g,'#5a3a1a',3,17,4,2);
+    caisse(g,3,2,10,10,3,tone(k,.08),v+1,'#d0a868');R(g,'#e8d8b0',7,2,2,10);
+  }
+});
+Object.assign(SH,{vase:24,livres:18,statue:42,echelle:42,poele:36,cartons:24});
+
 // Cinq mini-jeux de plus : défaire un lit, soulever des coussins, remettre une horloge à l'heure,
 // déplacer un pot sans le renverser, rejouer une mélodie au piano.
 function toile(shell,txt){
@@ -5747,7 +5807,7 @@ function edPointe(e){
   if(O_==='ajout'){
     if(!ED.ajout)return pan();const n=ED.ajout,[fw,fh]=FP[n],x=cx-((fw-1)>>1),y=cy-fh+1;
     if(!edLibre(n,x,y,-1)){ED.msg='Pas de place ici pour ce meuble (mur, autre meuble, ou juste devant une porte).';edEtat();return}
-    edModifie(C=>{C.furn.push([n,x,y,(Math.random()*1e6)|0])});ED.sel={meuble:edCarte().furn.length-1};return;
+    edModifie(C=>{C.furn.push([n,x,y,(Math.random()*1e6)|0])});ED.sel={meuble:edCarte().furn.length-1};ED.recents=[n,...(ED.recents||[]).filter(q=>q!==n)].slice(0,8);return;
   }
   if(O_==='murs'){
     if(ED.murMode==='porte'){edPercePorte(cx,cy);return}
@@ -5835,7 +5895,7 @@ function edPanneau(){
     ${nm?`<p class="petit">Modèle</p><div class="ed-modeles">${range(nm).map(k=>`<button data-ed="modele" data-v="${k}" class="${(op.mod??(n==='bed'?-1:CU.furn[s.meuble][3]%10))===k?'pris':''}"><img alt="" src="${edVignette(n,CU.furn[s.meuble][3],{...op,mod:k})}"></button>`).join('')}</div>`
       :/^(lift|escalier|secours)$/.test(n)?'':`<p class="petit">Aspect</p><div class="ed-modeles">${edAspects(CU.furn[s.meuble][3]).map(v=>`<button data-ed="aspectv" data-v="${v}" class="${v===CU.furn[s.meuble][3]?'pris':''}"><img alt="" src="${edVignette(n,v,op)}"></button>`).join('')}</div>`}
     <p class="petit">Flèches du clavier : déplacer d'une case.</p>`}
-  if(O_==='ajout'){h+=`<input id="ed-cherche" class="ed-cherche" placeholder="Chercher un meuble…" value="${esc(ED.cherche||'')}"><div class="ed-palette">${Object.keys(FP).filter(n=>SPR[n]&&(!ED.cherche||edNom(n).toLowerCase().includes(ED.cherche.toLowerCase())||n.includes(ED.cherche))).sort((a,b)=>edNom(a).localeCompare(edNom(b))).map(n=>`<button data-ed="prends" data-v="${n}" class="${ED.ajout===n?'pris':''}" title="${esc(edNom(n))}"><img alt="" src="${edIcone(n).toDataURL()}"><span>${esc(edNom(n))}</span></button>`).join('')}</div>`}
+  if(O_==='ajout')h+=edPalette();
   if(O_==='pieces'&&!(s&&s.rect!=null))h+=`<h3>Créer une pièce</h3><label class="ed-champ">Nom <input id="ed-nompiece" class="ed-cherche" maxlength="28" value="${esc(ED.nomPiece||'Nouvelle pièce')}"></label><button data-ed="creer" class="${ED.creer?'pris':''}">${ED.creer?'Trace-la sur la carte…':'Tracer la nouvelle pièce'}</button><p class="petit">Place-la contre une autre pièce : une case de mur sur le côté, ou trois rangées en haut et en bas. Une porte se pose toute seule.</p>`;
   if(O_==='pieces'&&s&&s.rect!=null){const R0=CU.plan.r.concat(CU.plan.c),q0=R0[s.rect];if(q0&&q0[4]&&(CU.crees||[]).includes(q0[4]))h+=`<button data-ed="supprpiece" class="danger">Supprimer « ${esc(q0[4])} »</button>`}
   if(O_==='pieces'&&s&&s.rect!=null){const R=CU.plan.r.concat(CU.plan.c),q=R[s.rect],A=W.areas.find(A=>A.rects.some(r=>r.x0===q[0]&&r.y0===q[1]));
@@ -5867,7 +5927,7 @@ function edInterface(){
   const e=$('ed');
   e.innerHTML=`<header id="ed-barre" class="ed-barre">
     <select id="ed-lv" aria-label="Lieu">${LEVELS.slice(0,10).map((l,i)=>`<option value="${i}">${i+1}. ${esc(l.nom)}</option>`).join('')}</select>
-    <span class="ed-outils" role="toolbar">${ED_OUTILS.map(([k,l])=>`<button data-ed-outil="${k}">${l}</button>`).join('')}</span>
+    <span class="ed-outils" role="toolbar">${ED_OUTILS.map(([k,l])=>`<button data-ed-outil="${k}" title="${esc(l)}"><img alt="" src="${edIconeOutil(k)}"><span>${l}</span></button>`).join('')}</span>
     <span class="ed-groupe"><button data-ed="annule" title="Annuler (Ctrl+Z)">↶</button><button data-ed="refait" title="Rétablir (Ctrl+Y)">↷</button><button data-ed="grille" title="Quadrillage">#</button><button data-ed="moins" title="Dézoomer">−</button><button data-ed="plus" title="Zoomer">+</button><button data-ed="centre" title="Tout voir">⤢</button></span>
     <span class="ed-groupe"><button data-ed="essai-n">Tester</button><button data-ed="essai-e">Tester en expert</button></span>
     <span class="ed-groupe"><button data-ed="exporte" class="fort">Exporter</button><button data-ed="copie">Copier</button><button data-ed="importe">Importer</button><input type="file" id="ed-fichier" accept=".json,application/json" hidden></span>
@@ -5910,6 +5970,7 @@ function edClic(x){
   if(a==='base'){if(!b.classList.contains('sur')){b.classList.add('sur');b.textContent='Sûr ? Re-clique';setTimeout(()=>{b.classList.remove('sur');b.textContent='Carte générée'},3000);return}
     b.classList.remove('sur');b.textContent='Carte générée';const avant=JSON.stringify(CU);ED.hist.push(avant);ED.base=(ED.base||0)+1;ED.cartes[ED.lv]=edBase(1000+ED.lv*7+ED.base*101);ED.msg='Nouvelle carte générée (Annuler pour revenir).';edSauve();edConstruit();edPanneau();edBarre()}
   if(a==='prends'){ED.ajout=ED.ajout===v?null:v;edPanneau()}
+  if(a==='cat'){ED.cat=v;ED.cherche='';edPanneau()}
   if(a==='tableau'){ED.tabN=+v;edPanneau()}
   if(a==='miroir'&&s&&s.meuble!=null)edMiroir();
   if(a==='murmode'){ED.murMode=v;edPanneau()}
@@ -6058,6 +6119,45 @@ function edAjoutePorte(cx,cy){
   const ok=edModifie(C=>{C.liens=[...(C.liens||[]),[na,nb]];const noms=edNomsAires(C);C.portes=C.portes||{};C.portes[noms.indexOf(na)+'-'+noms.indexOf(nb)]=pos},true);
   if(ok){ED.msg='Porte ajoutée entre « '+na+' » et « '+nb+' ».';edEtat()}
   return true;
+}
+
+// ——— Le menu de construction : des catégories, des récents, une icône par outil ———
+const ED_CATS=[
+  ['salon','Salon','armchairR',/^(sofa|armchair|basse|fireplace|piano|gramophone|harpe|jukebox|television|billard|bar$|banquette|vaisselier|paravent|aquarium|cage)/],
+  ['chambre','Chambre','bed',/^(bed|chevet|wardrobe|commode|vanity|trunk|valise|portant|mannequin|paravent)/],
+  ['cuisine','Cuisine','stove',/^(fridge|stove|sink|counter|table|rtable|chair|stool|poele)/],
+  ['bain','Bain','tub',/^(tub|toilet|shower|sink|medic|washer|cabine|bascule)/],
+  ['bureau','Bureau','desk',/^(desk|pcdesk|shelf|cabinet|copier|console|coffrefort|livres|globe|clock)/],
+  ['deco','Décor','plant',/^(plant|planter|lamp|vase|statue|buste|armure|fontaine|cage|aquarium|livres|globe|clock|banc|portemanteau|parapluies|chaussures|videpoche)/],
+  ['stock','Rangement','crate',/^(barre|crate|barrel|trunk|locker|cartons|echelle|chariot|valise|ropes|skis|bouee|portant)/],
+  ['tech','Technique','engine',/^(engine|tank|labbench|rack|console|spot|radio|perfusion|brancard|weights|treadmill|bandit|roulette|jetons|winerack|skirack)/],
+  ['struct','Structure','escalier',/^(mur|porte|escalier|secours|lift)/]
+];
+const edTousMeubles=()=>Object.keys(FP).filter(n=>SPR[n]);
+function edPalette(){
+  const tous=edTousMeubles(),q=(ED.cherche||'').toLowerCase(),cat=ED.cat||'salon';
+  const classes=n=>ED_CATS.filter(([,,,re])=>re.test(n)).map(c0=>c0[0]),divers=tous.filter(n=>!classes(n).length);
+  const liste=q?tous.filter(n=>edNom(n).toLowerCase().includes(q)||n.includes(q)):cat==='divers'?divers:tous.filter(n=>classes(n).includes(cat));
+  const bouton=n=>`<button data-ed="prends" data-v="${n}" class="${ED.ajout===n?'pris':''}" title="${esc(edNom(n))}"><img alt="" src="${edIcone(n).toDataURL()}"><span>${esc(edNom(n))}</span></button>`;
+  const rec=(ED.recents||[]).filter(n=>FP[n]);
+  return `<input id="ed-cherche" class="ed-cherche" placeholder="Chercher parmi ${tous.length} meubles…" value="${esc(ED.cherche||'')}">
+    ${rec.length?`<p class="ed-titre">Récents</p><div class="ed-palette recents">${rec.map(bouton).join('')}</div>`:''}
+    <div class="ed-cats" role="tablist">${[...ED_CATS,['divers','Divers','valise']].map(([k,l,ic])=>`<button data-ed="cat" data-v="${k}" class="${!q&&cat===k?'pris':''}" role="tab" aria-selected="${!q&&cat===k}"><img alt="" src="${edIcone(ic).toDataURL()}"><span>${l}</span></button>`).join('')}</div>
+    <p class="ed-titre">${q?'Résultats':(ED_CATS.find(c0=>c0[0]===cat)||[0,'Divers'])[1]} · ${liste.length}</p>
+    <div class="ed-palette">${liste.sort((a,b)=>edNom(a).localeCompare(edNom(b))).map(bouton).join('')||'<p class="petit">Aucun meuble ne porte ce nom.</p>'}</div>`;
+}
+const ED_ICO=new Map();
+function edIconeOutil(k){
+  if(ED_ICO.has(k))return ED_ICO.get(k);
+  const[q,g]=cv(28,28);g.imageSmoothingEnabled=false;
+  const meuble={meubles:'armchairR',ajout:'plant',murs:'mur',portes:'porte'}[k];
+  if(meuble){const s=edIcone(meuble),f=Math.min(28/s.width,28/s.height);g.drawImage(s,(28-s.width*f)/2,(28-s.height*f)/2,s.width*f,s.height*f)}
+  else if(k==='pieces'){R(g,'#5a4a3a',2,2,24,24);floorTile(g,'parquet',0,0,4,4,'#8a6a44');R(g,'#efe3c4',2,2,24,2);R(g,'#efe3c4',2,2,2,24);R(g,'#efe3c4',24,2,2,24);R(g,'#efe3c4',2,24,24,2)}
+  else if(k==='sol'){floorTile(g,'damier',0,0,6,6,'#8a7a68')}
+  else if(k==='tapis'){R(g,'#d8b35c',3,6,22,16);R(g,'#7a2f35',5,8,18,12);R(g,'#d8b35c',13,12,2,4)}
+  else if(k==='fenetres'){fenetreType(g,-2,2,typeof c!=='undefined'&&c?c.lv:0,3,0)}
+  else if(k==='tableaux'){tableau(g,4,4,0,7)}
+  const u=q.toDataURL();ED_ICO.set(k,u);return u;
 }
 
 // Comptes d'inspecteurs : plusieurs joueurs sur le même appareil, chacun sa partie, ses statistiques et ses réglages.
@@ -6898,7 +6998,7 @@ function onMapHover(e){
   G.hover=objAt(p.x,p.y);
   $('jeu').style.cursor=G.hover?G.curH:G.curN;
 }
-const NOM_F={mur:'le mur',porte:'la porte',porteL:'la porte',cabine:'la cabine',aquarium:"l'aquarium",coffrefort:'le coffre-fort',billard:'le billard',paravent:'le paravent',gramophone:'le gramophone',vaisselier:'le vaisselier',buste:'le buste',cage:'la cage à oiseau',jukebox:'le juke-box',television:'la télévision',harpe:'la harpe',portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur",bed:'le lit',sofa:'le canapé',sofaB:'le canapé',armchair:'le fauteuil',armchairL:'le fauteuil',armchairR:'le fauteuil',armchairB:'le fauteuil',clock:"l'horloge",plant:'le pot de fleurs',piano:'le piano',escalier:"l'escalier de service",secours:'la sortie de secours'};
+const NOM_F={vase:'le grand vase',livres:'la pile de livres',statue:'la statue',echelle:"l'escabeau",poele:'le poêle',cartons:'les cartons',mur:'le mur',porte:'la porte',porteL:'la porte',cabine:'la cabine',aquarium:"l'aquarium",coffrefort:'le coffre-fort',billard:'le billard',paravent:'le paravent',gramophone:'le gramophone',vaisselier:'le vaisselier',buste:'le buste',cage:'la cage à oiseau',jukebox:'le juke-box',television:'la télévision',harpe:'la harpe',portemanteau:'le porte-manteau',parapluies:'le porte-parapluies',chaussures:'le meuble à chaussures',videpoche:'la console',banc:'le banc',shelf:'la bibliothèque',wardrobe:"l'armoire",locker:'le casier',commode:'la commode',chevet:'la table de chevet',desk:'le bureau',pcdesk:'le poste de travail',cabinet:'le buffet',counter:'le plan de travail',bar:'le comptoir',fridge:'le réfrigérateur',medic:"l'armoire à pharmacie",vanity:'la coiffeuse',sink:'le lavabo',trunk:'la malle',crate:'la caisse',barrel:'le tonneau',fireplace:'la cheminée',washer:'la machine à laver',lift:"l'ascenseur",bed:'le lit',sofa:'le canapé',sofaB:'le canapé',armchair:'le fauteuil',armchairL:'le fauteuil',armchairR:'le fauteuil',armchairB:'le fauteuil',clock:"l'horloge",plant:'le pot de fleurs',piano:'le piano',escalier:"l'escalier de service",secours:'la sortie de secours'};
 function promptOf(o){
   if(o.kind==='suspect')return`Parler à ${c.suspects[o.s].prenom}`;
   if(o.kind==='vitrine')return`Examiner : ${c.set.rooms[o.room].o}`;
